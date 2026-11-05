@@ -123,9 +123,6 @@ abstract final class AppStrings {
   static const String homeBody =
       'Ambil satu foto selfie. Analisis butuh beberapa detik.';
   static const String startAnalysis = 'Mulai analisis';
-  static const String comingSoon = 'Segera hadir';
-  static const String comingSoonBody =
-      'Fitur ini sedang dibangun dan akan tersedia di versi berikutnya.';
 
   // History (placeholder until Phase 4).
   static const String historyEmptyTitle = 'Belum ada riwayat';
@@ -293,4 +290,55 @@ abstract final class AppStrings {
   static const String conflictHeading = 'Peringatan konflik bahan aktif';
   static const String source = 'Sumber';
   static const String productImage = 'Foto produk';
+
+  // History.
+  static const String historyClearAll = 'Hapus semua riwayat';
+  static const String historyClearConfirm =
+      'Semua riwayat analisis di perangkat ini akan dihapus.';
+  static const String historyDeleted = 'Riwayat dihapus.';
+  static const String undo = 'Urungkan';
+  static const String delete = 'Hapus';
+  static String deleteEntry(String date) => 'Hapus riwayat $date';
+  static const String noMainCondition = 'Tanpa kondisi menonjol';
+  static const String historyNotFound = 'Riwayat tidak ditemukan.';
+
+  // Settings: clear data.
+  static const String clearDataTitle = 'Hapus semua data lokal?';
+  static const String clearDataBody =
+      'Profil, jawaban kuesioner, riwayat, dan persetujuan akan dihapus '
+      'dari perangkat ini. Kamu akan memulai dari awal.';
+  static const String settingsDataSection = 'Data';
+  static const String settingsAccountSection = 'Profil & kuesioner';
+
+  // About.
+  static const String aboutTitle = 'Tentang Afa Skin';
+  static const String version = 'Versi';
+  static const String teamHeading = 'Tim';
+  static const String membersHeading = 'Anggota kelompok';
+  static const String attributionHeading = 'Atribusi & lisensi';
+  static const List<(String, String)> attributions = [
+    (
+      'Dataset kondisi kulit',
+      'Acne Detection, Roboflow Universe (SKIN CARE). Lisensi CC BY 4.0.',
+    ),
+    (
+      'Dataset tipe kulit',
+      'Dry, Oily, and Normal Skin Types, Kaggle (Shakya Dissanayake).',
+    ),
+    ('MediaPipe Face Mesh', 'Google. Lisensi Apache 2.0.'),
+    (
+      'Google ML Kit Face Detection',
+      'Google. Dipakai di perangkat hanya untuk panduan posisi wajah.',
+    ),
+    ('Font Belleza', 'Font Diner / Google Fonts. SIL Open Font License 1.1.'),
+    (
+      'Font judul',
+      'League Spartan (SIL Open Font License 1.1), sementara menggantikan '
+          'Etna sampai file font Etna tersedia.',
+    ),
+  ];
+  static const String openSourceLicenses = 'Lisensi open source';
+  static const String disclaimerShort =
+      'Afa Skin bukan alat diagnosis medis. Untuk kondisi serius, '
+      'periksakan ke dokter spesialis kulit.';
 }

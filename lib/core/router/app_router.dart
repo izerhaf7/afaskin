@@ -1,4 +1,5 @@
 import 'package:afaskin/core/session/session_controller.dart';
+import 'package:afaskin/features/about/about_page.dart';
 import 'package:afaskin/features/analysis/analyzing_page.dart';
 import 'package:afaskin/features/analysis/result_page.dart';
 import 'package:afaskin/features/capture/capture_page.dart';
@@ -34,6 +35,8 @@ abstract final class AppRoutes {
   static const String home = '/analysis';
   static const String history = '/history';
   static const String settings = '/settings';
+  static String historyEntry(String id) =>
+      '/history/${Uri.encodeComponent(id)}';
 
   // Full-screen flows (above the tab bar).
   static const String capture = '/analysis/capture';
@@ -168,6 +171,15 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: AppRoutes.history,
                 builder: (_, _) => const HistoryPage(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    parentNavigatorKey: rootKey,
+                    builder: (_, state) => HistoryEntryPage(
+                      analysisId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -194,7 +206,7 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.about,
         parentNavigatorKey: rootKey,
-        builder: (_, _) => const ComingSoonPage(),
+        builder: (_, _) => const AboutPage(),
       ),
       if (kDebugMode)
         GoRoute(

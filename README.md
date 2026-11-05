@@ -4,7 +4,7 @@ Aplikasi Flutter: analisis kondisi kulit dari selfie + rekomendasi skincare
 berbasis bahan aktif. Proyek Pembelajaran Mesin, Kelompok 3, Kelas A, TRK,
 Sekolah Vokasi IPB.
 
-**Status: Fase 3 (hasil & rekomendasi) selesai.** Berikutnya: Fase 4 (riwayat & pengaturan).
+**Status: Fase 4 (riwayat & pengaturan) selesai.** Berikutnya: Fase 5 (integrasi backend + APK release).
 
 Alur: splash → onboarding (3 halaman) → persetujuan → profil → kuesioner →
 bottom nav (Analisis, Riwayat, Pengaturan). Router menjaga urutan setup,
@@ -60,6 +60,15 @@ assets/
   `permission_handler` (status ditolak permanen + buka pengaturan HP).
 - iOS: tambahkan makro `PERMISSION_CAMERA=1` di `ios/Podfile` sesuai
   dokumentasi permission_handler saat build iOS.
+
+## Riwayat & pengaturan (Fase 4)
+
+- Riwayat: box Hive `history`, hanya JSON hasil analisis (tanpa foto),
+  disimpan otomatis setelah analisis sukses. Hapus satu (tombol / geser,
+  bisa diurungkan) atau semua.
+- Pengaturan: edit profil, ulangi kuesioner, hapus semua data lokal
+  (kembali ke onboarding), halaman Tentang dengan atribusi dataset.
+- **Isi nama anggota kelompok** di `lib/core/config/app_info.dart`.
 
 ## Catatan
 

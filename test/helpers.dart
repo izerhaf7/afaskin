@@ -5,6 +5,7 @@ import 'package:afaskin/data/models/models.dart';
 import 'package:afaskin/data/repositories/analysis_repository.dart';
 import 'package:afaskin/data/repositories/analysis_repository_mock.dart';
 import 'package:afaskin/data/repositories/providers.dart';
+import 'package:afaskin/features/history/history_controller.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -21,6 +22,7 @@ Future<({MemoryFlagStore flags, MemoryUserStore user})> pumpApp(
   WidgetTester tester, {
   MemoryFlagStore? flags,
   MemoryUserStore? user,
+  MemoryHistoryStore? history,
   double textScale = 1,
   Size size = const Size(360, 720),
   AnalysisRepository? repo,
@@ -43,6 +45,7 @@ Future<({MemoryFlagStore flags, MemoryUserStore user})> pumpApp(
       overrides: [
         flagStoreProvider.overrideWithValue(f),
         userStoreProvider.overrideWithValue(u),
+        historyStoreProvider.overrideWithValue(history ?? MemoryHistoryStore()),
         analysisRepositoryProvider.overrideWithValue(repo ?? fastMockRepo()),
         ...overrides,
       ],

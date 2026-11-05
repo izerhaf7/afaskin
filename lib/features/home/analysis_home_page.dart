@@ -81,20 +81,3 @@ class AnalysisHomePage extends StatelessWidget {
     );
   }
 }
-
-/// Placeholder for routes whose feature lands in a later phase.
-class ComingSoonPage extends StatelessWidget {
-  const ComingSoonPage({super.key, this.title = AppStrings.comingSoon});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(title)),
-    body: const EmptyView(
-      title: AppStrings.comingSoon,
-      body: AppStrings.comingSoonBody,
-      icon: Icons.construction_rounded,
-    ),
-  );
-}

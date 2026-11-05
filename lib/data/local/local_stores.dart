@@ -156,3 +156,60 @@ class MemoryUserStore implements UserStore {
     answers = null;
   }
 }
+
+/// Past analyses (result JSON only, never the photo), newest first.
+abstract interface class HistoryStore {
+  List<AnalysisResult> readAll();
+  Future<void> save(AnalysisResult result);
+  Future<void> delete(String analysisId);
+  Future<void> clear();
+}
+
+List<AnalysisResult> _newestFirst(Iterable<AnalysisResult> items) =>
+    items.toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+class HiveHistoryStore implements HistoryStore {
+  HiveHistoryStore(this._box);
+
+  static const String boxName = 'history';
+
+  final Box<String> _box;
+
+  @override
+  List<AnalysisResult> readAll() {
+    final items = <AnalysisResult>[];
+    for (final raw in _box.values) {
+      try {
+        items.add(
+          AnalysisResult.fromJson(jsonDecode(raw) as Map<String, dynamic>),
+        );
+      } on Object {
+        // Skip entries written by an older, incompatible app version.
+      }
+    }
+    return _newestFirst(items);
+  }
+
+  @override
+  Future<void> save(AnalysisResult result) =>
+      _box.put(result.analysisId, jsonEncode(result.toJson()));
+
+  @override
+  Future<void> delete(String analysisId) => _box.delete(analysisId);
+
+  @override
+  Future<void> clear() => _box.clear();
+}
+
+class MemoryHistoryStore implements HistoryStore {
+  final Map<String, AnalysisResult> items = {};
+
+  @override
+  List<AnalysisResult> readAll() => _newestFirst(items.values);
+  @override
+  Future<void> save(AnalysisResult r) async => items[r.analysisId] = r;
+  @override
+  Future<void> delete(String id) async => items.remove(id);
+  @override
+  Future<void> clear() async => items.clear();
+}

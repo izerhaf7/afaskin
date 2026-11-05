@@ -5,6 +5,7 @@ import 'package:afaskin/data/repositories/analysis_repository_mock.dart';
 import 'package:afaskin/features/analysis/analysis_flow.dart';
 import 'package:afaskin/features/capture/capture_page.dart';
 import 'package:afaskin/features/capture/capture_services.dart';
+import 'package:afaskin/features/history/history_controller.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -109,8 +110,10 @@ void main() {
     await tapVisible(tester, find.text('FAKE SHUTTER'));
     await waitFor(tester, find.text('Hasil analisis'));
 
-    // Photo is dropped from memory once the server accepted it.
+    // Photo is dropped from memory once the server accepted it, and the
+    // result (not the photo) lands in history.
     expect(container.read(pendingPhotoProvider), isNull);
+    expect(container.read(historyProvider), hasLength(1));
     expect(
       container.read(latestAnalysisProvider)!.skinType.label,
       SkinType.oily,

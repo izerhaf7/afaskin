@@ -13,6 +13,7 @@ import 'package:afaskin/core/widgets/state_views.dart';
 import 'package:afaskin/data/models/models.dart';
 import 'package:afaskin/data/repositories/providers.dart';
 import 'package:afaskin/features/analysis/analysis_flow.dart';
+import 'package:afaskin/features/history/history_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -83,6 +84,8 @@ class _AnalyzingPageState extends ConsumerState<AnalyzingPage> {
           );
       ref.read(pendingPhotoProvider.notifier).clear();
       ref.read(latestAnalysisProvider.notifier).set(result);
+      // History keeps the result JSON only; the photo is never stored.
+      await ref.read(historyProvider.notifier).add(result);
       if (mounted) context.go(AppRoutes.result);
     } on Failure catch (f) {
       // A rejected photo is useless: drop it. Keep it for network retries.

@@ -43,6 +43,8 @@ flutter:
     - assets/brand/
     - assets/mock/
     - assets/mock/products/
+    - assets/fonts/belleza/OFL.txt
+    - assets/fonts/etna/OFL-LeagueSpartan.txt
 
   fonts:
     # Display font. The real Etna file was not provided yet, so League Spartan
