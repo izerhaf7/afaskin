@@ -1,0 +1,32 @@
+{
+  "id": "prd_003",
+  "name": "Night Renewal Retinol + AHA Serum",
+  "brand": "Rona Botanica",
+  "category": "serum",
+  "price": 139000,
+  "image_url": "https://example.com/images/prd_003.jpg",
+  "match_score": 0.74,
+  "matched_ingredients": [
+    "retinol",
+    "glycolic acid"
+  ],
+  "reasons": [
+    "Retinol membantu mempercepat pergantian sel dan mengurangi bekas jerawat",
+    "Glycolic acid mengangkat sel kulit mati penyebab komedo tertutup"
+  ],
+  "warnings": [
+    "Mengandung retinol dan AHA (glycolic acid) sekaligus: berisiko iritasi. Gunakan maksimal 2-3 kali seminggu dan jangan dicampur dengan eksfoliant lain."
+  ],
+  "ingredients": [
+    "aqua",
+    "glycolic acid",
+    "propanediol",
+    "retinol",
+    "squalane",
+    "niacinamide",
+    "tocopherol",
+    "sodium hydroxide",
+    "phenoxyethanol"
+  ],
+  "source_url": "https://example.com/rona-botanica/night-renewal-serum"
+}

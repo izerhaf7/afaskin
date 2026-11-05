@@ -1,0 +1,28 @@
+{
+  "id": "prd_007",
+  "name": "Brightening Vitamin C 15% Serum",
+  "brand": "Daun Labs",
+  "category": "serum",
+  "price": 175000,
+  "image_url": "https://example.com/images/prd_007.jpg",
+  "match_score": 0.62,
+  "matched_ingredients": [
+    "ascorbic acid"
+  ],
+  "reasons": [
+    "Vitamin C membantu memudarkan bekas jerawat"
+  ],
+  "warnings": [
+    "Vitamin C (ascorbic acid) jangan dipakai bersamaan dengan benzoyl peroxide karena saling menonaktifkan. Pakai di waktu berbeda (pagi dan malam)."
+  ],
+  "ingredients": [
+    "aqua",
+    "ascorbic acid",
+    "propylene glycol",
+    "ferulic acid",
+    "tocopherol",
+    "sodium hyaluronate",
+    "triethanolamine"
+  ],
+  "source_url": "https://example.com/daun-labs/vitamin-c-serum"
+}

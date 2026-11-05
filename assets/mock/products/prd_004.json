@@ -1,0 +1,29 @@
+{
+  "id": "prd_004",
+  "name": "Niacinamide 10% Oil Control Serum",
+  "brand": "Kalis",
+  "category": "serum",
+  "price": 79000,
+  "image_url": "https://example.com/images/prd_004.jpg",
+  "match_score": 0.83,
+  "matched_ingredients": [
+    "niacinamide",
+    "zinc pca"
+  ],
+  "reasons": [
+    "Niacinamide membantu mengontrol minyak",
+    "Zinc PCA membantu meredakan jerawat ringan"
+  ],
+  "warnings": [],
+  "ingredients": [
+    "aqua",
+    "niacinamide",
+    "pentylene glycol",
+    "zinc pca",
+    "sodium hyaluronate",
+    "tamarindus indica seed gum",
+    "xanthan gum",
+    "phenoxyethanol"
+  ],
+  "source_url": "https://example.com/kalis/niacinamide-serum"
+}

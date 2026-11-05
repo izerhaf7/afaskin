@@ -1,0 +1,12 @@
+{
+  "version": "2026-11",
+  "questions": [
+    { "id": "q1", "text": "Seberapa sering wajahmu terlihat berminyak di siang hari?", "scale": { "min": 1, "max": 5, "min_label": "Tidak pernah", "max_label": "Selalu" } },
+    { "id": "q2", "text": "Seberapa sering kulitmu terasa kering atau ketarik setelah cuci muka?", "scale": { "min": 1, "max": 5, "min_label": "Tidak pernah", "max_label": "Selalu" } },
+    { "id": "q3", "text": "Seberapa sering jerawat muncul dalam sebulan terakhir?", "scale": { "min": 1, "max": 5, "min_label": "Tidak pernah", "max_label": "Sangat sering" } },
+    { "id": "q4", "text": "Seberapa mudah kulitmu perih atau kemerahan saat mencoba produk baru?", "scale": { "min": 1, "max": 5, "min_label": "Tidak pernah", "max_label": "Selalu" } },
+    { "id": "q5", "text": "Seberapa terlihat komedo atau pori-pori besar di area hidung dan dahi?", "scale": { "min": 1, "max": 5, "min_label": "Tidak terlihat", "max_label": "Sangat terlihat" } },
+    { "id": "q6", "text": "Seberapa sering kulitmu bersisik atau mengelupas?", "scale": { "min": 1, "max": 5, "min_label": "Tidak pernah", "max_label": "Selalu" } },
+    { "id": "q7", "text": "Seberapa sering kamu beraktivitas di bawah sinar matahari?", "scale": { "min": 1, "max": 5, "min_label": "Hampir tidak pernah", "max_label": "Setiap hari" } }
+  ]
+}

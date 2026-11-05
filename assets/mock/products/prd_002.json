@@ -1,0 +1,28 @@
+{
+  "id": "prd_002",
+  "name": "Pore Refining BHA Toner",
+  "brand": "Daun Labs",
+  "category": "toner",
+  "price": 89000,
+  "image_url": "https://example.com/images/prd_002.jpg",
+  "match_score": 0.81,
+  "matched_ingredients": [
+    "salicylic acid",
+    "niacinamide"
+  ],
+  "reasons": [
+    "Kombinasi BHA dan niacinamide cocok untuk kulit berminyak dengan komedo"
+  ],
+  "warnings": [],
+  "ingredients": [
+    "aqua",
+    "butylene glycol",
+    "niacinamide",
+    "salicylic acid",
+    "centella asiatica extract",
+    "sodium hyaluronate",
+    "betaine",
+    "ethylhexylglycerin"
+  ],
+  "source_url": "https://example.com/daun-labs/bha-toner"
+}

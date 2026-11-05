@@ -1,0 +1,131 @@
+{
+  "items": [
+    {
+      "id": "prd_001",
+      "name": "Gentle Balance Low pH Cleanser",
+      "brand": "Teduh",
+      "category": "cleanser",
+      "price": 65000,
+      "image_url": "https://example.com/images/prd_001.jpg",
+      "match_score": 0.86,
+      "matched_ingredients": [
+        "salicylic acid",
+        "green tea extract"
+      ],
+      "reasons": [
+        "Salicylic acid membantu membersihkan pori yang tersumbat komedo",
+        "pH rendah menjaga lapisan pelindung kulit tetap seimbang"
+      ],
+      "warnings": []
+    },
+    {
+      "id": "prd_002",
+      "name": "Pore Refining BHA Toner",
+      "brand": "Daun Labs",
+      "category": "toner",
+      "price": 89000,
+      "image_url": "https://example.com/images/prd_002.jpg",
+      "match_score": 0.81,
+      "matched_ingredients": [
+        "salicylic acid",
+        "niacinamide"
+      ],
+      "reasons": [
+        "Kombinasi BHA dan niacinamide cocok untuk kulit berminyak dengan komedo"
+      ],
+      "warnings": []
+    },
+    {
+      "id": "prd_003",
+      "name": "Night Renewal Retinol + AHA Serum",
+      "brand": "Rona Botanica",
+      "category": "serum",
+      "price": 139000,
+      "image_url": "https://example.com/images/prd_003.jpg",
+      "match_score": 0.74,
+      "matched_ingredients": [
+        "retinol",
+        "glycolic acid"
+      ],
+      "reasons": [
+        "Retinol membantu mempercepat pergantian sel dan mengurangi bekas jerawat",
+        "Glycolic acid mengangkat sel kulit mati penyebab komedo tertutup"
+      ],
+      "warnings": [
+        "Mengandung retinol dan AHA (glycolic acid) sekaligus: berisiko iritasi. Gunakan maksimal 2-3 kali seminggu dan jangan dicampur dengan eksfoliant lain."
+      ]
+    },
+    {
+      "id": "prd_004",
+      "name": "Niacinamide 10% Oil Control Serum",
+      "brand": "Kalis",
+      "category": "serum",
+      "price": 79000,
+      "image_url": "https://example.com/images/prd_004.jpg",
+      "match_score": 0.83,
+      "matched_ingredients": [
+        "niacinamide",
+        "zinc pca"
+      ],
+      "reasons": [
+        "Niacinamide membantu mengontrol minyak",
+        "Zinc PCA membantu meredakan jerawat ringan"
+      ],
+      "warnings": []
+    },
+    {
+      "id": "prd_005",
+      "name": "Water Gel Oil-Free Moisturizer",
+      "brand": "Sejuk",
+      "category": "moisturizer",
+      "price": 99000,
+      "image_url": "https://example.com/images/prd_005.jpg",
+      "match_score": 0.78,
+      "matched_ingredients": [
+        "hyaluronic acid",
+        "centella asiatica"
+      ],
+      "reasons": [
+        "Tekstur gel bebas minyak melembapkan tanpa menyumbat pori",
+        "Centella asiatica menenangkan kulit yang meradang"
+      ],
+      "warnings": []
+    },
+    {
+      "id": "prd_006",
+      "name": "Daily Matte Sunscreen SPF 50 PA++++",
+      "brand": "Teduh",
+      "category": "sunscreen",
+      "price": 119000,
+      "image_url": "https://example.com/images/prd_006.jpg",
+      "match_score": 0.8,
+      "matched_ingredients": [
+        "zinc oxide",
+        "niacinamide"
+      ],
+      "reasons": [
+        "Hasil akhir matte cocok untuk kulit berminyak",
+        "Perlindungan UV mencegah bekas jerawat menjadi lebih gelap"
+      ],
+      "warnings": []
+    },
+    {
+      "id": "prd_007",
+      "name": "Brightening Vitamin C 15% Serum",
+      "brand": "Daun Labs",
+      "category": "serum",
+      "price": 175000,
+      "image_url": "https://example.com/images/prd_007.jpg",
+      "match_score": 0.62,
+      "matched_ingredients": [
+        "ascorbic acid"
+      ],
+      "reasons": [
+        "Vitamin C membantu memudarkan bekas jerawat"
+      ],
+      "warnings": [
+        "Vitamin C (ascorbic acid) jangan dipakai bersamaan dengan benzoyl peroxide karena saling menonaktifkan. Pakai di waktu berbeda (pagi dan malam)."
+      ]
+    }
+  ]
+}

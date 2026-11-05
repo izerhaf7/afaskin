@@ -1,0 +1,30 @@
+{
+  "id": "prd_001",
+  "name": "Gentle Balance Low pH Cleanser",
+  "brand": "Teduh",
+  "category": "cleanser",
+  "price": 65000,
+  "image_url": "https://example.com/images/prd_001.jpg",
+  "match_score": 0.86,
+  "matched_ingredients": [
+    "salicylic acid",
+    "green tea extract"
+  ],
+  "reasons": [
+    "Salicylic acid membantu membersihkan pori yang tersumbat komedo",
+    "pH rendah menjaga lapisan pelindung kulit tetap seimbang"
+  ],
+  "warnings": [],
+  "ingredients": [
+    "aqua",
+    "sodium cocoyl glycinate",
+    "glycerin",
+    "salicylic acid",
+    "camellia sinensis leaf extract",
+    "panthenol",
+    "allantoin",
+    "citric acid",
+    "phenoxyethanol"
+  ],
+  "source_url": "https://example.com/teduh/gentle-balance-cleanser"
+}

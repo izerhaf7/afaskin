@@ -1,0 +1,29 @@
+{
+  "id": "prd_006",
+  "name": "Daily Matte Sunscreen SPF 50 PA++++",
+  "brand": "Teduh",
+  "category": "sunscreen",
+  "price": 119000,
+  "image_url": "https://example.com/images/prd_006.jpg",
+  "match_score": 0.8,
+  "matched_ingredients": [
+    "zinc oxide",
+    "niacinamide"
+  ],
+  "reasons": [
+    "Hasil akhir matte cocok untuk kulit berminyak",
+    "Perlindungan UV mencegah bekas jerawat menjadi lebih gelap"
+  ],
+  "warnings": [],
+  "ingredients": [
+    "aqua",
+    "zinc oxide",
+    "ethylhexyl methoxycinnamate",
+    "niacinamide",
+    "silica",
+    "glycerin",
+    "tocopheryl acetate",
+    "phenoxyethanol"
+  ],
+  "source_url": "https://example.com/teduh/daily-matte-sunscreen"
+}
