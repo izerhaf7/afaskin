@@ -4,7 +4,7 @@ Aplikasi Flutter: analisis kondisi kulit dari selfie + rekomendasi skincare
 berbasis bahan aktif. Proyek Pembelajaran Mesin, Kelompok 3, Kelas A, TRK,
 Sekolah Vokasi IPB.
 
-**Status: Fase 1 (onboarding) selesai.** Berikutnya: Fase 2 (kamera).
+**Status: Fase 2 (kamera) selesai.** Berikutnya: Fase 3 (hasil & rekomendasi).
 
 Alur: splash → onboarding (3 halaman) → persetujuan → profil → kuesioner →
 bottom nav (Analisis, Riwayat, Pengaturan). Router menjaga urutan setup,
@@ -43,6 +43,23 @@ lib/
 assets/
   brand/   fonts/   mock/
 ```
+
+## Kamera (Fase 2)
+
+- Kamera depan + oval panduan. ML Kit (tiap 3 frame) hanya untuk panduan:
+  wajah terdeteksi, di dalam oval, jarak pas, yaw/pitch ±15°, cukup terang
+  (rata-rata luma frame). Tombol shutter aktif hanya jika semua terpenuhi.
+  Ambang batas ada di `GuidanceConfig` (`lib/features/capture/face_guidance.dart`)
+  dan perlu disetel di HP asli.
+- Sebelum upload: orientasi EXIF diterapkan, semua metadata dihapus, sisi
+  terpanjang ≤ 1080 px, JPEG q85. Foto hanya di memori; file temp kamera &
+  galeri langsung dihapus.
+- Izin: layar penjelasan dulu, baru dialog sistem; jika ditolak permanen,
+  tombol ke pengaturan HP. Pilih dari galeri selalu tersedia.
+- Package tambahan di luar daftar brief: `image_picker` (galeri) dan
+  `permission_handler` (status ditolak permanen + buka pengaturan HP).
+- iOS: tambahkan makro `PERMISSION_CAMERA=1` di `ios/Podfile` sesuai
+  dokumentasi permission_handler saat build iOS.
 
 ## Catatan
 

@@ -1,11 +1,13 @@
 import 'package:afaskin/app.dart';
 import 'package:afaskin/core/session/session_controller.dart';
 import 'package:afaskin/data/local/local_stores.dart';
+import 'package:afaskin/data/models/models.dart';
 import 'package:afaskin/data/repositories/analysis_repository.dart';
 import 'package:afaskin/data/repositories/analysis_repository_mock.dart';
 import 'package:afaskin/data/repositories/providers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -21,6 +23,8 @@ Future<({MemoryFlagStore flags, MemoryUserStore user})> pumpApp(
   MemoryUserStore? user,
   double textScale = 1,
   Size size = const Size(360, 720),
+  AnalysisRepository? repo,
+  List<Override> overrides = const [],
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -39,7 +43,8 @@ Future<({MemoryFlagStore flags, MemoryUserStore user})> pumpApp(
       overrides: [
         flagStoreProvider.overrideWithValue(f),
         userStoreProvider.overrideWithValue(u),
-        analysisRepositoryProvider.overrideWithValue(fastMockRepo()),
+        analysisRepositoryProvider.overrideWithValue(repo ?? fastMockRepo()),
+        ...overrides,
       ],
       child: const AfaSkinApp(),
     ),
@@ -79,3 +84,18 @@ Future<void> waitFor(
   }
   await tester.pumpAndSettle();
 }
+
+/// Stores for a user who already finished setup.
+({MemoryFlagStore flags, MemoryUserStore user}) setupDoneStores() => (
+  flags: MemoryFlagStore(onboardingDone: true, consentAccepted: true),
+  user: MemoryUserStore()
+    ..profile = const UserProfile(
+      age: 21,
+      gender: Gender.female,
+      budgetMax: 150000,
+    )
+    ..answers = const QuestionnaireAnswers(
+      version: '2026-11',
+      answers: {'q1': 4, 'q2': 2},
+    ),
+);

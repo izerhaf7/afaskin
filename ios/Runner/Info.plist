@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Afa Skin memakai kamera depan untuk memandu posisi wajah dan mengambil foto selfie untuk analisis kulit.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Afa Skin membuka galeri agar kamu bisa memilih foto wajah untuk dianalisis.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

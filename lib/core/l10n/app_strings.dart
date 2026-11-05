@@ -135,4 +135,51 @@ abstract final class AppStrings {
   static const String settingsRedoQuestionnaire = 'Ulangi kuesioner';
   static const String settingsClearData = 'Hapus semua data lokal';
   static const String settingsAbout = 'Tentang';
+
+  // Capture: camera guidance.
+  static const String captureTitle = 'Ambil foto';
+  static const String guideNoFace = 'Arahkan wajah ke kamera';
+  static const String guideMultipleFaces = 'Pastikan hanya ada satu wajah';
+  static const String guideTooDark = 'Cari tempat lebih terang';
+  static const String guideTooBright =
+      'Cahaya terlalu silau, cari tempat lebih teduh';
+  static const String guideTooFar = 'Dekatkan wajah';
+  static const String guideTooClose = 'Jauhkan sedikit wajahmu';
+  static const String guideOffCenter = 'Posisikan wajah di dalam oval';
+  static const String guideNotFrontal = 'Hadapkan wajah lurus';
+  static const String guideReady = 'Pas! Tahan sebentar, lalu ambil foto';
+  static const String shutter = 'Ambil foto';
+  static const String shutterDisabledHint =
+      'Tombol aktif setelah posisi wajah dan cahaya pas';
+  static const String pickFromGallery = 'Pilih dari galeri';
+  static const String processingPhoto = 'Menyiapkan foto...';
+  static const String cameraUnavailable =
+      'Kamera tidak tersedia. Kamu masih bisa memilih foto dari galeri.';
+  static const String photoReadError =
+      'Foto tidak bisa dibaca. Coba foto lain.';
+
+  // Capture: permission.
+  static const String permissionTitle = 'Izinkan akses kamera';
+  static const String permissionBody =
+      'Afa Skin memakai kamera depan untuk memandu posisi wajah dan '
+      'mengambil satu foto selfie. Foto tidak disimpan di server.';
+  static const String permissionAllow = 'Izinkan kamera';
+  static const String permissionDeniedTitle = 'Akses kamera ditolak';
+  static const String permissionDeniedBody =
+      'Akses kamera dimatikan untuk Afa Skin. Aktifkan lewat pengaturan HP, '
+      'atau pilih foto dari galeri.';
+  static const String openSettings = 'Buka pengaturan HP';
+
+  // Analyzing.
+  static const List<String> analyzingSteps = [
+    'Memeriksa kualitas foto...',
+    'Mendeteksi area wajah...',
+    'Menganalisis kondisi kulit...',
+    'Mencocokkan dengan jawaban kuesioner...',
+    'Menyusun rekomendasi...',
+  ];
+  static const String analyzingTitle = 'Menganalisis';
+  static const String qualityRejectedTitle = 'Foto perlu diambil ulang';
+  static const String retakePhoto = 'Ambil ulang foto';
+  static const String analysisDoneTitle = 'Analisis selesai';
 }

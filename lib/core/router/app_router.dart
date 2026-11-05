@@ -1,4 +1,7 @@
 import 'package:afaskin/core/session/session_controller.dart';
+import 'package:afaskin/features/analysis/analyzing_page.dart';
+import 'package:afaskin/features/analysis/result_page.dart';
+import 'package:afaskin/features/capture/capture_page.dart';
 import 'package:afaskin/features/consent/consent_page.dart';
 import 'package:afaskin/features/history/history_page.dart';
 import 'package:afaskin/features/home/analysis_home_page.dart';
@@ -31,7 +34,9 @@ abstract final class AppRoutes {
   static const String settings = '/settings';
 
   // Full-screen flows (above the tab bar).
-  static const String capture = '/capture';
+  static const String capture = '/analysis/capture';
+  static const String analyzing = '/analysis/capture/analyzing';
+  static const String result = '/analysis/result';
   static const String editProfile = '/edit/profile';
   static const String editQuestionnaire = '/edit/questionnaire';
   static const String about = '/about';
@@ -115,6 +120,26 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: AppRoutes.home,
                 builder: (_, _) => const AnalysisHomePage(),
+                routes: [
+                  // Full-screen (root navigator), stacked above the tab.
+                  GoRoute(
+                    path: 'capture',
+                    parentNavigatorKey: rootKey,
+                    builder: (_, _) => const CapturePage(),
+                    routes: [
+                      GoRoute(
+                        path: 'analyzing',
+                        parentNavigatorKey: rootKey,
+                        builder: (_, _) => const AnalyzingPage(),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'result',
+                    parentNavigatorKey: rootKey,
+                    builder: (_, _) => const ResultPage(),
+                  ),
+                ],
               ),
             ],
           ),
@@ -135,11 +160,6 @@ GoRouter appRouter(Ref ref) {
             ],
           ),
         ],
-      ),
-      GoRoute(
-        path: AppRoutes.capture,
-        parentNavigatorKey: rootKey,
-        builder: (_, _) => const ComingSoonPage(),
       ),
       GoRoute(
         path: AppRoutes.editProfile,
