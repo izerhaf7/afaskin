@@ -338,6 +338,8 @@ abstract final class AppStrings {
     ),
   ];
   static const String openSourceLicenses = 'Lisensi open source';
+  static String modelVersion(String v) => 'Model: $v';
+  static const String serverUnreachable = 'Server analisis tidak terjangkau';
   static const String disclaimerShort =
       'Afa Skin bukan alat diagnosis medis. Untuk kondisi serius, '
       'periksakan ke dokter spesialis kulit.';

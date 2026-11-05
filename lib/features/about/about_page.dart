@@ -4,15 +4,25 @@ import 'package:afaskin/core/theme/app_spacing.dart';
 import 'package:afaskin/core/widgets/afa_button.dart';
 import 'package:afaskin/core/widgets/afa_card.dart';
 import 'package:afaskin/core/widgets/afa_logo.dart';
+import 'package:afaskin/data/models/models.dart';
+import 'package:afaskin/data/repositories/providers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+/// Backend model version, shown so testers know which model answered.
+final FutureProvider<HealthStatus> backendHealthProvider =
+    FutureProvider.autoDispose<HealthStatus>(
+      (ref) => ref.watch(analysisRepositoryProvider).health(),
+    );
+
 /// Version, team, dataset/model/font attributions (CC BY 4.0 requires it).
-class AboutPage extends StatelessWidget {
+class AboutPage extends ConsumerWidget {
   const AboutPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
+    final health = ref.watch(backendHealthProvider);
     return Scaffold(
       appBar: AppBar(title: const Text(AppStrings.aboutTitle)),
       body: ListView(
@@ -23,6 +33,17 @@ class AboutPage extends StatelessWidget {
           Text(
             '${AppStrings.version} ${AppInfo.version}',
             style: text.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            switch (health) {
+              AsyncData(:final value) => AppStrings.modelVersion(
+                value.modelVersion,
+              ),
+              AsyncError() => AppStrings.serverUnreachable,
+              _ => AppStrings.loading,
+            },
+            style: text.bodySmall,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.md),

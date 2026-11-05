@@ -126,6 +126,7 @@ void main() {
       await tapVisible(tester, find.text('Tentang'));
       expect(find.text('Tentang Afa Skin'), findsOneWidget);
       expect(find.text('Versi 0.1.0'), findsOneWidget);
+      await waitFor(tester, find.text('Model: mock-2026.11'));
       await tester.dragUntilVisible(
         find.textContaining('CC BY 4.0'),
         find.byType(Scrollable).first,
