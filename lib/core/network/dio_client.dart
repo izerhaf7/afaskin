@@ -1,7 +1,6 @@
+import 'package:afaskin/core/config/env.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-
-import 'package:afaskin/core/config/env.dart';
 
 /// Builds the app's single [Dio] instance.
 ///
@@ -20,7 +19,6 @@ Dio buildDio({String baseUrl = Env.apiBaseUrl}) {
       connectTimeout: const Duration(seconds: 30),
       sendTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
-      responseType: ResponseType.json,
       headers: {'Accept': 'application/json'},
     ),
   );
@@ -29,7 +27,6 @@ Dio buildDio({String baseUrl = Env.apiBaseUrl}) {
   if (kDebugMode) {
     dio.interceptors.add(
       LogInterceptor(
-        requestBody: false, // never log the photo upload
         responseBody: true,
         logPrint: (o) => debugPrint('[dio] $o'),
       ),

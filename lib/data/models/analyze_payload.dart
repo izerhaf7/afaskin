@@ -1,6 +1,5 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import 'package:afaskin/data/models/enums.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'analyze_payload.freezed.dart';
 part 'analyze_payload.g.dart';

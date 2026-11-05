@@ -1,6 +1,5 @@
-import 'package:material_ui/material_ui.dart';
-
 import 'package:afaskin/core/theme/app_colors.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Spacing scale: multiples of 4.
 abstract final class AppSpacing {

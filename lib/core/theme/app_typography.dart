@@ -1,6 +1,5 @@
-import 'package:material_ui/material_ui.dart';
-
 import 'package:afaskin/core/theme/app_colors.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Type scale. The only place in the app where font families are named.
 ///

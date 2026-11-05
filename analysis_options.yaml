@@ -16,3 +16,6 @@ linter:
     # every public member.
     public_member_api_docs: false
     lines_longer_than_80_chars: false
+    # Dart 3.13 lint that prefers the new `new`/primary-constructor syntax.
+    # Kept off so models use the classic freezed style.
+    unnecessary_type_name_in_constructor: false

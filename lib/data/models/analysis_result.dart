@@ -1,8 +1,7 @@
 import 'dart:ui' show Rect;
 
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import 'package:afaskin/data/models/enums.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'analysis_result.freezed.dart';
 part 'analysis_result.g.dart';

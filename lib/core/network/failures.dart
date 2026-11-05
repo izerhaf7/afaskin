@@ -9,7 +9,7 @@ sealed class Failure implements Exception {
   final String message;
 
   @override
-  String toString() => '$runtimeType: $message';
+  String toString() => 'Failure: $message';
 }
 
 /// No connection, DNS failure, timeout, TLS error, etc.
@@ -23,17 +23,16 @@ final class NetworkFailure extends Failure {
 /// The server's quality gate rejected the photo (HTTP 422,
 /// `error: quality_rejected`). The UI should send the user back to the camera.
 final class QualityRejected extends Failure {
-  const QualityRejected({
-    required this.reasons,
-    String? serverMessage,
-  }) : super(serverMessage ?? AppStrings.errorQualityDefault);
+  const QualityRejected({required this.reasons, String? serverMessage})
+    : super(serverMessage ?? AppStrings.errorQualityDefault);
 
   /// Machine codes, e.g. `too_dark`, `blurry`.
   final List<String> reasons;
 
   /// Reasons translated for display; unknown codes are kept verbatim.
-  List<String> get readableReasons =>
-      [for (final r in reasons) AppStrings.qualityReasons[r] ?? r];
+  List<String> get readableReasons => [
+    for (final r in reasons) AppStrings.qualityReasons[r] ?? r,
+  ];
 }
 
 /// Any other non-success response or an unparseable body.

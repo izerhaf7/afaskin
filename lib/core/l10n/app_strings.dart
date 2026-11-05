@@ -2,8 +2,7 @@
 /// moved to ARB files later without hunting through widgets.
 abstract final class AppStrings {
   static const String appName = 'Afa Skin';
-  static const String tagline =
-      'Kenali kulitmu, temukan skincare yang cocok.';
+  static const String tagline = 'Kenali kulitmu, temukan skincare yang cocok.';
 
   // Generic actions.
   static const String next = 'Lanjut';

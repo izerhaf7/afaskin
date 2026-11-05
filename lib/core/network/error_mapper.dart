@@ -1,6 +1,5 @@
-import 'package:dio/dio.dart';
-
 import 'package:afaskin/core/network/failures.dart';
+import 'package:dio/dio.dart';
 
 /// Maps any error from the HTTP layer to a domain [Failure].
 Failure mapToFailure(Object error) {
@@ -11,6 +10,7 @@ Failure mapToFailure(Object error) {
     case DioExceptionType.connectionTimeout:
     case DioExceptionType.sendTimeout:
     case DioExceptionType.receiveTimeout:
+    case DioExceptionType.transformTimeout:
       return const NetworkFailure(isTimeout: true);
     case DioExceptionType.connectionError:
     case DioExceptionType.badCertificate:

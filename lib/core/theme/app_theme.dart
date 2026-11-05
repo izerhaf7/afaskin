@@ -1,9 +1,8 @@
-import 'package:flutter/services.dart';
-import 'package:material_ui/material_ui.dart';
-
 import 'package:afaskin/core/theme/app_colors.dart';
 import 'package:afaskin/core/theme/app_spacing.dart';
 import 'package:afaskin/core/theme/app_typography.dart';
+import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Material 3 theme built by hand from the Copal tokens (no `fromSeed`).
 abstract final class AppTheme {
