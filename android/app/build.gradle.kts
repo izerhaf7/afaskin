@@ -21,7 +21,10 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "id.ac.ipb.trk.afaskin"
-    compileSdk = flutter.compileSdkVersion
+    // permission_handler_android 14 requires compiling against SDK 37. Compile
+    // SDK only affects which APIs are visible at build time; minSdk (24) and
+    // targetSdk (runtime behavior) are unchanged.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
