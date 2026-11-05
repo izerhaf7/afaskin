@@ -107,7 +107,7 @@ void main() {
     expect(find.text('FAKE SHUTTER'), findsOneWidget);
 
     await tapVisible(tester, find.text('FAKE SHUTTER'));
-    await waitFor(tester, find.text('Analisis selesai'));
+    await waitFor(tester, find.text('Hasil analisis'));
 
     // Photo is dropped from memory once the server accepted it.
     expect(container.read(pendingPhotoProvider), isNull);
@@ -128,7 +128,7 @@ void main() {
     expect(permission.settingsOpened, 1);
 
     await tapVisible(tester, find.text('Pilih dari galeri'));
-    await waitFor(tester, find.text('Analisis selesai'));
+    await waitFor(tester, find.text('Hasil analisis'));
   });
 
   testWidgets('quality rejected: shows reasons and returns to the camera', (
@@ -183,7 +183,7 @@ void main() {
     expect(container.read(pendingPhotoProvider), _processed);
 
     await tapVisible(tester, find.text('Coba lagi'));
-    await waitFor(tester, find.text('Analisis selesai'));
+    await waitFor(tester, find.text('Hasil analisis'));
     expect(calls, 2);
 
     final payload =

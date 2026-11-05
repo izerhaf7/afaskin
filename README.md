@@ -4,7 +4,7 @@ Aplikasi Flutter: analisis kondisi kulit dari selfie + rekomendasi skincare
 berbasis bahan aktif. Proyek Pembelajaran Mesin, Kelompok 3, Kelas A, TRK,
 Sekolah Vokasi IPB.
 
-**Status: Fase 2 (kamera) selesai.** Berikutnya: Fase 3 (hasil & rekomendasi).
+**Status: Fase 3 (hasil & rekomendasi) selesai.** Berikutnya: Fase 4 (riwayat & pengaturan).
 
 Alur: splash → onboarding (3 halaman) → persetujuan → profil → kuesioner →
 bottom nav (Analisis, Riwayat, Pengaturan). Router menjaga urutan setup,

@@ -9,6 +9,8 @@ import 'package:afaskin/features/home/home_shell.dart';
 import 'package:afaskin/features/onboarding/onboarding_page.dart';
 import 'package:afaskin/features/profile/profile_page.dart';
 import 'package:afaskin/features/questionnaire/questionnaire_page.dart';
+import 'package:afaskin/features/recommendation/product_detail_page.dart';
+import 'package:afaskin/features/recommendation/recommendations_page.dart';
 import 'package:afaskin/features/settings/settings_page.dart';
 import 'package:afaskin/features/splash/splash_page.dart';
 import 'package:afaskin/features/style_guide/style_guide_page.dart';
@@ -37,6 +39,10 @@ abstract final class AppRoutes {
   static const String capture = '/analysis/capture';
   static const String analyzing = '/analysis/capture/analyzing';
   static const String result = '/analysis/result';
+  static String recommendations(String analysisId) =>
+      '/analysis/recommendations/${Uri.encodeComponent(analysisId)}';
+  static String product(String id) =>
+      '/analysis/product/${Uri.encodeComponent(id)}';
   static const String editProfile = '/edit/profile';
   static const String editQuestionnaire = '/edit/questionnaire';
   static const String about = '/about';
@@ -138,6 +144,20 @@ GoRouter appRouter(Ref ref) {
                     path: 'result',
                     parentNavigatorKey: rootKey,
                     builder: (_, _) => const ResultPage(),
+                  ),
+                  GoRoute(
+                    path: 'recommendations/:analysisId',
+                    parentNavigatorKey: rootKey,
+                    builder: (_, state) => RecommendationsPage(
+                      analysisId: state.pathParameters['analysisId']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'product/:id',
+                    parentNavigatorKey: rootKey,
+                    builder: (_, state) => ProductDetailPage(
+                      productId: state.pathParameters['id']!,
+                    ),
                   ),
                 ],
               ),

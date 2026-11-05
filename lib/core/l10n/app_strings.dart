@@ -1,3 +1,5 @@
+import 'package:afaskin/data/models/enums.dart';
+
 /// All user-facing strings (Bahasa Indonesia) in one place, so they can be
 /// moved to ARB files later without hunting through widgets.
 abstract final class AppStrings {
@@ -181,5 +183,114 @@ abstract final class AppStrings {
   static const String analyzingTitle = 'Menganalisis';
   static const String qualityRejectedTitle = 'Foto perlu diambil ulang';
   static const String retakePhoto = 'Ambil ulang foto';
-  static const String analysisDoneTitle = 'Analisis selesai';
+
+  // Result.
+  static const String resultTitle = 'Hasil analisis';
+  static const String skinTypeHeading = 'Tipe kulit';
+  static const String confidence = 'keyakinan';
+  static const String conditionsHeading = 'Kondisi terdeteksi';
+  static const String conditionsEmpty =
+      'Tidak ada kondisi kulit yang menonjol terdeteksi.';
+  static const String faceMapHeading = 'Peta wajah';
+  static const String faceMapHint =
+      'Ketuk kondisi untuk melihat areanya di wajah.';
+  static const String dermatologistTitle = 'Pertimbangkan ke dokter kulit';
+  static const String dermatologistBody =
+      'Terdeteksi tanda yang sebaiknya diperiksa langsung oleh dokter '
+      'spesialis kulit, terutama jika terasa sakit atau meradang.';
+  static const String seeRecommendations = 'Lihat rekomendasi produk';
+  static String fusionNote(double alpha) =>
+      'Hasil menggabungkan foto (${(alpha * 100).round()}%) dan jawaban '
+      'kuesioner (${((1 - alpha) * 100).round()}%).';
+  static String percentOf(String label, String pct) => '$label, $pct';
+
+  static String skinType(SkinType t) => switch (t) {
+    SkinType.oily => 'Berminyak',
+    SkinType.dry => 'Kering',
+    SkinType.normal => 'Normal',
+    SkinType.unknown => 'Tidak diketahui',
+  };
+
+  static String skinTypeKey(String key) => switch (key) {
+    'oily' => skinType(SkinType.oily),
+    'dry' => skinType(SkinType.dry),
+    'normal' => skinType(SkinType.normal),
+    _ => key,
+  };
+
+  static String condition(SkinConditionLabel c) => switch (c) {
+    SkinConditionLabel.acne => 'Jerawat',
+    SkinConditionLabel.birthmark => 'Tanda lahir',
+    SkinConditionLabel.blackhead => 'Komedo hitam',
+    SkinConditionLabel.cysts => 'Jerawat kista',
+    SkinConditionLabel.milium => 'Milia',
+    SkinConditionLabel.papular => 'Papula',
+    SkinConditionLabel.purulent => 'Jerawat bernanah',
+    SkinConditionLabel.scars => 'Bekas jerawat',
+    SkinConditionLabel.whitehead => 'Komedo putih',
+    SkinConditionLabel.unknown => 'Kondisi lain',
+  };
+
+  /// Fallback descriptions when the API sends none.
+  static String conditionDescription(SkinConditionLabel c) => switch (c) {
+    SkinConditionLabel.acne =>
+      'Peradangan pada pori akibat sebum, sel kulit mati, dan bakteri.',
+    SkinConditionLabel.birthmark =>
+      'Area kulit dengan warna berbeda sejak lahir. Umumnya tidak berbahaya.',
+    SkinConditionLabel.blackhead =>
+      'Komedo terbuka: pori tersumbat sebum yang teroksidasi menjadi gelap.',
+    SkinConditionLabel.cysts => 'Benjolan besar di bawah kulit yang bisa nyeri. Sebaiknya ke dokter kulit.',
+    SkinConditionLabel.milium =>
+      'Bintik putih kecil keras akibat keratin yang terperangkap.',
+    SkinConditionLabel.papular =>
+      'Benjolan kecil kemerahan tanpa nanah, tanda pori meradang.',
+    SkinConditionLabel.purulent =>
+      'Jerawat berisi nanah. Jangan dipencet; pertimbangkan ke dokter kulit.',
+    SkinConditionLabel.scars =>
+      'Bekas jerawat berupa cekungan atau noda gelap.',
+    SkinConditionLabel.whitehead =>
+      'Komedo tertutup: sumbatan pori di bawah lapisan kulit tipis.',
+    SkinConditionLabel.unknown => '',
+  };
+
+  static String region(FaceRegion r) => switch (r) {
+    FaceRegion.forehead => 'Dahi',
+    FaceRegion.leftCheek => 'Pipi kiri',
+    FaceRegion.rightCheek => 'Pipi kanan',
+    FaceRegion.nose => 'Hidung',
+    FaceRegion.chin => 'Dagu',
+    FaceRegion.unknown => 'Area lain',
+  };
+
+  static String category(ProductCategory c) => switch (c) {
+    ProductCategory.cleanser => 'Cleanser',
+    ProductCategory.toner => 'Toner',
+    ProductCategory.serum => 'Serum',
+    ProductCategory.moisturizer => 'Moisturizer',
+    ProductCategory.sunscreen => 'Sunscreen',
+    ProductCategory.unknown => 'Lainnya',
+  };
+
+  // Recommendations.
+  static const String recommendationsTitle = 'Rekomendasi produk';
+  static const String allCategories = 'Semua';
+  static const String anyPrice = 'Semua harga';
+  static const String budgetFilter = 'Budget';
+  static String matchScore(String pct) => '$pct cocok';
+  static const String hasWarning = 'Ada peringatan bahan';
+  static const String recommendationsEmpty =
+      'Tidak ada produk untuk filter ini.';
+  static const String recommendationsEmptyBody =
+      'Coba kategori lain atau naikkan budget.';
+  static const String resetFilters = 'Atur ulang filter';
+
+  // Product detail.
+  static const String whyRecommended = 'Kenapa direkomendasikan';
+  static const String matchedIngredients = 'Bahan aktif yang cocok';
+  static const String ingredientsHeading = 'Komposisi';
+  static const String ingredientsLegend =
+      'Bahan yang disorot hijau relevan dengan kondisi kulitmu.';
+  static const String conflictHeading = 'Peringatan konflik bahan aktif';
+  static const String source = 'Sumber';
+  static const String productImage = 'Foto produk';
 }

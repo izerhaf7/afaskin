@@ -54,9 +54,17 @@ Future<({MemoryFlagStore flags, MemoryUserStore user})> pumpApp(
 
 /// Taps a widget after scrolling it into view.
 Future<void> tapVisible(WidgetTester tester, Finder finder) async {
-  await tester.ensureVisible(finder);
+  if (finder.evaluate().isEmpty) {
+    // Lazily built list item: scroll the main list until it exists.
+    await tester.dragUntilVisible(
+      finder,
+      find.byType(Scrollable).first,
+      const Offset(0, -200),
+    );
+  }
+  await tester.ensureVisible(finder.first);
   await tester.pumpAndSettle();
-  await tester.tap(finder);
+  await tester.tap(finder.first);
   await tester.pumpAndSettle();
 }
 
