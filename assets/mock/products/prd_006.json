@@ -1,29 +1,27 @@
 {
   "id": "prd_006",
-  "name": "Daily Matte Sunscreen SPF 50 PA++++",
+  "name": "Barrier Repair Cream",
   "brand": "Teduh",
-  "category": "sunscreen",
-  "price": 119000,
+  "category": "moisturizer",
+  "price": 179000,
   "image_url": "https://example.com/images/prd_006.jpg",
-  "match_score": 0.8,
+  "match_score": 0.76,
   "matched_ingredients": [
-    "zinc oxide",
-    "niacinamide"
+    "ceramide np",
+    "panthenol"
   ],
   "reasons": [
-    "Hasil akhir matte cocok untuk kulit berminyak",
-    "Perlindungan UV mencegah bekas jerawat menjadi lebih gelap"
+    "Ceramide & Cholesterol: Cocok dipakai malam saat memakai retinoid.",
+    "Catatan: Teksturnya cukup kaya; pakai tipis di zona T."
   ],
   "warnings": [],
   "ingredients": [
     "aqua",
-    "zinc oxide",
-    "ethylhexyl methoxycinnamate",
-    "niacinamide",
-    "silica",
-    "glycerin",
-    "tocopheryl acetate",
-    "phenoxyethanol"
+    "caprylic triglyceride",
+    "ceramide np",
+    "cholesterol",
+    "panthenol",
+    "shea butter"
   ],
-  "source_url": "https://example.com/teduh/daily-matte-sunscreen"
+  "source_url": "https://example.com/toko/prd_006"
 }

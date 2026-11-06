@@ -35,12 +35,14 @@ abstract final class AppTypography {
   /// Full M3 text theme. Styles not in the brief (display M/S, headline L/S,
   /// title S, label M/S) are filled in so no Material default font leaks in.
   static final TextTheme textTheme = TextTheme(
-    displayLarge: _etna(32, 40),
+    // Big headings use slight negative tracking (-0.01em), as in the design.
+    displayLarge: _etna(32, 40, ls: -0.32),
     displayMedium: _etna(28, 36),
     displaySmall: _etna(26, 34),
     headlineLarge: _etna(26, 34),
     headlineMedium: _etna(24, 32),
-    headlineSmall: _etna(22, 30),
+    // Alfa's speech-bubble questions.
+    headlineSmall: _etna(18, 26),
     titleLarge: _etna(20, 28),
     titleMedium: _etna(16, 24),
     titleSmall: _etna(14, 20),

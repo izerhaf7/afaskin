@@ -1,29 +1,28 @@
 {
   "id": "prd_005",
-  "name": "Water Gel Oil-Free Moisturizer",
-  "brand": "Sejuk",
+  "name": "Oil-Free Gel Moisturizer",
+  "brand": "Embun",
   "category": "moisturizer",
   "price": 99000,
   "image_url": "https://example.com/images/prd_005.jpg",
-  "match_score": 0.78,
+  "match_score": 0.9,
   "matched_ingredients": [
-    "hyaluronic acid",
-    "centella asiatica"
+    "sodium hyaluronate",
+    "ceramide np",
+    "centella asiatica extract"
   ],
   "reasons": [
-    "Tekstur gel bebas minyak melembapkan tanpa menyumbat pori",
-    "Centella asiatica menenangkan kulit yang meradang"
+    "Tekstur gel bebas minyak: Melembapkan tanpa menambah kilap di zona T.",
+    "Ceramide NP: Memperkuat lapisan pelindung kulit."
   ],
   "warnings": [],
   "ingredients": [
     "aqua",
     "glycerin",
     "sodium hyaluronate",
+    "ceramide np",
     "centella asiatica extract",
-    "dimethicone",
-    "carbomer",
-    "allantoin",
-    "phenoxyethanol"
+    "carbomer"
   ],
-  "source_url": "https://example.com/sejuk/water-gel"
+  "source_url": "https://example.com/toko/prd_005"
 }

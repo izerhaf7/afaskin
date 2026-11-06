@@ -47,6 +47,9 @@ abstract final class AppRoutes {
   static String product(String id) =>
       '/analysis/product/${Uri.encodeComponent(id)}';
   static const String editProfile = '/edit/profile';
+  static const String completeProfile = '/edit/complete-profile';
+  static const String consentReview = '/edit/consent';
+  static const String quizBeforeCapture = '/analysis/questionnaire';
   static const String editQuestionnaire = '/edit/questionnaire';
   static const String about = '/about';
 
@@ -96,7 +99,11 @@ GoRouter appRouter(Ref ref) {
   // Re-run redirects whenever setup progress changes.
   final refresh = ValueNotifier<int>(0);
   ref
-    ..listen(sessionProvider, (_, _) => refresh.value++)
+    // Only setup progress affects redirects. Refreshing on every session
+    // change (favorites, budget...) would rebuild open pages mid-flow.
+    ..listen(sessionProvider, (prev, next) {
+      if (prev?.nextStep != next.nextStep) refresh.value++;
+    })
     ..onDispose(refresh.dispose);
 
   return GoRouter(
@@ -142,6 +149,12 @@ GoRouter appRouter(Ref ref) {
                         builder: (_, _) => const AnalyzingPage(),
                       ),
                     ],
+                  ),
+                  GoRoute(
+                    path: 'questionnaire',
+                    parentNavigatorKey: rootKey,
+                    builder: (_, _) =>
+                        const QuestionnairePage(mode: QuizMode.beforeCapture),
                   ),
                   GoRoute(
                     path: 'result',
@@ -196,12 +209,22 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.editProfile,
         parentNavigatorKey: rootKey,
-        builder: (_, _) => const ProfilePage(editing: true),
+        builder: (_, _) => const ProfilePage(mode: ProfileMode.edit),
+      ),
+      GoRoute(
+        path: AppRoutes.completeProfile,
+        parentNavigatorKey: rootKey,
+        builder: (_, _) => const ProfilePage(mode: ProfileMode.complete),
+      ),
+      GoRoute(
+        path: AppRoutes.consentReview,
+        parentNavigatorKey: rootKey,
+        builder: (_, _) => const ConsentPage(review: true),
       ),
       GoRoute(
         path: AppRoutes.editQuestionnaire,
         parentNavigatorKey: rootKey,
-        builder: (_, _) => const QuestionnairePage(editing: true),
+        builder: (_, _) => const QuestionnairePage(mode: QuizMode.edit),
       ),
       GoRoute(
         path: AppRoutes.about,

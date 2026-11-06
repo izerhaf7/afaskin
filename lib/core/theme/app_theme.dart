@@ -52,7 +52,7 @@ abstract final class AppTheme {
       horizontal: AppSpacing.lg,
       vertical: AppSpacing.sm,
     );
-    const buttonMinSize = Size(64, 52);
+    const buttonMinSize = Size(64, 56);
 
     return ThemeData(
       useMaterial3: true,
@@ -94,7 +94,9 @@ abstract final class AppTheme {
           elevation: const WidgetStatePropertyAll(0),
           backgroundColor: WidgetStateProperty.resolveWith(
             (s) => s.contains(WidgetState.disabled)
-                ? AppColors.outline
+                ? AppColors.disabledFill
+                : s.contains(WidgetState.pressed)
+                ? AppColors.inkPressed
                 : AppColors.ink,
           ),
           foregroundColor: WidgetStateProperty.resolveWith(
@@ -242,12 +244,21 @@ abstract final class AppTheme {
         backgroundColor: AppColors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        height: 72,
-        indicatorColor: AppColors.sageTint,
+        height: 68,
+        indicatorColor: AppColors.mist,
         indicatorShape: const StadiumBorder(),
-        labelTextStyle: WidgetStatePropertyAll(text.labelSmall),
-        iconTheme: const WidgetStatePropertyAll(
-          IconThemeData(color: AppColors.ink),
+        // Active tab: Etna label in ink; idle: Belleza in muted ink.
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.selected)
+              ? text.labelSmall
+              : text.bodySmall?.copyWith(color: AppColors.inkMuted),
+        ),
+        iconTheme: WidgetStateProperty.resolveWith(
+          (s) => IconThemeData(
+            color: s.contains(WidgetState.selected)
+                ? AppColors.sage
+                : AppColors.inkMuted,
+          ),
         ),
       ),
 
@@ -273,6 +284,12 @@ abstract final class AppTheme {
         contentTextStyle: text.bodyMedium?.copyWith(color: AppColors.white),
         actionTextColor: AppColors.mist,
         behavior: SnackBarBehavior.floating,
+        insetPadding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          0,
+          AppSpacing.lg,
+          AppSpacing.md,
+        ),
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.inputAll),
       ),
     );

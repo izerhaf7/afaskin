@@ -4,13 +4,21 @@ import 'package:afaskin/data/models/models.dart';
 import 'package:hive_ce/hive_ce.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Simple flags (onboarding seen, consent accepted).
+/// Simple flags and preferences (onboarding seen, consent, reminders).
 abstract interface class FlagStore {
   bool get onboardingDone;
   Future<void> setOnboardingDone();
 
   bool get consentAccepted;
   Future<void> acceptConsent();
+
+  /// In-app reminder to re-analyze every 2 weeks (on by default).
+  bool get reminderOn;
+  Future<void> setReminderOn({required bool on});
+
+  /// Recommendations limited to the profile budget.
+  bool get budgetFilterOn;
+  Future<void> setBudgetFilterOn({required bool on});
 
   Future<void> clear();
 }
@@ -26,7 +34,14 @@ class PrefsFlagStore implements FlagStore {
 
   static const _onboardingKey = 'onboarding_done';
   static const _consentKey = 'consent_version';
-  static const Set<String> allowList = {_onboardingKey, _consentKey};
+  static const _reminderKey = 'reminder_on';
+  static const _budgetFilterKey = 'budget_filter_on';
+  static const Set<String> allowList = {
+    _onboardingKey,
+    _consentKey,
+    _reminderKey,
+    _budgetFilterKey,
+  };
 
   @override
   bool get onboardingDone => _prefs.getBool(_onboardingKey) ?? false;
@@ -41,44 +56,83 @@ class PrefsFlagStore implements FlagStore {
       _prefs.setString(_consentKey, currentConsentVersion);
 
   @override
+  bool get reminderOn => _prefs.getBool(_reminderKey) ?? true;
+  @override
+  Future<void> setReminderOn({required bool on}) =>
+      _prefs.setBool(_reminderKey, on);
+
+  @override
+  bool get budgetFilterOn => _prefs.getBool(_budgetFilterKey) ?? false;
+  @override
+  Future<void> setBudgetFilterOn({required bool on}) =>
+      _prefs.setBool(_budgetFilterKey, on);
+
+  @override
   Future<void> clear() => _prefs.clear();
 }
 
 /// In-memory flags for tests.
 class MemoryFlagStore implements FlagStore {
-  MemoryFlagStore({this.onboardingDone = false, this.consentAccepted = false});
+  MemoryFlagStore({
+    this.onboardingDone = false,
+    this.consentAccepted = false,
+    this.reminderOn = true,
+    this.budgetFilterOn = false,
+  });
 
   @override
   bool onboardingDone;
   @override
   bool consentAccepted;
+  @override
+  bool reminderOn;
+  @override
+  bool budgetFilterOn;
 
   @override
   Future<void> setOnboardingDone() async => onboardingDone = true;
   @override
   Future<void> acceptConsent() async => consentAccepted = true;
   @override
+  Future<void> setReminderOn({required bool on}) async => reminderOn = on;
+  @override
+  Future<void> setBudgetFilterOn({required bool on}) async =>
+      budgetFilterOn = on;
+  @override
   Future<void> clear() async {
     onboardingDone = false;
     consentAccepted = false;
+    reminderOn = true;
+    budgetFilterOn = false;
   }
 }
 
-/// Profile and questionnaire answers, stored in the Hive `user` box as JSON
-/// strings (keeps the box schema-free; no TypeAdapters needed).
+/// Nickname, profile, questionnaire answers and favorites, stored in the
+/// Hive `user` box as JSON strings (schema-free; no TypeAdapters needed).
+/// The nickname never leaves the phone.
 abstract interface class UserStore {
+  String? readName();
+  Future<void> writeName(String name);
+
   UserProfile? readProfile();
   Future<void> writeProfile(UserProfile profile);
 
   QuestionnaireAnswers? readAnswers();
   Future<void> writeAnswers(QuestionnaireAnswers answers);
 
+  Set<String> readFavorites();
+  Future<void> writeFavorites(Set<String> productIds);
+
   Future<void> clear();
 }
 
 /// Saved questionnaire answers plus the questionnaire version they belong to.
 class QuestionnaireAnswers {
-  const QuestionnaireAnswers({required this.version, required this.answers});
+  const QuestionnaireAnswers({
+    required this.version,
+    required this.answers,
+    this.answeredAt,
+  });
 
   factory QuestionnaireAnswers.fromJson(Map<String, dynamic> json) =>
       QuestionnaireAnswers(
@@ -86,37 +140,53 @@ class QuestionnaireAnswers {
         answers: (json['answers'] as Map<String, dynamic>).map(
           (k, v) => MapEntry(k, v as int),
         ),
+        answeredAt: DateTime.tryParse('${json['answered_at']}'),
       );
 
   final String version;
   final Map<String, int> answers;
 
-  Map<String, dynamic> toJson() => {'version': version, 'answers': answers};
+  /// When the user last answered (shown in the re-analyze sheet).
+  final DateTime? answeredAt;
+
+  Map<String, dynamic> toJson() => {
+    'version': version,
+    'answers': answers,
+    if (answeredAt != null) 'answered_at': answeredAt!.toIso8601String(),
+  };
 }
 
 class HiveUserStore implements UserStore {
   HiveUserStore(this._box);
 
   static const String boxName = 'user';
+  static const _nameKey = 'name';
   static const _profileKey = 'profile';
   static const _answersKey = 'questionnaire';
+  static const _favoritesKey = 'favorites';
 
   final Box<String> _box;
 
-  Map<String, dynamic>? _read(String key) {
+  Object? _read(String key) {
     final raw = _box.get(key);
     if (raw == null) return null;
     try {
-      return jsonDecode(raw) as Map<String, dynamic>;
+      return jsonDecode(raw);
     } on FormatException {
       return null;
     }
   }
 
   @override
+  String? readName() => _box.get(_nameKey);
+
+  @override
+  Future<void> writeName(String name) => _box.put(_nameKey, name);
+
+  @override
   UserProfile? readProfile() {
     final json = _read(_profileKey);
-    return json == null ? null : UserProfile.fromJson(json);
+    return json is Map<String, dynamic> ? UserProfile.fromJson(json) : null;
   }
 
   @override
@@ -126,7 +196,9 @@ class HiveUserStore implements UserStore {
   @override
   QuestionnaireAnswers? readAnswers() {
     final json = _read(_answersKey);
-    return json == null ? null : QuestionnaireAnswers.fromJson(json);
+    return json is Map<String, dynamic>
+        ? QuestionnaireAnswers.fromJson(json)
+        : null;
   }
 
   @override
@@ -134,14 +206,30 @@ class HiveUserStore implements UserStore {
       _box.put(_answersKey, jsonEncode(answers.toJson()));
 
   @override
+  Set<String> readFavorites() {
+    final json = _read(_favoritesKey);
+    return json is List ? {for (final e in json) '$e'} : <String>{};
+  }
+
+  @override
+  Future<void> writeFavorites(Set<String> productIds) =>
+      _box.put(_favoritesKey, jsonEncode(productIds.toList()));
+
+  @override
   Future<void> clear() => _box.clear();
 }
 
 /// In-memory store for tests.
 class MemoryUserStore implements UserStore {
+  String? name;
   UserProfile? profile;
   QuestionnaireAnswers? answers;
+  Set<String> favorites = {};
 
+  @override
+  String? readName() => name;
+  @override
+  Future<void> writeName(String n) async => name = n;
   @override
   UserProfile? readProfile() => profile;
   @override
@@ -151,9 +239,15 @@ class MemoryUserStore implements UserStore {
   @override
   Future<void> writeAnswers(QuestionnaireAnswers a) async => answers = a;
   @override
+  Set<String> readFavorites() => favorites;
+  @override
+  Future<void> writeFavorites(Set<String> ids) async => favorites = {...ids};
+  @override
   Future<void> clear() async {
+    name = null;
     profile = null;
     answers = null;
+    favorites = {};
   }
 }
 

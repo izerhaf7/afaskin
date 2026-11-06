@@ -5,9 +5,9 @@ merekomendasikan skincare berdasarkan kecocokan bahan aktif. Proyek mata
 kuliah Pembelajaran Mesin, Kelompok 3, Kelas A, Teknologi Rekayasa Komputer,
 Sekolah Vokasi IPB.
 
-**Status:** Fase 0–5 selesai di sisi aplikasi. Yang tersisa butuh dunia
-nyata: backend FastAPI asli, uji di HP Android fisik, dan build APK di mesin
-yang punya Android SDK (atau lewat GitHub Actions, lihat di bawah).
+**Status:** Fase 0–5 selesai, plus desain **Tahap 2** (Claude Design) sudah
+diterapkan: maskot Alfa, profil bertahap, beranda, rekomendasi grid, riwayat
+dengan tren, dan pengaturan baru. APK release dibangun di GitHub Actions.
 
 Inferensi ML berjalan **di server**. Aplikasi memandu pengambilan foto,
 mengirim foto + profil + kuesioner, lalu menampilkan hasil dan rekomendasi.
@@ -116,6 +116,36 @@ lib/
 assets/  brand/  fonts/  mock/
 tools/mock_server/   FastAPI mock sesuai kontrak
 ```
+
+## Tahap 2 (desain Claude Design)
+
+Alur: splash → onboarding → persetujuan → nama panggilan → umur (17+) →
+kuesioner (Alfa bertanya, otomatis lanjut) → kamera → menganalisis → hasil.
+Gender dan budget ditanya setelah hasil pertama lewat kartu
+"Lengkapi profilmu" di Rekomendasi.
+
+**Perubahan kontrak API untuk tim backend:**
+
+- `profile.gender` dan `profile.budget_max` bisa `null` (belum diisi).
+- Nilai gender: `female`, `male`, `unspecified` ("Tidak ingin menyebut").
+- Nama panggilan **tidak** dikirim ke server.
+- Opsional: `scale.labels` di kuesioner (label untuk setiap nilai).
+- Opsional: entri `reasons` / `warnings` boleh berformat `"Judul: isi"`.
+
+**Penyimpangan kecil dari desain (disengaja):**
+
+- Angka jawaban terpilih di kuesioner memakai badge Ink, bukan Sage:
+  putih di atas Sage hanya 3,1:1 (aturan kontras 3.3).
+- "Pori-pori besar" di desain bukan salah satu dari 9 kelas model, jadi
+  data contoh memakai Komedo putih.
+- Pengingat analisis ulang hanya tampil di Beranda (belum notifikasi HP;
+  butuh package notifikasi tambahan).
+- Bahasa: hanya Indonesia (baris Bahasa menampilkan toast "menyusul").
+- Favorit (ikon bookmark) tersimpan lokal; desain belum punya layar daftar
+  favorit.
+- "Hapus semua data lokal" tetap ada di Pengaturan karena diwajibkan brief.
+
+Package tambahan: `url_launcher` untuk tombol "Lihat di toko".
 
 ## Catatan
 

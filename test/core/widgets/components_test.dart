@@ -2,6 +2,7 @@ import 'package:afaskin/core/theme/app_theme.dart';
 import 'package:afaskin/core/widgets/afa_button.dart';
 import 'package:afaskin/core/widgets/afa_card.dart';
 import 'package:afaskin/core/widgets/afa_chip.dart';
+import 'package:afaskin/core/widgets/alfa_mascot.dart';
 import 'package:afaskin/core/widgets/quatrefoil_shape.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -106,5 +107,33 @@ void main() {
       ),
     );
     expect(tester.hasRunningAnimations, isFalse);
+  });
+
+  testWidgets('Alfa renders every mood and motion, still under reduce motion', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(disableAnimations: true),
+        child: _wrap(
+          Wrap(
+            children: [
+              for (final m in AlfaMood.values)
+                for (final motion in AlfaMotion.values)
+                  AlfaMascot(mood: m, motion: motion, size: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 3));
+    expect(tester.takeException(), isNull);
+    expect(tester.hasRunningAnimations, isFalse);
+    expect(find.byType(AlfaMascot), findsNWidgets(24));
+  });
+
+  testWidgets('Alfa animates when motion is allowed', (tester) async {
+    await tester.pumpWidget(_wrap(const AlfaMascot()));
+    expect(tester.hasRunningAnimations, isTrue);
   });
 }

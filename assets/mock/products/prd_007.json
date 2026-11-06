@@ -1,28 +1,27 @@
 {
   "id": "prd_007",
-  "name": "Brightening Vitamin C 15% Serum",
-  "brand": "Daun Labs",
-  "category": "serum",
-  "price": 175000,
+  "name": "Matte Daily Sunscreen SPF 50 PA++++",
+  "brand": "Lumera Lab",
+  "category": "sunscreen",
+  "price": 129000,
   "image_url": "https://example.com/images/prd_007.jpg",
-  "match_score": 0.62,
+  "match_score": 0.89,
   "matched_ingredients": [
-    "ascorbic acid"
+    "zinc oxide",
+    "niacinamide"
   ],
   "reasons": [
-    "Vitamin C membantu memudarkan bekas jerawat"
+    "Hasil akhir matte: Silica menyerap minyak sehingga wajah tidak mengilap di siang hari.",
+    "Zinc Oxide: Perlindungan UV yang lembut untuk kulit berjerawat."
   ],
-  "warnings": [
-    "Vitamin C (ascorbic acid) jangan dipakai bersamaan dengan benzoyl peroxide karena saling menonaktifkan. Pakai di waktu berbeda (pagi dan malam)."
-  ],
+  "warnings": [],
   "ingredients": [
     "aqua",
-    "ascorbic acid",
-    "propylene glycol",
-    "ferulic acid",
-    "tocopherol",
-    "sodium hyaluronate",
-    "triethanolamine"
+    "zinc oxide",
+    "niacinamide",
+    "silica",
+    "ethylhexyl methoxycinnamate",
+    "tocopherol"
   ],
-  "source_url": "https://example.com/daun-labs/vitamin-c-serum"
+  "source_url": "https://example.com/toko/prd_007"
 }

@@ -1,3 +1,4 @@
+import 'package:afaskin/core/router/app_router.dart';
 import 'package:afaskin/core/session/session_controller.dart';
 import 'package:afaskin/core/theme/app_theme.dart';
 import 'package:afaskin/data/local/local_stores.dart';
@@ -12,7 +13,14 @@ const _scale = LikertScale(
   min: 1,
   max: 5,
   minLabel: 'Tidak pernah',
-  maxLabel: 'Selalu',
+  maxLabel: 'Hampir selalu',
+  labels: [
+    'Tidak pernah',
+    'Jarang',
+    'Kadang-kadang',
+    'Sering',
+    'Hampir selalu',
+  ],
 );
 final _q = Questionnaire(
   version: 'test',
@@ -23,25 +31,44 @@ final _q = Questionnaire(
 );
 
 double _progress(WidgetTester tester) => tester
-    .widget<LinearProgressIndicator>(
-      find.byKey(const Key('questionnaire_progress')),
-    )
+    .widget<LinearProgressIndicator>(find.byKey(const Key('flow_progress')))
     .value!;
+
+FilledButton _cta(WidgetTester tester) =>
+    tester.widget<FilledButton>(find.byType(FilledButton));
 
 Future<MemoryUserStore> _pump(
   WidgetTester tester, {
+  QuizMode mode = QuizMode.setup,
   QuestionnaireAnswers? initial,
 }) async {
-  final user = MemoryUserStore();
+  tester.view.physicalSize = const Size(390, 900);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+  // Alfa animates forever otherwise; reduced motion freezes him.
+  tester.platformDispatcher.accessibilityFeaturesTestValue =
+      const FakeAccessibilityFeatures(disableAnimations: true);
+  addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+  final user = MemoryUserStore()..name = 'Rani';
   final router = GoRouter(
-    initialLocation: '/q',
+    initialLocation: '/start',
     routes: [
       GoRoute(
-        path: '/q',
-        builder: (_, _) =>
-            QuestionnaireFlow(questionnaire: _q, initial: initial),
+        path: '/start',
+        builder: (_, _) => const Text('START'),
+        routes: [
+          GoRoute(
+            path: 'q',
+            builder: (_, _) => QuestionnaireFlow(
+              questionnaire: _q,
+              mode: mode,
+              initial: initial,
+              autoAdvance: const Duration(milliseconds: 100),
+            ),
+          ),
+        ],
       ),
-      GoRoute(path: '/analysis', builder: (_, _) => const Text('HOME')),
+      GoRoute(path: AppRoutes.capture, builder: (_, _) => const Text('CAMERA')),
     ],
   );
   await tester.pumpWidget(
@@ -53,72 +80,101 @@ Future<MemoryUserStore> _pump(
       child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
     ),
   );
+  router.go('/start/q');
+  await tester.pumpAndSettle();
   return user;
 }
 
 void main() {
-  testWidgets('one question per screen, progress advances, back works', (
+  testWidgets('Alfa asks one question at a time; picking auto-advances', (
     tester,
   ) async {
     final user = await _pump(tester);
 
     expect(find.text('Pertanyaan nomor 1?'), findsOneWidget);
-    expect(find.text('Pertanyaan 1 dari 3'), findsOneWidget);
+    expect(find.text('1/3'), findsOneWidget);
+    expect(
+      find.text('Makasih, Rani! Sekarang 3 pertanyaan singkat, ya.'),
+      findsOneWidget,
+    );
     expect(_progress(tester), closeTo(1 / 3, 1e-9));
+    // Every value has its own label.
+    for (final l in _scale.labels!) {
+      expect(find.text(l), findsOneWidget);
+    }
+    expect(_cta(tester).enabled, isFalse);
 
-    // "Lanjut" disabled until an answer is picked.
-    FilledButton button() =>
-        tester.widget<FilledButton>(find.byType(FilledButton));
-    expect(button().enabled, isFalse);
-
-    await tester.tap(find.text('Selalu'));
-    await tester.pump();
-    expect(button().enabled, isTrue);
-    await tester.tap(find.text('Lanjut'));
+    // Picking an answer moves on by itself.
+    await tester.tap(find.text('Hampir selalu'));
     await tester.pumpAndSettle();
-
     expect(find.text('Pertanyaan nomor 2?'), findsOneWidget);
+    expect(find.text('2/3'), findsOneWidget);
     expect(_progress(tester), closeTo(2 / 3, 1e-9));
-    expect(button().enabled, isFalse);
+    expect(_cta(tester).enabled, isFalse);
 
-    // Back keeps the earlier answer.
+    // Back keeps the earlier answer, and "Lanjut" works too.
     await tester.tap(find.byTooltip('Kembali'));
     await tester.pumpAndSettle();
     expect(find.text('Pertanyaan nomor 1?'), findsOneWidget);
-    expect(button().enabled, isTrue);
-
-    await tester.tap(find.text('Lanjut'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('3'));
-    await tester.pump();
+    expect(_cta(tester).enabled, isTrue);
     await tester.tap(find.text('Lanjut'));
     await tester.pumpAndSettle();
 
-    expect(_progress(tester), closeTo(1, 1e-9));
-    expect(find.text('Selesai'), findsOneWidget);
+    await tester.tap(find.text('Kadang-kadang'));
+    await tester.pumpAndSettle();
+
+    // Last question: lead line and "Ambil foto wajah".
+    expect(find.text('Pertanyaan terakhir!'), findsOneWidget);
+    expect(find.text('Ambil foto wajah'), findsOneWidget);
     await tester.tap(find.text('Tidak pernah'));
-    await tester.pump();
-    await tester.tap(find.text('Selesai'));
+    await tester.pumpAndSettle();
+    // No auto-advance past the last question.
+    expect(find.text('Pertanyaan nomor 3?'), findsOneWidget);
+
+    await tester.tap(find.text('Ambil foto wajah'));
     await tester.pumpAndSettle();
 
-    expect(find.text('HOME'), findsOneWidget);
+    expect(find.text('CAMERA'), findsOneWidget);
     expect(user.answers!.version, 'test');
     expect(user.answers!.answers, {'q1': 5, 'q2': 3, 'q3': 1});
+    expect(user.answers!.answeredAt, isNotNull);
   });
 
-  testWidgets('previous answers are pre-selected; stale ids dropped', (
+  testWidgets('edit mode saves and goes back; old answers pre-selected', (
     tester,
   ) async {
-    await _pump(
+    final user = await _pump(
       tester,
+      mode: QuizMode.edit,
       initial: const QuestionnaireAnswers(
         version: 'old',
-        answers: {'q1': 2, 'q99': 4},
+        answers: {'q1': 2, 'q2': 4, 'q3': 1, 'q99': 4},
       ),
     );
-    expect(
-      tester.widget<FilledButton>(find.byType(FilledButton)).enabled,
-      isTrue,
+    expect(_cta(tester).enabled, isTrue);
+    await tester.tap(find.text('Lanjut'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lanjut'));
+    await tester.pumpAndSettle();
+    expect(find.text('Simpan'), findsOneWidget);
+    await tester.tap(find.text('Simpan'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('START'), findsOneWidget);
+    // Stale question id dropped.
+    expect(user.answers!.answers, {'q1': 2, 'q2': 4, 'q3': 1});
+  });
+
+  test('LikertScale.labelFor falls back to end labels', () {
+    const plain = LikertScale(
+      min: 1,
+      max: 5,
+      minLabel: 'Tidak pernah',
+      maxLabel: 'Selalu',
     );
+    expect(plain.labelFor(1), 'Tidak pernah');
+    expect(plain.labelFor(3), isNull);
+    expect(plain.labelFor(5), 'Selalu');
+    expect(_scale.labelFor(2), 'Jarang');
   });
 }

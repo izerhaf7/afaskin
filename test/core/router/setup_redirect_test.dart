@@ -16,6 +16,7 @@ void main() {
   const done = SessionState(
     onboardingDone: true,
     consentAccepted: true,
+    name: 'Rani',
     profile: _profile,
     answers: _answers,
   );
@@ -31,6 +32,7 @@ void main() {
       const SessionState(
         onboardingDone: true,
         consentAccepted: true,
+        name: 'Rani',
         profile: _profile,
       ).nextStep,
       SetupStep.questionnaire,

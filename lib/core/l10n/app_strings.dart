@@ -40,25 +40,31 @@ abstract final class AppStrings {
   static const String openStyleGuide = 'Buka style guide';
   static const String styleGuideTitle = 'Style guide';
 
-  // Onboarding.
+  // Onboarding (Tahap 2).
   static const String skip = 'Lewati';
   static const String start = 'Mulai';
-  static const String onboarding1Title = 'Kenali kulitmu';
+  static const String onboarding1Title = 'Kenali kulitmu dari satu foto';
   static const String onboarding1Body =
-      'Afa Skin membaca kondisi kulit wajahmu dari satu foto selfie, '
-      'lalu mencarikan skincare dengan bahan aktif yang cocok.';
-  static const String onboarding2Title = 'Cara kerjanya';
+      'Afa Skin membaca kondisi kulit wajah dari foto selfie, lalu mencarikan '
+      'skincare yang bahan aktifnya cocok untukmu.';
+  static const String onboarding2Title = 'Tiga langkah, kurang dari semenit';
+  static const String onboarding2Body =
+      'Jawab beberapa pertanyaan singkat, ambil foto, lalu lihat produk yang '
+      'paling sesuai dengan kondisi kulitmu.';
   static const List<(String, String)> onboarding2Steps = [
-    ('Foto', 'Ambil selfie dengan panduan posisi dan cahaya.'),
-    ('Analisis', 'Tipe kulit dan kondisi kulit dibaca per area wajah.'),
-    ('Rekomendasi', 'Produk dipilih berdasarkan kecocokan bahan aktif.'),
+    ('1. Foto', 'Selfie wajah tanpa makeup'),
+    ('2. Analisis', 'Tipe kulit dan kondisi per area wajah'),
+    ('3. Rekomendasi', 'Produk dengan bahan aktif yang cocok'),
   ];
-  static const String onboarding3Title = 'Tips foto yang baik';
+  static const String onboarding3Title = 'Foto yang baik, hasil yang akurat';
+  static const String onboarding3Body =
+      'Kamera akan memandumu secara langsung. Ikuti petunjuk di layar sampai '
+      'tombol foto aktif.';
   static const List<String> onboarding3Tips = [
-    'Cari cahaya alami yang merata, hindari lampu dari belakang.',
-    'Bersihkan wajah dari makeup.',
-    'Rapikan rambut agar dahi terlihat.',
-    'Hadapkan wajah lurus ke kamera.',
+    'Cahaya dari depan, misalnya menghadap jendela',
+    'Wajah bersih, tanpa makeup',
+    'Lepas kacamata, rapikan rambut dari dahi',
+    'Pegang ponsel sejajar mata',
   ];
   static String onboardingPageLabel(int page, int total) =>
       'Halaman $page dari $total';
@@ -66,74 +72,115 @@ abstract final class AppStrings {
   // Consent.
   static const String consentTitle = 'Sebelum mulai';
   static const String consentIntro =
-      'Baca dan setujui dua hal berikut untuk memakai Afa Skin.';
-  static const String consentMedicalTitle = 'Bukan diagnosis medis';
+      'Baca dan centang kedua poin di bawah untuk melanjutkan.';
+  static const String consentMedicalTitle = 'Afa Skin bukan alat medis';
   static const String consentMedicalBody =
-      'Afa Skin memberi perkiraan berbasis model pembelajaran mesin, bukan '
-      'diagnosis dokter. Untuk kondisi serius, misalnya kista atau jerawat '
-      'meradang parah, periksakan ke dokter spesialis kulit.';
-  static const String consentMedicalCheck =
-      'Saya mengerti hasil Afa Skin bukan diagnosis medis.';
-  static const String consentPhotoTitle = 'Privasi foto';
+      'Hasil analisis hanya perkiraan dan bukan diagnosis. Untuk masalah kulit '
+      'serius, konsultasikan ke dokter kulit.';
+  static const String consentPhotoTitle = 'Foto tidak disimpan di server';
   static const String consentPhotoBody =
-      'Foto hanya dipakai untuk analisis dan tidak disimpan di server. '
-      'Di perangkatmu, foto dihapus setelah terkirim, dan riwayat hanya '
-      'menyimpan hasil analisis tanpa foto.';
-  static const String consentPhotoCheck =
-      'Saya setuju foto saya dikirim ke server untuk dianalisis.';
+      'Foto diproses lalu langsung dihapus. Riwayat hasil hanya tersimpan di '
+      'ponsel ini.';
+  static const String consentAlfa =
+      'Tenang, Alfa jaga privasimu. Fotomu tidak disimpan.';
   static const String consentAccept = 'Setuju dan lanjut';
+  static const String consentReviewTitle = 'Persetujuan & disclaimer';
+  static const String consentAccepted = 'Kamu sudah menyetujui kedua poin ini.';
 
-  // Profile.
-  static const String profileTitle = 'Profil kamu';
-  static const String profileIntro =
-      'Dipakai untuk menyesuaikan analisis dan rekomendasi produk.';
-  static const String profileEditTitle = 'Edit profil';
-  static const String ageLabel = 'Umur';
-  static const String ageHint = 'Contoh: 21';
+  // Profile (Alfa asks one thing at a time).
+  static const String askName =
+      'Kenalan dulu dong, Alfa mau tau nih nama kamu?';
+  static const String nameHint = 'Nama panggilanmu';
+  static const String nameNote = 'Nama panggilan juga boleh, kok.';
+  static String askAge(String name) => 'Salam kenal, $name! Umur kamu berapa?';
+  static const String askAgeTooYoung =
+      'Waduh, sepertinya umurnya belum cukup nih.';
+  static const String ageHint = 'Contoh: 23';
   static const String ageSuffix = 'tahun';
-  static const String ageError = 'Masukkan umur antara 12 dan 100 tahun.';
-  static const String genderLabel = 'Gender';
+  static const String ageTooYoung = 'Afa Skin untuk pengguna 17 tahun ke atas.';
+  static const String ageNote =
+      'Umur membantu Alfa memilih bahan aktif yang sesuai.';
+  static String askGenderAfterResult(String name) =>
+      'Hasilnya sudah keluar! Biar rekomendasinya makin pas, gender kamu '
+      'apa, $name?';
+  static const String askGender = 'Oke! Kalau gender kamu?';
   static const String genderFemale = 'Perempuan';
   static const String genderMale = 'Laki-laki';
-  static const String genderOther = 'Lainnya';
-  static const String genderError = 'Pilih salah satu.';
-  static const String budgetLabel = 'Budget maksimum per produk';
-  static const String budgetError = 'Pilih rentang budget.';
-  static String budgetUpTo(String amount) => 'Sampai $amount';
+  static const String genderUnspecified = 'Tidak ingin menyebut';
+  static const String askBudget =
+      'Terakhir nih! Budget per produk kira-kira berapa?';
+  static const String budgetHint = '150.000';
+  static const String budgetNote =
+      'Produk di atas budget tetap bisa kamu lihat nanti.';
+  static const String currency = 'Rp';
+  static const String toQuestionnaire = 'Lanjut ke kuesioner';
   static const String profileSaved = 'Profil disimpan.';
+  static const String profileCompleted =
+      'Makasih! Rekomendasi sudah disesuaikan.';
+  static const String you = 'kamu';
+  static String stepCount(int current, int total) => '$current/$total';
 
   // Questionnaire.
   static const String questionnaireTitle = 'Kuesioner kulit';
-  static String questionProgress(int current, int total) =>
-      'Pertanyaan $current dari $total';
-  static const String finish = 'Selesai';
+  static String quizLeadFirst(String name, int count) =>
+      'Makasih, $name! Sekarang $count pertanyaan singkat, ya.';
+  static const String quizLeadLast = 'Pertanyaan terakhir!';
+  static const String takeFacePhoto = 'Ambil foto wajah';
+  static const String finish = 'Simpan';
   static const String questionnaireEmpty = 'Belum ada pertanyaan tersedia.';
   static const String questionnaireSaved = 'Jawaban kuesioner disimpan.';
   static String likertOption(int value, String? label) =>
       label == null ? '$value' : '$value, $label';
+  static String questionProgress(int current, int total) =>
+      'Pertanyaan $current dari $total';
 
   // Main tabs.
   static const String tabAnalysis = 'Analisis';
   static const String tabHistory = 'Riwayat';
   static const String tabSettings = 'Pengaturan';
 
-  // Analysis home.
-  static const String greeting = 'Halo!';
-  static const String homeTitle = 'Siap cek kulitmu?';
-  static const String homeBody =
-      'Ambil satu foto selfie. Analisis butuh beberapa detik.';
+  // Home (Beranda).
+  static String greeting(int hour, String? name) {
+    final part = hour < 11
+        ? 'pagi'
+        : hour < 15
+        ? 'siang'
+        : hour < 18
+        ? 'sore'
+        : 'malam';
+    final n = (name ?? '').trim();
+    return n.isEmpty ? 'Selamat $part' : 'Selamat $part, $n';
+  }
+
+  static const String homeTitle = 'Bagaimana kulitmu hari ini?';
+  static const String reanalyzeTitle = 'Analisis ulang';
+  static String reanalyzeBody(String date) =>
+      'Terakhir $date. Ulangi tiap 2 minggu untuk melihat perubahan kulitmu.';
+  static const String firstAnalysisTitle = 'Analisis pertama';
+  static const String firstAnalysisBody =
+      'Ambil satu selfie, Alfa bantu baca kondisi kulitmu.';
   static const String startAnalysis = 'Mulai analisis';
+  static const String lastResult = 'Hasil terakhir';
+  static const String seeFullResult = 'Lihat hasil lengkap';
+  static const String recommendationsTitle = 'Rekomendasi produk';
+  static String recoLine(int count, String? budget) => budget == null
+      ? '$count produk untuk kulitmu'
+      : '$count produk sesuai budget $budget';
+  static String nextReminder(String date) =>
+      'Pengingat analisis berikutnya: $date';
+  static const String openProfile = 'Profil';
 
-  // History (placeholder until Phase 4).
-  static const String historyEmptyTitle = 'Belum ada riwayat';
-  static const String historyEmptyBody =
-      'Hasil analisis akan tersimpan di sini, tanpa foto.';
-
-  // Settings.
-  static const String settingsEditProfile = 'Edit profil';
-  static const String settingsRedoQuestionnaire = 'Ulangi kuesioner';
-  static const String settingsClearData = 'Hapus semua data lokal';
-  static const String settingsAbout = 'Tentang';
+  // Re-analyze sheet.
+  static String reanalyzeSheetBody(String? date) => date == null
+      ? 'Jawaban kuesioner terakhirmu akan dipakai lagi. Perbarui jika '
+            'rutinitas atau kondisi kulitmu berubah.'
+      : 'Jawaban kuesioner terakhirmu ($date) akan dipakai lagi. Perbarui '
+            'jika rutinitas atau kondisi kulitmu berubah.';
+  static const String reanalyzeTip =
+      'Foto di tempat dan jam yang sama seperti sebelumnya agar hasilnya bisa '
+      'dibandingkan.';
+  static const String photoNow = 'Langsung ambil foto';
+  static const String updateAnswersFirst = 'Perbarui jawaban dulu';
 
   // Capture: camera guidance.
   static const String captureTitle = 'Ambil foto';
@@ -170,16 +217,24 @@ abstract final class AppStrings {
   static const String openSettings = 'Buka pengaturan HP';
 
   // Analyzing.
+  static const String analyzingTitle = 'Alfa lagi membaca kulitmu';
   static const List<String> analyzingSteps = [
-    'Memeriksa kualitas foto...',
-    'Mendeteksi area wajah...',
-    'Menganalisis kondisi kulit...',
-    'Mencocokkan dengan jawaban kuesioner...',
-    'Menyusun rekomendasi...',
+    'Memeriksa kualitas foto',
+    'Mendeteksi area wajah',
+    'Menganalisis kondisi kulit',
+    'Mencocokkan bahan aktif',
   ];
-  static const String analyzingTitle = 'Menganalisis';
+  static const String analyzingFooter =
+      'Foto akan dihapus setelah analisis selesai';
+  static const String netErrorTitle = 'Koneksi terputus';
+  static const String netErrorBody =
+      'Analisis belum selesai karena internet tidak tersambung. Periksa '
+      'koneksimu, lalu coba lagi.';
+  static const String serverErrorTitle = 'Analisis belum berhasil';
+  static const String backToHome = 'Kembali ke beranda';
   static const String qualityRejectedTitle = 'Foto perlu diambil ulang';
   static const String retakePhoto = 'Ambil ulang foto';
+  static const String savedToHistory = 'Hasil baru tersimpan di Riwayat.';
 
   // Result.
   static const String resultTitle = 'Hasil analisis';
@@ -269,46 +324,96 @@ abstract final class AppStrings {
   };
 
   // Recommendations.
-  static const String recommendationsTitle = 'Rekomendasi produk';
+  static String analysisOf(String date) => 'Analisis $date';
+  static const String recoTitle = 'Rekomendasi untukmu';
+  static const String detail = 'Detail';
+  static const String completeProfileTitle = 'Lengkapi profilmu, yuk';
+  static const String completeProfileBody =
+      'Gender dan budget bikin rekomendasi Alfa makin pas.';
+  static const String completeProfileCta = 'Lengkapi · 2 pertanyaan';
   static const String allCategories = 'Semua';
   static const String anyPrice = 'Semua harga';
-  static const String budgetFilter = 'Budget';
+  static String maxPrice(String amount) => 'Maks $amount';
+  static String productCount(int n) => '$n produk';
   static String matchScore(String pct) => '$pct cocok';
-  static const String hasWarning = 'Ada peringatan bahan';
-  static const String recommendationsEmpty =
-      'Tidak ada produk untuk filter ini.';
-  static const String recommendationsEmptyBody =
-      'Coba kategori lain atau naikkan budget.';
-  static const String resetFilters = 'Atur ulang filter';
+  static const String hasConflict = 'Ada konflik bahan';
+  static const String recoEmptyTitle = 'Belum ada yang pas di budget ini';
+  static const String recoEmptyBody =
+      'Matikan filter budget atau pilih kategori lain.';
+  static const String scoreNote =
+      'Skor kecocokan dihitung dari bahan aktif terhadap hasil analisis. '
+      'Afa Skin tidak menerima bayaran dari brand.';
+  static const String productPhoto = 'foto produk';
+  static const String noAnalysisYet =
+      'Belum ada hasil analisis. Mulai analisis dulu, ya.';
+
+  // Budget sheet.
+  static const String budgetSheetTitle = 'Budget per produk';
+  static const String budgetSheetBody = 'Bisa diubah kapan saja.';
 
   // Product detail.
   static const String whyRecommended = 'Kenapa direkomendasikan';
-  static const String matchedIngredients = 'Bahan aktif yang cocok';
   static const String ingredientsHeading = 'Komposisi';
-  static const String ingredientsLegend =
-      'Bahan yang disorot hijau relevan dengan kondisi kulitmu.';
-  static const String conflictHeading = 'Peringatan konflik bahan aktif';
-  static const String source = 'Sumber';
+  static const String goodForYou = 'Cocok untukmu';
+  static const String conflictHeading = 'Hati-hati konflik bahan aktif';
+  static const String fictionalNote =
+      'Produk dan brand fiktif untuk keperluan desain.';
+  static const String openStore = 'Lihat di toko';
+  static const String openingStore = 'Membuka toko mitra di browser.';
+  static const String storeUnavailable = 'Tautan toko belum tersedia.';
+  static const String savedToFavorites = 'Disimpan ke favorit';
+  static const String removedFromFavorites = 'Dihapus dari favorit';
   static const String productImage = 'Foto produk';
 
   // History.
-  static const String historyClearAll = 'Hapus semua riwayat';
-  static const String historyClearConfirm =
-      'Semua riwayat analisis di perangkat ini akan dihapus.';
-  static const String historyDeleted = 'Riwayat dihapus.';
-  static const String undo = 'Urungkan';
-  static const String delete = 'Hapus';
-  static String deleteEntry(String date) => 'Hapus riwayat $date';
-  static const String noMainCondition = 'Tanpa kondisi menonjol';
+  static const String historyTitle = 'Riwayat';
+  static String trendDown(int points, String since) =>
+      'Turun $points% sejak $since. Alfa ikut senang!';
+  static String trendUp(int points, String since) =>
+      'Naik $points% sejak $since. Yuk cek rekomendasinya.';
+  static String trendFlat(String since) => 'Stabil sejak $since.';
+  static const String historyLocalNote =
+      'Riwayat hanya tersimpan di ponsel ini.';
+  static const String historyEmptyTitle = 'Belum ada riwayat';
+  static const String historyEmptyBody =
+      'Setiap hasil analisis akan tersimpan di sini, jadi kamu bisa memantau '
+      'perubahan kulitmu.';
   static const String historyNotFound = 'Riwayat tidak ditemukan.';
+  static const String noMainCondition = 'Tanpa kondisi menonjol';
+  static const String delete = 'Hapus';
+  static const String deleted = 'Riwayat dihapus.';
+  static const String undo = 'Urungkan';
+  static String deleteEntry(String date) => 'Hapus riwayat $date';
 
-  // Settings: clear data.
-  static const String clearDataTitle = 'Hapus semua data lokal?';
-  static const String clearDataBody =
-      'Profil, jawaban kuesioner, riwayat, dan persetujuan akan dihapus '
-      'dari perangkat ini. Kamu akan memulai dari awal.';
-  static const String settingsDataSection = 'Data';
-  static const String settingsAccountSection = 'Profil & kuesioner';
+  // Settings.
+  static const String settingsTitle = 'Pengaturan';
+  static const String skinProfile = 'Profil kulit';
+  static const String incomplete = 'belum lengkap';
+  static const String change = 'Ubah';
+  static const String preferences = 'Preferensi';
+  static const String reminder = 'Pengingat analisis ulang';
+  static const String settingsRedoQuestionnaire = 'Ulangi kuesioner';
+  static const String reminderEvery = 'Setiap 2 minggu';
+  static const String language = 'Bahasa';
+  static const String languageValue = 'Indonesia';
+  static const String moreLanguagesSoon = 'Bahasa lain menyusul.';
+  static const String privacyData = 'Privasi & data';
+  static const String photoNotStored = 'Foto tidak disimpan';
+  static const String photoNotStoredBody = 'Foto dihapus setelah dianalisis';
+  static const String clearHistory = 'Hapus semua riwayat';
+  static const String clearHistoryTitle = 'Hapus semua riwayat?';
+  static String clearHistoryBody(int n) =>
+      '$n hasil analisis akan dihapus dari ponsel ini dan tidak bisa '
+      'dikembalikan.';
+  static const String historyAlreadyEmpty = 'Riwayat sudah kosong.';
+  static const String clearAllData = 'Hapus semua data lokal';
+  static const String clearAllDataTitle = 'Hapus semua data lokal?';
+  static const String clearAllDataBody =
+      'Profil, jawaban kuesioner, favorit, riwayat, dan persetujuan akan '
+      'dihapus dari perangkat ini. Kamu akan memulai dari awal.';
+  static const String others = 'Lainnya';
+  static const String aboutApp = 'Tentang Afa Skin';
+  static String appVersion(String v) => 'Afa Skin versi $v';
 
   // About.
   static const String aboutTitle = 'Tentang Afa Skin';

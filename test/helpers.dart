@@ -100,6 +100,7 @@ Future<void> waitFor(
 ({MemoryFlagStore flags, MemoryUserStore user}) setupDoneStores() => (
   flags: MemoryFlagStore(onboardingDone: true, consentAccepted: true),
   user: MemoryUserStore()
+    ..name = 'Rani'
     ..profile = const UserProfile(
       age: 21,
       gender: Gender.female,

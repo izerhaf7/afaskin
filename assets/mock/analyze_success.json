@@ -1,21 +1,105 @@
 {
   "analysis_id": "8f14e45f-ceea-4e7a-9b3c-2d1f6a7b9c01",
   "created_at": "2026-11-05T09:30:00+07:00",
-  "quality": { "passed": true, "sharpness": 182.4, "brightness": 131.0 },
-  "skin_type": { "label": "oily", "confidence": 0.78, "probs": { "oily": 0.78, "dry": 0.07, "normal": 0.15 } },
+  "quality": {
+    "passed": true,
+    "sharpness": 182.4,
+    "brightness": 131.0
+  },
+  "skin_type": {
+    "label": "oily",
+    "confidence": 0.78,
+    "probs": {
+      "oily": 0.78,
+      "dry": 0.07,
+      "normal": 0.15
+    }
+  },
   "conditions": [
-    { "label": "blackhead", "probability": 0.71, "regions": ["nose", "forehead"], "description": "Komedo terbuka akibat pori tersumbat sebum." },
-    { "label": "whitehead", "probability": 0.33, "regions": ["forehead"], "description": "Komedo tertutup: sumbatan pori yang tertutup lapisan kulit tipis." },
-    { "label": "acne", "probability": 0.46, "regions": ["left_cheek", "chin"], "description": "Jerawat ringan akibat peradangan pada folikel rambut." },
-    { "label": "papular", "probability": 0.18, "regions": ["right_cheek"], "description": "Benjolan kecil kemerahan tanpa nanah, tanda peradangan pori." }
+    {
+      "label": "blackhead",
+      "probability": 0.71,
+      "regions": [
+        "nose",
+        "forehead"
+      ],
+      "description": "Komedo terbuka akibat pori tersumbat sebum."
+    },
+    {
+      "label": "papular",
+      "probability": 0.42,
+      "regions": [
+        "right_cheek"
+      ],
+      "description": "Benjolan kecil kemerahan tanpa nanah, tanda pori meradang."
+    },
+    {
+      "label": "whitehead",
+      "probability": 0.55,
+      "regions": [
+        "forehead",
+        "chin"
+      ],
+      "description": "Komedo tertutup: sumbatan pori yang tertutup lapisan kulit tipis."
+    },
+    {
+      "label": "acne",
+      "probability": 0.3,
+      "regions": [
+        "left_cheek"
+      ],
+      "description": "Jerawat ringan akibat peradangan pada folikel rambut."
+    }
   ],
   "rois": [
-    { "name": "forehead", "bbox": [0.30, 0.12, 0.40, 0.14] },
-    { "name": "left_cheek", "bbox": [0.18, 0.42, 0.20, 0.18] },
-    { "name": "right_cheek", "bbox": [0.62, 0.42, 0.20, 0.18] },
-    { "name": "nose", "bbox": [0.43, 0.38, 0.14, 0.20] },
-    { "name": "chin", "bbox": [0.38, 0.74, 0.24, 0.12] }
+    {
+      "name": "forehead",
+      "bbox": [
+        0.3,
+        0.12,
+        0.4,
+        0.14
+      ]
+    },
+    {
+      "name": "left_cheek",
+      "bbox": [
+        0.18,
+        0.42,
+        0.2,
+        0.18
+      ]
+    },
+    {
+      "name": "right_cheek",
+      "bbox": [
+        0.62,
+        0.42,
+        0.2,
+        0.18
+      ]
+    },
+    {
+      "name": "nose",
+      "bbox": [
+        0.43,
+        0.38,
+        0.14,
+        0.2
+      ]
+    },
+    {
+      "name": "chin",
+      "bbox": [
+        0.38,
+        0.74,
+        0.24,
+        0.12
+      ]
+    }
   ],
-  "fusion": { "alpha": 0.6 },
+  "fusion": {
+    "alpha": 0.6
+  },
   "disclaimer": "Hasil ini bukan diagnosis medis."
 }

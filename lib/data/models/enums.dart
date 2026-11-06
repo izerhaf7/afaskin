@@ -30,5 +30,6 @@ enum FaceRegion { forehead, leftCheek, rightCheek, nose, chin, unknown }
 @JsonEnum(fieldRename: FieldRename.snake)
 enum ProductCategory { cleanser, toner, serum, moisturizer, sunscreen, unknown }
 
+/// `unspecified` = "Tidak ingin menyebut" (sent as "unspecified").
 @JsonEnum(fieldRename: FieldRename.snake)
-enum Gender { female, male, other }
+enum Gender { female, male, unspecified }

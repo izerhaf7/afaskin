@@ -4,18 +4,26 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'analyze_payload.freezed.dart';
 part 'analyze_payload.g.dart';
 
+/// The `profile` part of the analyze payload. Gender and budget are asked
+/// after the first result ("Lengkapi profilmu"), so they can be null; they
+/// are then sent as JSON `null`.
 @freezed
 abstract class UserProfile with _$UserProfile {
   const factory UserProfile({
     required int age,
-    required Gender gender,
+    Gender? gender,
 
     /// Max price per product, in Rupiah.
-    required int budgetMax,
+    int? budgetMax,
   }) = _UserProfile;
+
+  const UserProfile._();
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>
       _$UserProfileFromJson(json);
+
+  /// Gender and budget both answered.
+  bool get isComplete => gender != null && budgetMax != null;
 }
 
 /// The `payload` form field of `POST /analyze` (sent as a JSON string).

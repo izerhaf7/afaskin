@@ -5,6 +5,7 @@ import 'package:afaskin/core/widgets/afa_button.dart';
 import 'package:afaskin/core/widgets/afa_card.dart';
 import 'package:afaskin/core/widgets/afa_chip.dart';
 import 'package:afaskin/core/widgets/afa_logo.dart';
+import 'package:afaskin/core/widgets/alfa_mascot.dart';
 import 'package:afaskin/core/widgets/quatrefoil_shape.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -139,6 +140,21 @@ class _StyleGuidePageState extends State<StyleGuidePage> {
                 icon: Icons.warning_amber_rounded,
               ),
               AfaChip(label: 'Agak gelap', tone: AfaChipTone.caution),
+            ],
+          ),
+
+          const _Section('Alfa'),
+          Wrap(
+            spacing: AppSpacing.xs,
+            runSpacing: AppSpacing.xs,
+            children: [
+              for (final m in AlfaMood.values)
+                Column(
+                  children: [
+                    AlfaMascot(mood: m, size: 72),
+                    Text(m.name, style: text.bodySmall),
+                  ],
+                ),
             ],
           ),
 

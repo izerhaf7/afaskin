@@ -39,6 +39,46 @@ abstract final class AppColors {
   /// Scrim behind sheets/dialogs.
   static final Color scrim = ink.withValues(alpha: 0.40);
 
-  /// Disabled foreground (text/icon) on disabled [outline] fill.
-  static final Color disabledForeground = ink.withValues(alpha: 0.60);
+  // Tahap 2 design tokens.
+
+  /// Secondary text. 6.2:1 on white, 5.3:1 on mist: fine for body text.
+  static const Color inkMuted = Color(0xFF56636F);
+
+  /// Pressed state of ink buttons.
+  static const Color inkPressed = Color(0xFF1D2935);
+
+  /// Disabled button fill; label uses [disabledForeground].
+  static const Color disabledFill = Color(0xFFD5DCE2);
+
+  /// Disabled label (exempt from WCAG contrast as an inactive control).
+  static const Color disabledForeground = inkMuted;
+
+  /// Match badge / matched ingredient background ([positive] text: 5.0:1).
+  static const Color positiveTint = Color(0xFFE0EDE8);
+
+  /// Conflict banner background ([danger] text: 4.7:1, ink body: 9.4:1).
+  static const Color dangerTint = Color(0xFFF6E4E1);
+
+  /// Pressed state on mist surfaces.
+  static const Color mistPressed = Color(0xFFD3E4DF);
+
+  /// Second stripe of the product-photo placeholder pattern.
+  static const Color mistStripe = Color(0xFFD7E7E3);
+
+  /// Scrim behind bottom sheets.
+  static const Color sheetScrim = Color(0x730E141B);
+}
+
+/// Colors of Alfa, the axolotl mascot (from the design's Mascot component).
+abstract final class AlfaPalette {
+  static const Color gillDark = Color(0xFF5E7B74);
+  static const Color gillMid = Color(0xFF6A8780);
+  static const Color gillLight = Color(0xFF8EAAA3);
+  static const Color gillPale = Color(0xFFA9C2BB);
+  static const Color body = Color(0xFFB9D0CA);
+  static const Color bodyLight = Color(0xFFD6E7E2);
+  static const Color belly = Color(0xFFF4F1EA);
+  static const Color headLight = Color(0xFFEAF4F1);
+  static const Color headShade = Color(0xFFBFD5CF);
+  static const Color blush = Color(0xFFEBB7AB);
 }

@@ -8,21 +8,21 @@ part of 'analyze_payload.dart';
 
 _UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => _UserProfile(
   age: (json['age'] as num).toInt(),
-  gender: $enumDecode(_$GenderEnumMap, json['gender']),
-  budgetMax: (json['budget_max'] as num).toInt(),
+  gender: $enumDecodeNullable(_$GenderEnumMap, json['gender']),
+  budgetMax: (json['budget_max'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$UserProfileToJson(_UserProfile instance) =>
     <String, dynamic>{
       'age': instance.age,
-      'gender': _$GenderEnumMap[instance.gender]!,
+      'gender': _$GenderEnumMap[instance.gender],
       'budget_max': instance.budgetMax,
     };
 
 const _$GenderEnumMap = {
   Gender.female: 'female',
   Gender.male: 'male',
-  Gender.other: 'other',
+  Gender.unspecified: 'unspecified',
 };
 
 _AnalyzePayload _$AnalyzePayloadFromJson(Map<String, dynamic> json) =>

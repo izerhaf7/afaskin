@@ -1,12 +1,29 @@
-/// Formats Rupiah without pulling in `intl`: `150000` -> `Rp150.000`.
-String formatRupiah(int amount) {
+/// Indonesian digit grouping without `intl`: `150000` -> `150.000`.
+String formatThousands(int amount) {
   final digits = amount.abs().toString();
   final buf = StringBuffer();
   for (var i = 0; i < digits.length; i++) {
     if (i > 0 && (digits.length - i) % 3 == 0) buf.write('.');
     buf.write(digits[i]);
   }
-  return '${amount < 0 ? '-' : ''}Rp$buf';
+  return '${amount < 0 ? '-' : ''}$buf';
+}
+
+/// `150000` -> `Rp150.000`.
+String formatRupiah(int amount) => amount < 0
+    ? '-Rp${formatThousands(-amount)}'
+    : 'Rp${formatThousands(amount)}';
+
+/// `5 Nov 2026`.
+String formatDate(DateTime t) {
+  final l = t.toLocal();
+  return '${l.day} ${_months[l.month - 1]} ${l.year}';
+}
+
+/// `5 Nov` (trend labels).
+String formatDayMonth(DateTime t) {
+  final l = t.toLocal();
+  return '${l.day} ${_months[l.month - 1]}';
 }
 
 /// `0.78` -> `78%`.

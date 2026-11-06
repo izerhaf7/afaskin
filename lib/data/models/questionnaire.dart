@@ -35,6 +35,10 @@ abstract class LikertScale with _$LikertScale {
     required int max,
     required String minLabel,
     required String maxLabel,
+
+    /// Optional label for every value, min to max (e.g. "Jarang", "Sering").
+    /// Not in the original contract; older servers can omit it.
+    List<String>? labels,
   }) = _LikertScale;
 
   const LikertScale._();
@@ -44,4 +48,13 @@ abstract class LikertScale with _$LikertScale {
 
   /// All selectable values, e.g. `[1, 2, 3, 4, 5]`.
   List<int> get values => [for (var v = min; v <= max; v++) v];
+
+  /// Text for [value]: its own label if provided, else the end labels.
+  String? labelFor(int value) {
+    final i = value - min;
+    if (labels != null && i >= 0 && i < labels!.length) return labels![i];
+    if (value == min) return minLabel;
+    if (value == max) return maxLabel;
+    return null;
+  }
 }

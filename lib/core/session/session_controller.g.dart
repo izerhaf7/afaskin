@@ -133,7 +133,7 @@ final class SessionProvider extends $NotifierProvider<Session, SessionState> {
   }
 }
 
-String _$sessionHash() => r'48ec20d0242fbbc8d93103753f3ee618f76b53b7';
+String _$sessionHash() => r'527a43f572ad877517665a8c072920e0afc52c61';
 
 /// App-wide user state. Reads synchronously at startup (stores are opened in
 /// `main` before `runApp`), so the router can decide immediately.

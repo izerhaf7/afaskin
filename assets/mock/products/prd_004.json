@@ -1,29 +1,32 @@
 {
   "id": "prd_004",
-  "name": "Niacinamide 10% Oil Control Serum",
-  "brand": "Kalis",
+  "name": "Retinal 0.1% Night Serum",
+  "brand": "Kalma",
   "category": "serum",
-  "price": 79000,
+  "price": 249000,
   "image_url": "https://example.com/images/prd_004.jpg",
-  "match_score": 0.83,
+  "match_score": 0.84,
   "matched_ingredients": [
-    "niacinamide",
-    "zinc pca"
+    "retinal",
+    "ceramide np",
+    "bisabolol"
   ],
   "reasons": [
-    "Niacinamide membantu mengontrol minyak",
-    "Zinc PCA membantu meredakan jerawat ringan"
+    "Retinal: Mempercepat pergantian sel sehingga komedo hitam (71%) dan papula (42%) berkurang.",
+    "Ceramide NP & Bisabolol: Menjaga skin barrier tetap kuat selama memakai retinoid."
   ],
-  "warnings": [],
+  "warnings": [
+    "Jangan dipakai bersamaan dengan produk ber-AHA/BHA: Termasuk Clarifying Gel Cleanser di daftar ini. Pakai di malam yang berbeda agar kulit tidak iritasi."
+  ],
   "ingredients": [
     "aqua",
-    "niacinamide",
-    "pentylene glycol",
-    "zinc pca",
-    "sodium hyaluronate",
-    "tamarindus indica seed gum",
-    "xanthan gum",
+    "squalane",
+    "retinal",
+    "ceramide np",
+    "bisabolol",
+    "tocopherol",
+    "glycerin",
     "phenoxyethanol"
   ],
-  "source_url": "https://example.com/kalis/niacinamide-serum"
+  "source_url": "https://example.com/toko/prd_004"
 }

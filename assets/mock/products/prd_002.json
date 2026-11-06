@@ -1,28 +1,27 @@
 {
   "id": "prd_002",
-  "name": "Pore Refining BHA Toner",
-  "brand": "Daun Labs",
+  "name": "Pore Balancing Toner",
+  "brand": "Teduh",
   "category": "toner",
-  "price": 89000,
+  "price": 115000,
   "image_url": "https://example.com/images/prd_002.jpg",
-  "match_score": 0.81,
+  "match_score": 0.88,
   "matched_ingredients": [
-    "salicylic acid",
-    "niacinamide"
+    "niacinamide",
+    "centella asiatica extract"
   ],
   "reasons": [
-    "Kombinasi BHA dan niacinamide cocok untuk kulit berminyak dengan komedo"
+    "Niacinamide: Membantu menyamarkan pori dan meratakan produksi minyak.",
+    "Centella Asiatica: Menenangkan kemerahan ringan di dagu."
   ],
   "warnings": [],
   "ingredients": [
     "aqua",
-    "butylene glycol",
     "niacinamide",
-    "salicylic acid",
+    "butylene glycol",
     "centella asiatica extract",
-    "sodium hyaluronate",
     "betaine",
-    "ethylhexylglycerin"
+    "sodium hyaluronate"
   ],
-  "source_url": "https://example.com/daun-labs/bha-toner"
+  "source_url": "https://example.com/toko/prd_002"
 }

@@ -589,7 +589,9 @@ $LikertScaleCopyWith<$Res> get scale {
 /// @nodoc
 mixin _$LikertScale {
 
- int get min; int get max; String get minLabel; String get maxLabel;
+ int get min; int get max; String get minLabel; String get maxLabel;/// Optional label for every value, min to max (e.g. "Jarang", "Sering").
+/// Not in the original contract; older servers can omit it.
+ List<String>? get labels;
 /// Create a copy of LikertScale
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -603,20 +605,20 @@ $LikertScaleCopyWith<LikertScale> get copyWith => _$LikertScaleCopyWithImpl<Like
 @override
 bool operator ==(Object other) {
   final _this = this as LikertScale;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LikertScale&&(identical(other.min, _this.min) || other.min == _this.min)&&(identical(other.max, _this.max) || other.max == _this.max)&&(identical(other.minLabel, _this.minLabel) || other.minLabel == _this.minLabel)&&(identical(other.maxLabel, _this.maxLabel) || other.maxLabel == _this.maxLabel));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LikertScale&&(identical(other.min, _this.min) || other.min == _this.min)&&(identical(other.max, _this.max) || other.max == _this.max)&&(identical(other.minLabel, _this.minLabel) || other.minLabel == _this.minLabel)&&(identical(other.maxLabel, _this.maxLabel) || other.maxLabel == _this.maxLabel)&&const DeepCollectionEquality().equals(other.labels, _this.labels));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as LikertScale;
-  return Object.hash(runtimeType,_this.min,_this.max,_this.minLabel,_this.maxLabel);
+  return Object.hash(runtimeType,_this.min,_this.max,_this.minLabel,_this.maxLabel,const DeepCollectionEquality().hash(_this.labels));
 }
 
 @override
 String toString() {
   final _this = this as LikertScale;
-  return 'LikertScale(min: ${_this.min}, max: ${_this.max}, minLabel: ${_this.minLabel}, maxLabel: ${_this.maxLabel})';
+  return 'LikertScale(min: ${_this.min}, max: ${_this.max}, minLabel: ${_this.minLabel}, maxLabel: ${_this.maxLabel}, labels: ${_this.labels})';
 }
 
 
@@ -627,7 +629,7 @@ abstract mixin class $LikertScaleCopyWith<$Res>  {
   factory $LikertScaleCopyWith(LikertScale value, $Res Function(LikertScale) _then) = _$LikertScaleCopyWithImpl;
 @useResult
 $Res call({
- int min, int max, String minLabel, String maxLabel
+ int min, int max, String minLabel, String maxLabel, List<String>? labels
 });
 
 
@@ -644,13 +646,14 @@ class _$LikertScaleCopyWithImpl<$Res>
 
 /// Create a copy of LikertScale
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? min = null,Object? max = null,Object? minLabel = null,Object? maxLabel = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? min = null,Object? max = null,Object? minLabel = null,Object? maxLabel = null,Object? labels = freezed,}) {
   return _then(LikertScale(
 min: null == min ? _self.min : min // ignore: cast_nullable_to_non_nullable
 as int,max: null == max ? _self.max : max // ignore: cast_nullable_to_non_nullable
 as int,minLabel: null == minLabel ? _self.minLabel : minLabel // ignore: cast_nullable_to_non_nullable
 as String,maxLabel: null == maxLabel ? _self.maxLabel : maxLabel // ignore: cast_nullable_to_non_nullable
-as String,
+as String,labels: freezed == labels ? _self.labels : labels // ignore: cast_nullable_to_non_nullable
+as List<String>?,
   ));
 }
 
@@ -735,10 +738,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int min,  int max,  String minLabel,  String maxLabel)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int min,  int max,  String minLabel,  String maxLabel,  List<String>? labels)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LikertScale() when $default != null:
-return $default(_that.min,_that.max,_that.minLabel,_that.maxLabel);case _:
+return $default(_that.min,_that.max,_that.minLabel,_that.maxLabel,_that.labels);case _:
   return orElse();
 
 }
@@ -756,10 +759,10 @@ return $default(_that.min,_that.max,_that.minLabel,_that.maxLabel);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int min,  int max,  String minLabel,  String maxLabel)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int min,  int max,  String minLabel,  String maxLabel,  List<String>? labels)  $default,) {final _that = this;
 switch (_that) {
 case _LikertScale():
-return $default(_that.min,_that.max,_that.minLabel,_that.maxLabel);case _:
+return $default(_that.min,_that.max,_that.minLabel,_that.maxLabel,_that.labels);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -776,10 +779,10 @@ return $default(_that.min,_that.max,_that.minLabel,_that.maxLabel);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int min,  int max,  String minLabel,  String maxLabel)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int min,  int max,  String minLabel,  String maxLabel,  List<String>? labels)?  $default,) {final _that = this;
 switch (_that) {
 case _LikertScale() when $default != null:
-return $default(_that.min,_that.max,_that.minLabel,_that.maxLabel);case _:
+return $default(_that.min,_that.max,_that.minLabel,_that.maxLabel,_that.labels);case _:
   return null;
 
 }
@@ -791,13 +794,26 @@ return $default(_that.min,_that.max,_that.minLabel,_that.maxLabel);case _:
 @JsonSerializable()
 
 class _LikertScale extends LikertScale {
-  const _LikertScale({required this.min, required this.max, required this.minLabel, required this.maxLabel}): super._();
+  const _LikertScale({required this.min, required this.max, required this.minLabel, required this.maxLabel,  List<String>? labels}): _labels = labels,super._();
   factory _LikertScale.fromJson(Map<String, dynamic> json) => _$LikertScaleFromJson(json);
 
 @override final  int min;
 @override final  int max;
 @override final  String minLabel;
 @override final  String maxLabel;
+/// Optional label for every value, min to max (e.g. "Jarang", "Sering").
+/// Not in the original contract; older servers can omit it.
+ final  List<String>? _labels;
+/// Optional label for every value, min to max (e.g. "Jarang", "Sering").
+/// Not in the original contract; older servers can omit it.
+@override List<String>? get labels {
+  final value = _labels;
+  if (value == null) return null;
+  if (_labels is EqualUnmodifiableListView) return _labels;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
 
 /// Create a copy of LikertScale
 /// with the given fields replaced by the non-null parameter values.
@@ -812,18 +828,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LikertScale&&(identical(other.min, min) || other.min == min)&&(identical(other.max, max) || other.max == max)&&(identical(other.minLabel, minLabel) || other.minLabel == minLabel)&&(identical(other.maxLabel, maxLabel) || other.maxLabel == maxLabel));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LikertScale&&(identical(other.min, min) || other.min == min)&&(identical(other.max, max) || other.max == max)&&(identical(other.minLabel, minLabel) || other.minLabel == minLabel)&&(identical(other.maxLabel, maxLabel) || other.maxLabel == maxLabel)&&const DeepCollectionEquality().equals(other.labels, _labels));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,min,max,minLabel,maxLabel);
+    return Object.hash(runtimeType,min,max,minLabel,maxLabel,const DeepCollectionEquality().hash(_labels));
 }
 
 @override
 String toString() {
-    return 'LikertScale(min: $min, max: $max, minLabel: $minLabel, maxLabel: $maxLabel)';
+    return 'LikertScale(min: $min, max: $max, minLabel: $minLabel, maxLabel: $maxLabel, labels: $labels)';
 }
 
 
@@ -834,7 +850,7 @@ abstract mixin class _$LikertScaleCopyWith<$Res> implements $LikertScaleCopyWith
   factory _$LikertScaleCopyWith(_LikertScale value, $Res Function(_LikertScale) _then) = __$LikertScaleCopyWithImpl;
 @override @useResult
 $Res call({
- int min, int max, String minLabel, String maxLabel
+ int min, int max, String minLabel, String maxLabel, List<String>? labels
 });
 
 
@@ -851,13 +867,14 @@ class __$LikertScaleCopyWithImpl<$Res>
 
 /// Create a copy of LikertScale
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? min = null,Object? max = null,Object? minLabel = null,Object? maxLabel = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? min = null,Object? max = null,Object? minLabel = null,Object? maxLabel = null,Object? labels = freezed,}) {
   return _then(_LikertScale(
 min: null == min ? _self.min : min // ignore: cast_nullable_to_non_nullable
 as int,max: null == max ? _self.max : max // ignore: cast_nullable_to_non_nullable
 as int,minLabel: null == minLabel ? _self.minLabel : minLabel // ignore: cast_nullable_to_non_nullable
 as String,maxLabel: null == maxLabel ? _self.maxLabel : maxLabel // ignore: cast_nullable_to_non_nullable
-as String,
+as String,labels: freezed == labels ? _self._labels : labels // ignore: cast_nullable_to_non_nullable
+as List<String>?,
   ));
 }
 

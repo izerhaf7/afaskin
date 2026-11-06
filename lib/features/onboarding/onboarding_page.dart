@@ -5,9 +5,11 @@ import 'package:afaskin/core/router/app_router.dart';
 import 'package:afaskin/core/session/session_controller.dart';
 import 'package:afaskin/core/theme/app_colors.dart';
 import 'package:afaskin/core/theme/app_spacing.dart';
+import 'package:afaskin/core/widgets/afa_backdrop.dart';
 import 'package:afaskin/core/widgets/afa_button.dart';
-import 'package:afaskin/core/widgets/afa_card.dart';
-import 'package:afaskin/core/widgets/state_views.dart';
+import 'package:afaskin/core/widgets/afa_parts.dart';
+import 'package:afaskin/core/widgets/alfa_mascot.dart';
+import 'package:afaskin/core/widgets/quatrefoil_shape.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -41,12 +43,11 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       unawaited(_finish());
       return;
     }
-    final reduce = MediaQuery.disableAnimationsOf(context);
-    if (reduce) {
+    if (MediaQuery.disableAnimationsOf(context)) {
       _controller.jumpToPage(_page + 1);
     } else {
       _controller.nextPage(
-        duration: const Duration(milliseconds: 280),
+        duration: const Duration(milliseconds: 320),
         curve: Curves.easeOutCubic,
       );
     }
@@ -56,118 +57,133 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   Widget build(BuildContext context) {
     final isLast = _page == _pageCount - 1;
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xs),
-                child: isLast
-                    ? const SizedBox(height: AppSpacing.minTouchTarget)
-                    : TextButton(
-                        onPressed: _finish,
+      body: AfaBackdrop(
+        style: BackdropStyle.bubbles,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.xxs,
+              AppSpacing.lg,
+              AppSpacing.lg,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  height: AppSpacing.minTouchTarget,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 96,
+                        child: SegmentedProgress(
+                          count: _pageCount,
+                          filled: _page + 1,
+                          height: 4,
+                          semanticsLabel: AppStrings.onboardingPageLabel(
+                            _page + 1,
+                            _pageCount,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () => unawaited(_finish()),
                         child: const Text(AppStrings.skip),
                       ),
-              ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: PageView(
+                    controller: _controller,
+                    onPageChanged: (i) => setState(() => _page = i),
+                    children: const [_IntroPage(), _HowPage(), _TipsPage()],
+                  ),
+                ),
+                AfaButton(
+                  label: isLast ? AppStrings.start : AppStrings.next,
+                  onPressed: _next,
+                ),
+              ],
             ),
-            Expanded(
-              child: PageView(
-                controller: _controller,
-                onPageChanged: (i) => setState(() => _page = i),
-                children: const [_IntroPage(), _HowPage(), _TipsPage()],
-              ),
-            ),
-            _Dots(count: _pageCount, index: _page),
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: AfaButton(
-                label: isLast ? AppStrings.start : AppStrings.next,
-                onPressed: _next,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _Dots extends StatelessWidget {
-  const _Dots({required this.count, required this.index});
-
-  final int count;
-  final int index;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    label: AppStrings.onboardingPageLabel(index + 1, count),
-    child: ExcludeSemantics(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          for (var i = 0; i < count; i++)
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-              width: i == index ? 24 : 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: i == index ? AppColors.sage : AppColors.outline,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-        ],
-      ),
-    ),
-  );
-}
-
-/// Shared page layout: illustration, title, then free content.
+/// Illustration on top, big title + body below, vertically centered.
 class _OnboardingContent extends StatelessWidget {
   const _OnboardingContent({
-    required this.icon,
+    required this.art,
     required this.title,
-    required this.child,
+    required this.body,
   });
 
-  final IconData icon;
+  final Widget art;
   final String title;
-  final Widget child;
+  final String body;
 
   @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppSpacing.lg,
-      vertical: AppSpacing.md,
-    ),
-    child: Column(
-      children: [
-        QuatrefoilIcon(icon: icon, size: 140),
-        const SizedBox(height: AppSpacing.lg),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.headlineMedium,
-          textAlign: TextAlign.center,
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return LayoutBuilder(
+      builder: (context, c) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: c.maxHeight),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              art,
+              const SizedBox(height: AppSpacing.xl),
+              Text(title, style: text.displayLarge),
+              const SizedBox(height: AppSpacing.sm),
+              Text(body, style: text.bodyLarge),
+              const SizedBox(height: AppSpacing.md),
+            ],
+          ),
         ),
-        const SizedBox(height: AppSpacing.md),
-        child,
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 class _IntroPage extends StatelessWidget {
   const _IntroPage();
 
   @override
-  Widget build(BuildContext context) => _OnboardingContent(
-    icon: Icons.face_retouching_natural_rounded,
+  Widget build(BuildContext context) => const _OnboardingContent(
     title: AppStrings.onboarding1Title,
-    child: Text(
-      AppStrings.onboarding1Body,
-      style: Theme.of(context).textTheme.bodyLarge,
-      textAlign: TextAlign.center,
+    body: AppStrings.onboarding1Body,
+    art: Center(
+      child: SizedBox(
+        width: 300,
+        height: 280,
+        child: Stack(
+          children: [
+            Positioned(
+              left: 12,
+              top: 20,
+              child: QuatrefoilShape(size: 150, color: AppColors.white),
+            ),
+            Positioned(right: 10, top: 0, child: QuatrefoilShape(size: 120)),
+            Positioned(
+              left: 60,
+              bottom: 0,
+              child: QuatrefoilShape(size: 110, color: AppColors.ink),
+            ),
+            Positioned(
+              right: 30,
+              bottom: 20,
+              child: QuatrefoilShape(size: 130, color: AppColors.outline),
+            ),
+            Positioned(left: 62, top: 50, child: AlfaMascot(size: 180)),
+          ],
+        ),
+      ),
     ),
   );
 }
@@ -175,47 +191,70 @@ class _IntroPage extends StatelessWidget {
 class _HowPage extends StatelessWidget {
   const _HowPage();
 
-  static const List<IconData> _icons = [
-    Icons.photo_camera_outlined,
-    Icons.insights_rounded,
-    Icons.shopping_bag_outlined,
+  static const List<(IconData, Color)> _icons = [
+    (Icons.photo_camera_outlined, AppColors.sage),
+    (Icons.search_rounded, AppColors.sage),
+    (Icons.water_drop_outlined, AppColors.ink),
   ];
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return _OnboardingContent(
-      icon: Icons.auto_awesome_outlined,
       title: AppStrings.onboarding2Title,
-      child: Column(
-        children: [
-          for (final (i, (title, body)) in AppStrings.onboarding2Steps.indexed)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: AfaCard(
+      body: AppStrings.onboarding2Body,
+      art: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: AppRadius.cardAll,
+        ),
+        child: Column(
+          children: [
+            for (final (i, (title, body))
+                in AppStrings.onboarding2Steps.indexed) ...[
+              if (i > 0)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    width: 2,
+                    height: 16,
+                    margin: const EdgeInsets.only(left: 27),
+                    color: AppColors.outline,
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 child: Row(
                   children: [
-                    QuatrefoilIcon(
-                      icon: _icons[i],
-                      size: 48,
-                      color: AppColors.mist,
-                      borderColor: null,
+                    QuatrefoilTile(
+                      icon: _icons[i].$1,
+                      size: 56,
+                      color: _icons[i].$2,
+                      iconColor: AppColors.white,
+                      iconSize: 26,
                     ),
-                    const SizedBox(width: AppSpacing.sm),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('${i + 1}. $title', style: text.titleMedium),
-                          Text(body, style: text.bodyMedium),
+                          Text(title, style: text.titleMedium),
+                          Text(
+                            body,
+                            style: text.bodyMedium?.copyWith(
+                              color: AppColors.inkMuted,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-        ],
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -224,33 +263,53 @@ class _HowPage extends StatelessWidget {
 class _TipsPage extends StatelessWidget {
   const _TipsPage();
 
+  static const List<IconData> _icons = [
+    Icons.wb_sunny_outlined,
+    Icons.water_drop_outlined,
+    Icons.visibility_off_outlined,
+    Icons.smartphone_rounded,
+  ];
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    Widget tip(int i) => Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        borderRadius: AppRadius.cardAll,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          QuatrefoilTile(icon: _icons[i], iconSize: 22),
+          const SizedBox(height: AppSpacing.sm),
+          Text(AppStrings.onboarding3Tips[i], style: text.bodyMedium),
+        ],
+      ),
+    );
     return _OnboardingContent(
-      icon: Icons.wb_sunny_outlined,
       title: AppStrings.onboarding3Title,
-      child: AfaCard(
-        child: Column(
-          children: [
-            for (final tip in AppStrings.onboarding3Tips)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.check_circle_outline_rounded,
-                      color: AppColors.positive,
-                      size: 20,
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Expanded(child: Text(tip, style: text.bodyMedium)),
-                  ],
-                ),
+      body: AppStrings.onboarding3Body,
+      art: Column(
+        children: [
+          for (final row in const [
+            [0, 1],
+            [2, 3],
+          ]) ...[
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: tip(row[0])),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(child: tip(row[1])),
+                ],
               ),
+            ),
+            if (row[0] == 0) const SizedBox(height: AppSpacing.sm),
           ],
-        ),
+        ],
       ),
     );
   }

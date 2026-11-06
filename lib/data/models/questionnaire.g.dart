@@ -37,6 +37,7 @@ _LikertScale _$LikertScaleFromJson(Map<String, dynamic> json) => _LikertScale(
   max: (json['max'] as num).toInt(),
   minLabel: json['min_label'] as String,
   maxLabel: json['max_label'] as String,
+  labels: (json['labels'] as List<dynamic>?)?.map((e) => e as String).toList(),
 );
 
 Map<String, dynamic> _$LikertScaleToJson(_LikertScale instance) =>
@@ -45,4 +46,5 @@ Map<String, dynamic> _$LikertScaleToJson(_LikertScale instance) =>
       'max': instance.max,
       'min_label': instance.minLabel,
       'max_label': instance.maxLabel,
+      'labels': instance.labels,
     };

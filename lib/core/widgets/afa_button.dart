@@ -7,6 +7,12 @@ enum AfaButtonVariant {
 
   /// Sage outline, ink label.
   secondary,
+
+  /// White fill, ink label: primary action on an ink card.
+  onDark,
+
+  /// Danger fill, white label (5.8:1): destructive confirmation.
+  danger,
 }
 
 /// App button. Colors and shape come from the theme
@@ -32,6 +38,21 @@ class AfaButton extends StatelessWidget {
     this.loading = false,
   }) : variant = AfaButtonVariant.secondary;
 
+  static ButtonStyle? _styleFor(AfaButtonVariant v) => switch (v) {
+    AfaButtonVariant.onDark =>
+      FilledButton.styleFrom(
+        backgroundColor: AppColors.white,
+        foregroundColor: AppColors.ink,
+      ).copyWith(
+        overlayColor: const WidgetStatePropertyAll(AppColors.mistPressed),
+      ),
+    AfaButtonVariant.danger => FilledButton.styleFrom(
+      backgroundColor: AppColors.danger,
+      foregroundColor: AppColors.white,
+    ),
+    _ => null,
+  };
+
   final String label;
 
   /// Null disables the button.
@@ -53,32 +74,35 @@ class AfaButton extends StatelessWidget {
             dimension: 20,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: variant == AfaButtonVariant.primary
-                  ? AppColors.white
-                  : AppColors.ink,
+              color: switch (variant) {
+                AfaButtonVariant.primary ||
+                AfaButtonVariant.danger => AppColors.white,
+                _ => AppColors.ink,
+              },
             ),
           )
         : Text(label, textAlign: TextAlign.center);
 
-    final Widget button = switch ((variant, icon != null && !loading)) {
-      (AfaButtonVariant.primary, true) => FilledButton.icon(
+    final filled = variant != AfaButtonVariant.secondary;
+    final style = _styleFor(variant);
+    final Widget button = switch ((filled, icon != null && !loading)) {
+      (true, true) => FilledButton.icon(
+        onPressed: callback,
+        style: style,
+        icon: Icon(icon),
+        label: content,
+      ),
+      (true, false) => FilledButton(
+        onPressed: callback,
+        style: style,
+        child: content,
+      ),
+      (false, true) => OutlinedButton.icon(
         onPressed: callback,
         icon: Icon(icon),
         label: content,
       ),
-      (AfaButtonVariant.primary, false) => FilledButton(
-        onPressed: callback,
-        child: content,
-      ),
-      (AfaButtonVariant.secondary, true) => OutlinedButton.icon(
-        onPressed: callback,
-        icon: Icon(icon),
-        label: content,
-      ),
-      (AfaButtonVariant.secondary, false) => OutlinedButton(
-        onPressed: callback,
-        child: content,
-      ),
+      (false, false) => OutlinedButton(onPressed: callback, child: content),
     };
 
     return Semantics(

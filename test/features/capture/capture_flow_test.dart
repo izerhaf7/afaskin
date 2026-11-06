@@ -76,9 +76,11 @@ Future<ProviderContainer> _openCapture(
       }),
     ],
   );
-  await tester.pump(const Duration(seconds: 1));
+  await tester.pump(const Duration(seconds: 2));
   await tester.pumpAndSettle();
   await tapVisible(tester, find.text('Mulai analisis'));
+  // Saved answers -> re-analyze sheet -> straight to the camera.
+  await tapVisible(tester, find.text('Langsung ambil foto'));
   return ProviderScope.containerOf(tester.element(find.byType(CapturePage)));
 }
 
@@ -87,7 +89,7 @@ void main() {
     registerFallbackValue(Uint8List(0));
     registerFallbackValue(
       const AnalyzePayload(
-        profile: UserProfile(age: 1, gender: Gender.other, budgetMax: 1),
+        profile: UserProfile(age: 1, gender: Gender.unspecified, budgetMax: 1),
         questionnaire: {},
       ),
     );
@@ -182,7 +184,7 @@ void main() {
     );
     await tapVisible(tester, find.text('FAKE SHUTTER'));
     await waitFor(tester, find.text('Coba lagi'));
-    expect(find.textContaining('koneksi internet'), findsOneWidget);
+    expect(find.text('Koneksi terputus'), findsOneWidget);
     expect(container.read(pendingPhotoProvider), _processed);
 
     await tapVisible(tester, find.text('Coba lagi'));

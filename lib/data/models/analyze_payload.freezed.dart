@@ -16,8 +16,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserProfile {
 
- int get age; Gender get gender;/// Max price per product, in Rupiah.
- int get budgetMax;
+ int get age; Gender? get gender;/// Max price per product, in Rupiah.
+ int? get budgetMax;
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -55,7 +55,7 @@ abstract mixin class $UserProfileCopyWith<$Res>  {
   factory $UserProfileCopyWith(UserProfile value, $Res Function(UserProfile) _then) = _$UserProfileCopyWithImpl;
 @useResult
 $Res call({
- int age, Gender gender, int budgetMax
+ int age, Gender? gender, int? budgetMax
 });
 
 
@@ -72,12 +72,12 @@ class _$UserProfileCopyWithImpl<$Res>
 
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? age = null,Object? gender = null,Object? budgetMax = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? age = null,Object? gender = freezed,Object? budgetMax = freezed,}) {
   return _then(UserProfile(
 age: null == age ? _self.age : age // ignore: cast_nullable_to_non_nullable
-as int,gender: null == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
-as Gender,budgetMax: null == budgetMax ? _self.budgetMax : budgetMax // ignore: cast_nullable_to_non_nullable
-as int,
+as int,gender: freezed == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
+as Gender?,budgetMax: freezed == budgetMax ? _self.budgetMax : budgetMax // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -162,7 +162,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int age,  Gender gender,  int budgetMax)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int age,  Gender? gender,  int? budgetMax)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserProfile() when $default != null:
 return $default(_that.age,_that.gender,_that.budgetMax);case _:
@@ -183,7 +183,7 @@ return $default(_that.age,_that.gender,_that.budgetMax);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int age,  Gender gender,  int budgetMax)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int age,  Gender? gender,  int? budgetMax)  $default,) {final _that = this;
 switch (_that) {
 case _UserProfile():
 return $default(_that.age,_that.gender,_that.budgetMax);case _:
@@ -203,7 +203,7 @@ return $default(_that.age,_that.gender,_that.budgetMax);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int age,  Gender gender,  int budgetMax)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int age,  Gender? gender,  int? budgetMax)?  $default,) {final _that = this;
 switch (_that) {
 case _UserProfile() when $default != null:
 return $default(_that.age,_that.gender,_that.budgetMax);case _:
@@ -217,14 +217,14 @@ return $default(_that.age,_that.gender,_that.budgetMax);case _:
 /// @nodoc
 @JsonSerializable()
 
-class _UserProfile implements UserProfile {
-  const _UserProfile({required this.age, required this.gender, required this.budgetMax});
+class _UserProfile extends UserProfile {
+  const _UserProfile({required this.age, this.gender, this.budgetMax}): super._();
   factory _UserProfile.fromJson(Map<String, dynamic> json) => _$UserProfileFromJson(json);
 
 @override final  int age;
-@override final  Gender gender;
+@override final  Gender? gender;
 /// Max price per product, in Rupiah.
-@override final  int budgetMax;
+@override final  int? budgetMax;
 
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
@@ -261,7 +261,7 @@ abstract mixin class _$UserProfileCopyWith<$Res> implements $UserProfileCopyWith
   factory _$UserProfileCopyWith(_UserProfile value, $Res Function(_UserProfile) _then) = __$UserProfileCopyWithImpl;
 @override @useResult
 $Res call({
- int age, Gender gender, int budgetMax
+ int age, Gender? gender, int? budgetMax
 });
 
 
@@ -278,12 +278,12 @@ class __$UserProfileCopyWithImpl<$Res>
 
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? age = null,Object? gender = null,Object? budgetMax = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? age = null,Object? gender = freezed,Object? budgetMax = freezed,}) {
   return _then(_UserProfile(
 age: null == age ? _self.age : age // ignore: cast_nullable_to_non_nullable
-as int,gender: null == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
-as Gender,budgetMax: null == budgetMax ? _self.budgetMax : budgetMax // ignore: cast_nullable_to_non_nullable
-as int,
+as int,gender: freezed == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
+as Gender?,budgetMax: freezed == budgetMax ? _self.budgetMax : budgetMax // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

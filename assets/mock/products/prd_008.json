@@ -1,0 +1,27 @@
+{
+  "id": "prd_008",
+  "name": "Aqua Sun Fluid SPF 50",
+  "brand": "Sora Derma",
+  "category": "sunscreen",
+  "price": 319000,
+  "image_url": "https://example.com/images/prd_008.jpg",
+  "match_score": 0.86,
+  "matched_ingredients": [
+    "niacinamide",
+    "allantoin"
+  ],
+  "reasons": [
+    "Ringan seperti air: Nyaman dipakai ulang di atas makeup.",
+    "Catatan: Mengandung fragrance; uji dulu di area kecil."
+  ],
+  "warnings": [],
+  "ingredients": [
+    "aqua",
+    "homosalate",
+    "niacinamide",
+    "glycerin",
+    "allantoin",
+    "fragrance"
+  ],
+  "source_url": "https://example.com/toko/prd_008"
+}
