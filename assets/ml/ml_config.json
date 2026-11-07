@@ -1,5 +1,5 @@
 {
- "version": "afaskin-ondevice-2026.11",
+ "version": "afaskin-ondevice-2026.11-v2",
  "skin_type": {
   "model": "skin_type.tflite",
   "arch": "ResNet50",
@@ -20,7 +20,7 @@
   "skin_sigma": 0.9
  },
  "condition": {
-  "default_model": "MobileNetV2",
+  "default_model": "ResNet50",
   "classes": [
    "Acne",
    "Birthmark",
@@ -47,18 +47,19 @@
   ],
   "models": {
    "MobileNetV2": {
-    "model": "condition_mobilenetv2.tflite",
-    "T": 0.978,
-    "alpha": 0.35,
+    "model": "condition_v2_mobilenetv2.tflite",
+    "T": 0.969,
+    "alpha": 0.25,
     "rule": "geometric"
    },
    "ResNet50": {
-    "model": "condition_resnet50.tflite",
-    "T": 1.2019063630491331,
-    "alpha": 0.3,
+    "model": "condition_resnet50_v2.tflite",
+    "T": 1.2209863927470295,
+    "alpha": 0.6,
     "rule": "geometric"
    }
-  }
+  },
+  "_catatan_v2": "Model kondisi v2 (notebook 04) menggantikan v1. ResNet50 v2: akurasi 70,5%, F1 macro 0,660, F1 selfie 0,699. Diuji pada 158 gambar berlabel acnenew dengan pipeline patch aplikasi: AUC Scars vs wajah tanpa lesi naik 0,374 -> 0,926, Acne 0,640 -> 0,773. Karena Scars kini benar-benar terlihat dari foto, jalur kuesioner untuk Scars dihapus."
  },
  "roi": {
   "roi": {
@@ -130,20 +131,15 @@
   "max_conditions": 4,
   "skin_min": 0.6,
   "aggregation": "mean",
-  "gate_conf": 0.6,
-  "gate_frac": 0.1,
-  "gate_min_patches": 5,
+  "gate_conf": 0.4,
+  "gate_frac": 0.05,
+  "gate_min_patches": 4,
   "_catatan": "Dipilih dari uji on-device (Nov 2026): top-3 per kelas selalu 'menemukan' lesi di wajah bersih; mean + gating bukti visual mencegah kondisi muncul hanya dari kuesioner. Titik ML Kit diperhalus model landmark MediaPipe; patch dibatasi masker wajah & dilewati bila kilap.",
   "feature_mask": true,
   "glare_level": 215,
   "glare_max": 0.06,
   "hair_l_rel": 0.6,
-  "questionnaire_only": {
-   "Scars": {
-    "answer": "Q7",
-    "min": 3
-   }
-  }
+  "_catatan_gate": "Ambang dipilih dari sapuan pada 158 gambar berlabel dengan model v2: alpha 0.6, gate_conf 0.40, gate_frac 0.05, gate_min_patches 4 memberi acne 12/40, Scars 19/40, tahi lalat 5/39, dan hanya 3/39 wajah tanpa lesi ikut menampilkan kondisi. Pada foto asli pengguna (3 sudut) Scars muncul dari bukti visual 4 patch per sudut."
  },
  "recommender": {
   "weights": [
@@ -775,6 +771,7 @@
    },
    "Birthmark": {},
    "Clear": {}
-  }
+  },
+  "_catatan": "Bobot 0.5/0.5/0.0 dari notebook 06 varian Sephora (outputs/recommender), yaitu katalog yang dipakai aplikasi: P@10 0,517 NDCG@10 0,559, nol pelanggaran keamanan. Varian notebook 06 local (0.7/0.3) dioptimalkan pada katalog Sociolla 824 produk yang tidak beririsan dengan 1427 produk Sephora di catalog.json, jadi TIDAK diterapkan."
  }
 }

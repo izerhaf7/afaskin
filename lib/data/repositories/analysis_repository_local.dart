@@ -135,27 +135,15 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
     final minP = (scan['min_condition_p'] as num).toDouble();
     // Tampil hanya kalau (1) probabilitas akhir cukup dan (2) model citra
     // sendiri melihat kondisi itu di cukup banyak patch. Pengecualian: kelas yang
-    // modelnya nyaris buta (Scars: AUC 0,53 pada 158 gambar berlabel, hanya 2/40
-    // wajah berbekas yang terdeteksi) boleh muncul dari jawaban kuesioner saja,
-    // karena untuk kelas itu kuesioner justru sumber yang lebih andal.
-    final qOnly = (scan['questionnaire_only'] as Map?)?.cast<String, dynamic>() ?? const {};
+    // Model v2 sudah bisa melihat bekas jerawat dari foto (AUC 0,926 pada 158
+    // gambar berlabel), jadi jalur `questionnaire_only` untuk Scars dihapus:
+    // setiap kondisi kini wajib punya bukti visual dari model.
     bool visualOk(String cls) =>
         evidence[cls]!.count >= gateMin && evidence[cls]!.frac >= gateFrac;
-    bool fromAnswers(String cls) {
-      final rule = (qOnly[cls] as Map?)?.cast<String, dynamic>();
-      if (rule == null) return false;
-      final a = answers[rule['answer'] as String];
-      return a != null && a >= (rule['min'] as num).toInt();
-    }
 
-    // Kelas `questionnaire_only` sengaja tidak memakai ambang minP: kalau pengguna
-    // menyatakan punya bekas jerawat, menyembunyikannya karena model foto tidak yakin
-    // justru salah. Kondisinya tetap ditandai di UI sebagai berasal dari kuesioner.
     final conds = [
       for (final c in prof.pCond.entries)
-        if (c.key != 'Clear' &&
-            ((c.value >= minP && visualOk(c.key)) || fromAnswers(c.key)))
-          c,
+        if (c.key != 'Clear' && c.value >= minP && visualOk(c.key)) c,
     ];
     mergeSortDesc(conds, (c) => c.value);
     final createdAt = DateTime.now();
@@ -194,15 +182,8 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
           {
             'label': c.key.toLowerCase(),
             'probability': c.value,
-            // Kotak area hanya digambar kalau model foto memang melihat kondisinya.
-            // Untuk kondisi yang murni dari kuesioner, menampilkan kotak di wajah
-            // akan menyesatkan seolah foto yang menemukannya.
-            'regions': visualOk(c.key) ? agg.where[c.key] : const <dynamic>[],
-            'description': [
-              MlTexts.condition[c.key.toLowerCase()]?.$2,
-              if (fromAnswers(c.key) && !visualOk(c.key))
-                'Berdasarkan jawaban kuesionermu (model foto belum bisa mengenali kondisi ini dengan andal).',
-            ].whereType<String>().join(' '),
+            'regions': agg.where[c.key],
+            'description': MlTexts.condition[c.key.toLowerCase()]?.$2,
           },
       ],
       'rois': front.rois,

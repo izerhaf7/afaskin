@@ -226,16 +226,16 @@
     "oily": 0.7077
    },
    "p_cond": {
-    "Acne": 0.1455,
-    "Birthmark": 0.0805,
-    "Blackhead": 0.071,
-    "Cysts": 0.1392,
-    "Milium": 0.0859,
-    "Papular": 0.1553,
-    "Purulent": 0.1278,
-    "Scars": 0.0862,
-    "Whitehead": 0.069,
-    "Clear": 0.0398
+    "Acne": 0.1373,
+    "Birthmark": 0.0891,
+    "Blackhead": 0.0696,
+    "Cysts": 0.1258,
+    "Milium": 0.1013,
+    "Papular": 0.1561,
+    "Purulent": 0.1065,
+    "Scars": 0.1022,
+    "Whitehead": 0.0658,
+    "Clear": 0.0463
    },
    "sensitive": true
   },
@@ -249,8 +249,21 @@
   ],
   "recommend": [
    {
+    "id": "P480628",
+    "match_score": 0.931,
+    "matched": [
+     "ascorbyl glucoside",
+     "glycerin",
+     "niacinamide",
+     "panthenol",
+     "sodium hyaluronate"
+    ],
+    "reasons": 4,
+    "warnings": 0
+   },
+   {
     "id": "P479348",
-    "match_score": 0.93,
+    "match_score": 0.925,
     "matched": [
      "azelaic acid",
      "glycerin",
@@ -261,33 +274,10 @@
     "warnings": 0
    },
    {
-    "id": "P480628",
-    "match_score": 0.929,
-    "matched": [
-     "glycerin",
-     "niacinamide",
-     "panthenol",
-     "sodium hyaluronate"
-    ],
-    "reasons": 4,
-    "warnings": 0
-   },
-   {
-    "id": "P470243",
-    "match_score": 0.879,
-    "matched": [
-     "glycerin",
-     "salicylic acid 2%",
-     "sodium hyaluronate",
-     "zinc oxide"
-    ],
-    "reasons": 4,
-    "warnings": 0
-   },
-   {
     "id": "P445832",
-    "match_score": 0.878,
+    "match_score": 0.872,
     "matched": [
+     "ascorbic acid",
      "glycerin",
      "melaleuca alternifolia leaf oil",
      "salicylic acid",
@@ -297,27 +287,50 @@
     "warnings": 0
    },
    {
-    "id": "P500857",
-    "match_score": 0.871,
+    "id": "P470243",
+    "match_score": 0.872,
     "matched": [
      "glycerin",
-     "salicylic acid 2.0%"
+     "salicylic acid 2%",
+     "sodium hyaluronate",
+     "titanium dioxide",
+     "zinc oxide"
+    ],
+    "reasons": 4,
+    "warnings": 0
+   },
+   {
+    "id": "P500614",
+    "match_score": 0.868,
+    "matched": [
+     "arbutin",
+     "glycerin"
     ],
     "reasons": 3,
     "warnings": 0
    },
    {
-    "id": "P500614",
-    "match_score": 0.87,
+    "id": "P503693",
+    "match_score": 0.866,
     "matched": [
-     "glycerin"
+     "azelaic acid",
+     "ceramide ap",
+     "ceramide eop",
+     "ceramide eos",
+     "ceramide np",
+     "ceramide ns",
+     "glycerin",
+     "niacinamide",
+     "salicylic acid",
+     "sodium hyaluronate crosspolymer",
+     "squalane"
     ],
-    "reasons": 2,
+    "reasons": 4,
     "warnings": 0
    },
    {
     "id": "P503913",
-    "match_score": 0.844,
+    "match_score": 0.84,
     "matched": [
      "ceramide np",
      "glycerin",
@@ -329,7 +342,7 @@
    },
    {
     "id": "P464239",
-    "match_score": 0.839,
+    "match_score": 0.836,
     "matched": [
      "glycerin usp",
      "squalane"
@@ -339,17 +352,18 @@
    },
    {
     "id": "P464244",
-    "match_score": 0.825,
+    "match_score": 0.824,
     "matched": [
+     "ascorbic acid",
      "glycerin",
      "panthenol"
     ],
-    "reasons": 3,
+    "reasons": 4,
     "warnings": 0
    },
    {
     "id": "P469517",
-    "match_score": 0.821,
+    "match_score": 0.811,
     "matched": [
      "ceramide ap",
      "ceramide eop",
@@ -364,9 +378,13 @@
    },
    {
     "id": "P505158",
-    "match_score": 0.756,
+    "match_score": 0.758,
     "matched": [
+     "avobenzone 3%",
      "glycerin",
+     "homosalate 15%",
+     "octisalate 5%",
+     "octocrylene 10%",
      "panthenol",
      "squalane"
     ],
@@ -375,7 +393,7 @@
    },
    {
     "id": "P469521",
-    "match_score": 0.75,
+    "match_score": 0.748,
     "matched": [
      "glycerin",
      "niacinamide",
@@ -386,7 +404,7 @@
    },
    {
     "id": "P469519",
-    "match_score": 0.729,
+    "match_score": 0.727,
     "matched": [
      "glycerin",
      "sodium hyaluronate"
@@ -396,20 +414,24 @@
    },
    {
     "id": "P469830",
-    "match_score": 0.647,
+    "match_score": 0.642,
     "matched": [
-     "glycerin"
+     "avobenzone 2%",
+     "glycerin",
+     "homosalate 9.9%",
+     "octinoxate 7.5%",
+     "octisalate 3.0%"
     ],
-    "reasons": 1,
+    "reasons": 2,
     "warnings": 0
    },
    {
     "id": "P501321",
-    "match_score": 0.628,
+    "match_score": 0.625,
     "matched": [
      "zinc oxide 10%"
     ],
-    "reasons": 2,
+    "reasons": 3,
     "warnings": 0
    }
   ],
@@ -654,16 +676,16 @@
     "oily": 0.0022
    },
    "p_cond": {
-    "Acne": 0.049,
-    "Birthmark": 0.1566,
-    "Blackhead": 0.0521,
-    "Cysts": 0.0516,
-    "Milium": 0.1463,
-    "Papular": 0.0579,
-    "Purulent": 0.0528,
-    "Scars": 0.3098,
-    "Whitehead": 0.0552,
-    "Clear": 0.0688
+    "Acne": 0.061,
+    "Birthmark": 0.1383,
+    "Blackhead": 0.0688,
+    "Cysts": 0.0674,
+    "Milium": 0.121,
+    "Papular": 0.0845,
+    "Purulent": 0.0706,
+    "Scars": 0.2544,
+    "Whitehead": 0.0769,
+    "Clear": 0.057
    },
    "sensitive": false
   },
@@ -674,7 +696,7 @@
   "recommend": [
    {
     "id": "P471111",
-    "match_score": 0.94,
+    "match_score": 0.945,
     "matched": [
      "glycerin",
      "glycolic acid",
@@ -701,7 +723,7 @@
    },
    {
     "id": "P504199",
-    "match_score": 0.925,
+    "match_score": 0.924,
     "matched": [
      "glycerin",
      "lactic acid",
@@ -711,19 +733,8 @@
     "warnings": 1
    },
    {
-    "id": "P500756",
-    "match_score": 0.906,
-    "matched": [
-     "3-o-ethyl ascorbic acid",
-     "glycerin",
-     "squalane"
-    ],
-    "reasons": 4,
-    "warnings": 0
-   },
-   {
     "id": "P480274",
-    "match_score": 0.899,
+    "match_score": 0.903,
     "matched": [
      "azelaic acid",
      "glycolic acid",
@@ -734,8 +745,32 @@
     "warnings": 1
    },
    {
+    "id": "P503197",
+    "match_score": 0.897,
+    "matched": [
+     "3-o-ethyl ascorbic acid",
+     "glycerin",
+     "salicylic acid"
+    ],
+    "reasons": 4,
+    "warnings": 0
+   },
+   {
+    "id": "P482535",
+    "match_score": 0.895,
+    "matched": [
+     "azelaic acid",
+     "mandelic acid",
+     "niacinamide",
+     "salicylic acid",
+     "sodium hyaluronate"
+    ],
+    "reasons": 4,
+    "warnings": 2
+   },
+   {
     "id": "P474822",
-    "match_score": 0.894,
+    "match_score": 0.89,
     "matched": [
      "glycerin",
      "glycolic acid"
@@ -745,7 +780,7 @@
    },
    {
     "id": "P502761",
-    "match_score": 0.893,
+    "match_score": 0.88,
     "matched": [
      "ascorbyl glucoside",
      "capryloyl salicylic acid",
@@ -758,19 +793,8 @@
     "warnings": 2
    },
    {
-    "id": "P503197",
-    "match_score": 0.887,
-    "matched": [
-     "3-o-ethyl ascorbic acid",
-     "glycerin",
-     "salicylic acid"
-    ],
-    "reasons": 4,
-    "warnings": 0
-   },
-   {
     "id": "P472472",
-    "match_score": 0.874,
+    "match_score": 0.869,
     "matched": [
      "ascorbyl glucoside",
      "glycerin",
@@ -784,7 +808,7 @@
    },
    {
     "id": "P483664",
-    "match_score": 0.858,
+    "match_score": 0.857,
     "matched": [
      "glycerin",
      "salicylic acid",
@@ -796,7 +820,7 @@
    },
    {
     "id": "P464244",
-    "match_score": 0.838,
+    "match_score": 0.84,
     "matched": [
      "ascorbic acid",
      "glycerin",
@@ -806,20 +830,19 @@
     "warnings": 0
    },
    {
-    "id": "P504614",
-    "match_score": 0.81,
+    "id": "P470221",
+    "match_score": 0.808,
     "matched": [
-     "ascorbic acid",
-     "azelaic acid",
-     "glycerin",
-     "lactic acid"
+     "capryloyl salicylic acid",
+     "lactic acid",
+     "squalane"
     ],
     "reasons": 4,
     "warnings": 1
    },
    {
     "id": "P505158",
-    "match_score": 0.788,
+    "match_score": 0.781,
     "matched": [
      "avobenzone 3%",
      "glycerin",
@@ -833,8 +856,19 @@
     "warnings": 0
    },
    {
+    "id": "P502326",
+    "match_score": 0.72,
+    "matched": [
+     "glycerin",
+     "squalane",
+     "titanium dioxide"
+    ],
+    "reasons": 4,
+    "warnings": 0
+   },
+   {
     "id": "P482540",
-    "match_score": 0.744,
+    "match_score": 0.713,
     "matched": [
      "ascorbic acid",
      "glycerin",
@@ -846,29 +880,18 @@
     ],
     "reasons": 4,
     "warnings": 3
-   },
-   {
-    "id": "P502326",
-    "match_score": 0.736,
-    "matched": [
-     "glycerin",
-     "squalane",
-     "titanium dioxide"
-    ],
-    "reasons": 4,
-    "warnings": 0
    }
   ],
   "recommend_serum_400k": [
    "P473725",
-   "P483137",
    "P460554",
+   "P483137",
    "P464241",
    "P504424",
-   "P442758",
+   "P469515",
    "P504417",
    "P483092",
-   "P469515",
+   "P442758",
    "P442563"
   ]
  },
@@ -1101,16 +1124,16 @@
     "oily": 0.1481
    },
    "p_cond": {
-    "Acne": 0.0975,
-    "Birthmark": 0.099,
-    "Blackhead": 0.155,
-    "Cysts": 0.11,
-    "Milium": 0.1052,
-    "Papular": 0.0855,
-    "Purulent": 0.0975,
-    "Scars": 0.0319,
-    "Whitehead": 0.1791,
-    "Clear": 0.0394
+    "Acne": 0.1015,
+    "Birthmark": 0.1046,
+    "Blackhead": 0.1214,
+    "Cysts": 0.1287,
+    "Milium": 0.118,
+    "Papular": 0.0784,
+    "Purulent": 0.1016,
+    "Scars": 0.0487,
+    "Whitehead": 0.1615,
+    "Clear": 0.0354
    },
    "sensitive": false
   },
@@ -1120,7 +1143,7 @@
   "recommend": [
    {
     "id": "P471111",
-    "match_score": 0.937,
+    "match_score": 0.935,
     "matched": [
      "glycerin",
      "glycolic acid",
@@ -1156,8 +1179,20 @@
     "warnings": 1
    },
    {
+    "id": "P480274",
+    "match_score": 0.92,
+    "matched": [
+     "azelaic acid",
+     "glycolic acid",
+     "niacinamide",
+     "salicylic acid"
+    ],
+    "reasons": 4,
+    "warnings": 1
+   },
+   {
     "id": "P474822",
-    "match_score": 0.921,
+    "match_score": 0.92,
     "matched": [
      "glycerin",
      "glycolic acid"
@@ -1166,20 +1201,8 @@
     "warnings": 1
    },
    {
-    "id": "P480274",
-    "match_score": 0.921,
-    "matched": [
-     "azelaic acid",
-     "glycolic acid",
-     "niacinamide",
-     "salicylic acid"
-    ],
-    "reasons": 4,
-    "warnings": 1
-   },
-   {
     "id": "P503197",
-    "match_score": 0.918,
+    "match_score": 0.913,
     "matched": [
      "glycerin",
      "salicylic acid"
@@ -1188,20 +1211,30 @@
     "warnings": 0
    },
    {
-    "id": "P479348",
+    "id": "P480628",
     "match_score": 0.912,
     "matched": [
-     "azelaic acid",
      "glycerin",
      "niacinamide",
-     "zinc pca"
+     "panthenol",
+     "sodium hyaluronate"
     ],
     "reasons": 4,
     "warnings": 0
    },
    {
+    "id": "P470536",
+    "match_score": 0.904,
+    "matched": [
+     "glycolic acid",
+     "salicylic acid"
+    ],
+    "reasons": 3,
+    "warnings": 1
+   },
+   {
     "id": "P421276",
-    "match_score": 0.906,
+    "match_score": 0.899,
     "matched": [
      "glycerin",
      "glycolic acid",
@@ -1209,21 +1242,11 @@
      "squalane"
     ],
     "reasons": 4,
-    "warnings": 1
-   },
-   {
-    "id": "P470536",
-    "match_score": 0.905,
-    "matched": [
-     "glycolic acid",
-     "salicylic acid"
-    ],
-    "reasons": 3,
     "warnings": 1
    },
    {
     "id": "P476010",
-    "match_score": 0.886,
+    "match_score": 0.873,
     "matched": [
      "glycerin",
      "glycolic acid",
@@ -1237,23 +1260,18 @@
     "warnings": 1
    },
    {
-    "id": "P504315",
-    "match_score": 0.876,
+    "id": "P464244",
+    "match_score": 0.864,
     "matched": [
      "glycerin",
-     "glycolic acid",
-     "lactic acid",
-     "mandelic acid",
-     "niacinamide",
-     "panthenol",
-     "squalane"
+     "panthenol"
     ],
-    "reasons": 4,
-    "warnings": 1
+    "reasons": 3,
+    "warnings": 0
    },
    {
     "id": "P503913",
-    "match_score": 0.839,
+    "match_score": 0.834,
     "matched": [
      "ceramide np",
      "glycerin",
@@ -1265,9 +1283,13 @@
    },
    {
     "id": "P505158",
-    "match_score": 0.769,
+    "match_score": 0.772,
     "matched": [
+     "avobenzone 3%",
      "glycerin",
+     "homosalate 15%",
+     "octisalate 5%",
+     "octocrylene 10%",
      "panthenol",
      "squalane"
     ],
@@ -1276,33 +1298,34 @@
    },
    {
     "id": "P501321",
-    "match_score": 0.737,
+    "match_score": 0.723,
     "matched": [
      "zinc oxide 10%"
     ],
-    "reasons": 2,
+    "reasons": 3,
     "warnings": 0
    },
    {
     "id": "P502326",
-    "match_score": 0.688,
+    "match_score": 0.698,
     "matched": [
      "glycerin",
-     "squalane"
+     "squalane",
+     "titanium dioxide"
     ],
-    "reasons": 3,
+    "reasons": 4,
     "warnings": 0
    }
   ],
   "recommend_serum_400k": [
    "P473725",
    "P460554",
-   "P442563",
    "P483137",
-   "P483138",
+   "P442563",
    "P504424",
    "P504417",
    "P483092",
+   "P483138",
    "P464241",
    "P479722"
   ]
