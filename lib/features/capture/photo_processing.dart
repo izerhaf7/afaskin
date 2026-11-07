@@ -3,9 +3,10 @@ import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
 
-/// Upload limits from the brief.
-const int kMaxUploadSide = 1080;
-const int kJpegQuality = 85;
+/// Photo limits. Analysis runs on the device, so the photo is kept large
+/// enough for skin detail (skin patches are ~15% of the face width).
+const int kMaxUploadSide = 1600;
+const int kJpegQuality = 92;
 
 class PhotoDecodeException implements Exception {
   const PhotoDecodeException();

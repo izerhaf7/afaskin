@@ -66,6 +66,27 @@ void main() {
       expect(_eval([_face(yaw: null, pitch: null)]), GuidanceStatus.ready);
     });
 
+    test('side photo: turn 20-50 degrees, second side the other way', () {
+      GuidanceStatus side(double? yaw, {double? avoid}) => evaluateGuidance(
+        faces: [_face(yaw: yaw)],
+        luminance: 130,
+        pose: CapturePose.side,
+        avoidYawSign: avoid,
+      );
+      expect(side(5), GuidanceStatus.turnHead);
+      expect(side(-19.9), GuidanceStatus.turnHead);
+      expect(side(30), GuidanceStatus.ready);
+      expect(side(-30), GuidanceStatus.ready);
+      expect(side(60), GuidanceStatus.turnLess);
+      // First side photo was +30: the second must turn to negative yaw.
+      expect(side(30, avoid: 1), GuidanceStatus.turnOtherSide);
+      expect(side(-30, avoid: 1), GuidanceStatus.ready);
+      // No yaw from the detector: leave it to the server.
+      expect(side(null), GuidanceStatus.ready);
+      // The front photo rule is unchanged.
+      expect(_eval([_face(yaw: 30)]), GuidanceStatus.notFrontal);
+    });
+
     test('every status has an Indonesian message', () {
       for (final s in GuidanceStatus.values) {
         expect(s.message, isNotEmpty);

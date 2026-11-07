@@ -1,7 +1,9 @@
 import 'package:afaskin/app.dart';
 import 'package:afaskin/core/session/session_controller.dart';
 import 'package:afaskin/data/local/local_stores.dart';
+import 'package:afaskin/data/repositories/providers.dart';
 import 'package:afaskin/features/history/history_controller.dart';
+import 'package:afaskin/ml/profile_store.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +24,7 @@ Future<void> main() async {
   await Hive.initFlutter();
   final userBox = await Hive.openBox<String>(HiveUserStore.boxName);
   final historyBox = await Hive.openBox<String>(HiveHistoryStore.boxName);
+  final profileBox = await Hive.openBox<String>(HiveProfileStore.boxName);
 
   LicenseRegistry.addLicense(_bundledFontLicenses);
 
@@ -31,6 +34,7 @@ Future<void> main() async {
         flagStoreProvider.overrideWithValue(PrefsFlagStore(prefs)),
         userStoreProvider.overrideWithValue(HiveUserStore(userBox)),
         historyStoreProvider.overrideWithValue(HiveHistoryStore(historyBox)),
+        profileStoreProvider.overrideWithValue(HiveProfileStore(profileBox)),
       ],
       child: const AfaSkinApp(),
     ),

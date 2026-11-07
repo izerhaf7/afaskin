@@ -8,55 +8,99 @@ part of 'providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Fusion profiles per analysis. `main.dart` overrides this with the Hive box.
 
-@ProviderFor(dio)
-final dioProvider = DioProvider._();
+@ProviderFor(profileStore)
+final profileStoreProvider = ProfileStoreProvider._();
 
-final class DioProvider extends $FunctionalProvider<Dio, Dio, Dio>
-    with $Provider<Dio> {
-  DioProvider._()
+/// Fusion profiles per analysis. `main.dart` overrides this with the Hive box.
+
+final class ProfileStoreProvider
+    extends $FunctionalProvider<ProfileStore, ProfileStore, ProfileStore>
+    with $Provider<ProfileStore> {
+  /// Fusion profiles per analysis. `main.dart` overrides this with the Hive box.
+  ProfileStoreProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'dioProvider',
+        name: r'profileStoreProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$dioHash();
+  String debugGetCreateSourceHash() => _$profileStoreHash();
 
   @$internal
   @override
-  $ProviderElement<Dio> $createElement($ProviderPointer pointer) =>
+  $ProviderElement<ProfileStore> $createElement($ProviderPointer pointer) =>
       $ProviderElement(pointer);
 
   @override
-  Dio create(Ref ref) {
-    return dio(ref);
+  ProfileStore create(Ref ref) {
+    return profileStore(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(Dio value) {
+  Override overrideWithValue(ProfileStore value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<Dio>(value),
+      providerOverride: $SyncValueProvider<ProfileStore>(value),
     );
   }
 }
 
-String _$dioHash() => r'8444fa72797e4d4906045b5dfdca2841a8b396cd';
+String _$profileStoreHash() => r'd8af23ebdeb598aa95f38145383b3cf195164a79';
 
-/// Mock vs API is picked with `--dart-define=USE_MOCK=true|false`.
-/// Widgets read this provider, never `dio` directly.
+/// On-device ML (TFLite models + catalog), loaded once in the background.
+
+@ProviderFor(mlEngine)
+final mlEngineProvider = MlEngineProvider._();
+
+/// On-device ML (TFLite models + catalog), loaded once in the background.
+
+final class MlEngineProvider
+    extends
+        $FunctionalProvider<AsyncValue<MlEngine>, MlEngine, FutureOr<MlEngine>>
+    with $FutureModifier<MlEngine>, $FutureProvider<MlEngine> {
+  /// On-device ML (TFLite models + catalog), loaded once in the background.
+  MlEngineProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'mlEngineProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$mlEngineHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<MlEngine> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<MlEngine> create(Ref ref) {
+    return mlEngine(ref);
+  }
+}
+
+String _$mlEngineHash() => r'e656b30e7649a229c0ef689299d1596e1217d66a';
+
+/// On-device analysis (default) or canned mock responses (`USE_MOCK=true`).
+/// Widgets read this provider, never the engine directly.
 
 @ProviderFor(analysisRepository)
 final analysisRepositoryProvider = AnalysisRepositoryProvider._();
 
-/// Mock vs API is picked with `--dart-define=USE_MOCK=true|false`.
-/// Widgets read this provider, never `dio` directly.
+/// On-device analysis (default) or canned mock responses (`USE_MOCK=true`).
+/// Widgets read this provider, never the engine directly.
 
 final class AnalysisRepositoryProvider
     extends
@@ -66,8 +110,8 @@ final class AnalysisRepositoryProvider
           AnalysisRepository
         >
     with $Provider<AnalysisRepository> {
-  /// Mock vs API is picked with `--dart-define=USE_MOCK=true|false`.
-  /// Widgets read this provider, never `dio` directly.
+  /// On-device analysis (default) or canned mock responses (`USE_MOCK=true`).
+  /// Widgets read this provider, never the engine directly.
   AnalysisRepositoryProvider._()
     : super(
         from: null,
@@ -103,4 +147,4 @@ final class AnalysisRepositoryProvider
 }
 
 String _$analysisRepositoryHash() =>
-    r'5213b9fe40156b21dda5ccd5678f13eda551d053';
+    r'9d9f01c1be7c4f227676af18ec303be6f6b671b0';

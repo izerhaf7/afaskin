@@ -21,10 +21,22 @@ class LiveCameraView extends StatefulWidget {
     super.key,
     this.active = true,
     this.config = const GuidanceConfig(),
+    this.pose = CapturePose.front,
+    this.avoidYawSign,
+    this.onYawCaptured,
   });
 
   /// Raw JPEG bytes from the camera (temp file already deleted).
   final ValueChanged<Uint8List> onCaptured;
+
+  /// Front or side photo; changes the guidance rule.
+  final CapturePose pose;
+
+  /// Side photo: sign of the yaw of the side photo already taken.
+  final double? avoidYawSign;
+
+  /// Called with the head yaw (degrees) at the moment of capture.
+  final ValueChanged<double?>? onYawCaptured;
 
   /// No camera, or it failed to start.
   final VoidCallback onUnavailable;
@@ -53,6 +65,9 @@ class _LiveCameraViewState extends State<LiveCameraView>
   bool _streaming = false;
   GuidanceStatus _status = GuidanceStatus.noFace;
 
+  /// Yaw of the single face in the last evaluated frame.
+  double? _lastYaw;
+
   @override
   void initState() {
     super.initState();
@@ -65,6 +80,12 @@ class _LiveCameraViewState extends State<LiveCameraView>
     super.didUpdateWidget(old);
     if (old.active != widget.active) {
       unawaited(widget.active ? _startStream() : _stopStream());
+    } else if (old.pose != widget.pose ||
+        old.avoidYawSign != widget.avoidYawSign) {
+      // Next photo of the three-view capture: re-evaluate from scratch (the
+      // stream was stopped to take the previous picture).
+      _status = GuidanceStatus.noFace; // build() follows didUpdateWidget
+      if (widget.active) unawaited(_startStream());
     }
   }
 
@@ -95,9 +116,9 @@ class _LiveCameraViewState extends State<LiveCameraView>
       );
       final controller = CameraController(
         _camera,
-        // 1280x720: sharp enough for skin analysis after the 1080px resize,
-        // light enough to keep the preview >= 24 fps.
-        ResolutionPreset.high,
+        // 1920x1080: skin patches are only ~15% of the face width, so 720p
+        // left lesions blurry (on-device diagnosis, Nov 2026).
+        ResolutionPreset.veryHigh,
         enableAudio: false,
         imageFormatGroup: Platform.isIOS
             ? ImageFormatGroup.bgra8888
@@ -195,10 +216,13 @@ class _LiveCameraViewState extends State<LiveCameraView>
     final w = (swapped ? image.height : image.width).toDouble();
     final h = (swapped ? image.width : image.height).toDouble();
     final mirror = camera.lensDirection == CameraLensDirection.front;
+    _lastYaw = faces.length == 1 ? faces.single.headEulerAngleY : null;
 
     return evaluateGuidance(
       luminance: luminance,
       config: widget.config,
+      pose: widget.pose,
+      avoidYawSign: widget.avoidYawSign,
       faces: [
         for (final f in faces)
           FaceObservation(
@@ -230,9 +254,11 @@ class _LiveCameraViewState extends State<LiveCameraView>
     try {
       // Some Android devices fail to take a picture while streaming.
       await _stopStream();
+      final yaw = _lastYaw;
       final file = await c.takePicture();
       final bytes = await file.readAsBytes();
       await deleteQuietly(file.path);
+      widget.onYawCaptured?.call(yaw);
       widget.onCaptured(bytes);
     } on CameraException catch (e) {
       debugPrint('Capture failed: ${e.code}');

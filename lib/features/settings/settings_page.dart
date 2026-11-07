@@ -11,6 +11,7 @@ import 'package:afaskin/core/widgets/afa_backdrop.dart';
 import 'package:afaskin/core/widgets/afa_button.dart';
 import 'package:afaskin/core/widgets/afa_parts.dart';
 import 'package:afaskin/data/models/models.dart';
+import 'package:afaskin/data/repositories/providers.dart';
 import 'package:afaskin/features/analysis/analysis_flow.dart';
 import 'package:afaskin/features/history/history_controller.dart';
 import 'package:afaskin/features/recommendation/product_widgets.dart';
@@ -90,6 +91,7 @@ class SettingsPage extends ConsumerWidget {
     );
     if (!ok) return;
     await ref.read(historyProvider.notifier).clear();
+    await ref.read(profileStoreProvider).clear();
     if (context.mounted) showAfaToast(context, AppStrings.deleted);
   }
 
@@ -101,7 +103,10 @@ class SettingsPage extends ConsumerWidget {
     );
     if (!ok) return;
     ref.read(pendingPhotoProvider.notifier).clear();
+    ref.read(pendingSidePhotosProvider.notifier).clear();
+    ref.read(latestAnalysisPhotoProvider.notifier).clear();
     await ref.read(historyProvider.notifier).clear();
+    await ref.read(profileStoreProvider).clear();
     // Resetting the session makes the router send the user to onboarding.
     await ref.read(sessionProvider.notifier).clearAll();
   }

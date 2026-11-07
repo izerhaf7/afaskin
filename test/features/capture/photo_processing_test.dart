@@ -18,9 +18,9 @@ void main() {
     final out = preparePhotoForUpload(input);
     final decoded = img.decodeJpg(out)!;
 
-    // Portrait after orientation is applied; longest side capped at 1080.
-    expect(decoded.height, 1080);
-    expect(decoded.width, 810);
+    // Portrait after orientation is applied; longest side capped at 1600.
+    expect(decoded.height, 1600);
+    expect(decoded.width, 1200);
     // No metadata left.
     expect(decoded.exif.gpsIfd.isEmpty, isTrue);
     expect(decoded.exif.imageIfd.orientation, anyOf(isNull, 1));

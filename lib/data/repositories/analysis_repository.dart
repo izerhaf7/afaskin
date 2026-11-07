@@ -12,11 +12,14 @@ abstract interface class AnalysisRepository {
 
   Future<Questionnaire> getQuestionnaire();
 
-  /// [imageJpeg] must already be resized and stripped of EXIF.
-  /// Throws `QualityRejected` when the server's quality gate fails.
+  /// [imageJpeg] (front view) must already be resized and stripped of EXIF;
+  /// so must the optional [sideImagesJpeg] (up to two, head turned to each
+  /// side). Throws `QualityRejected` when the front photo fails the server's
+  /// quality gate; a side photo that fails is simply ignored by the server.
   Future<AnalysisResult> analyze({
     required Uint8List imageJpeg,
     required AnalyzePayload payload,
+    List<Uint8List> sideImagesJpeg = const [],
   });
 
   Future<List<Product>> getRecommendations({

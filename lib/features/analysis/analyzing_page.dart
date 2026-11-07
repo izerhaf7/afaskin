@@ -74,16 +74,23 @@ class _AnalyzingPageState extends ConsumerState<AnalyzingPage> {
     });
 
     try {
-      final result = await ref
-          .read(analysisRepositoryProvider)
-          .analyze(
-            imageJpeg: photo,
-            payload: AnalyzePayload(
-              profile: session.profile!,
-              questionnaire: session.answers?.answers ?? const {},
-            ),
-          );
+      final repo = ref.read(analysisRepositoryProvider);
+      final sides = ref.read(pendingSidePhotosProvider);
+      final payload = AnalyzePayload(
+        profile: session.profile!,
+        questionnaire: session.answers?.answers ?? const {},
+      );
+      final result = sides.isEmpty
+          ? await repo.analyze(imageJpeg: photo, payload: payload)
+          : await repo.analyze(
+              imageJpeg: photo,
+              payload: payload,
+              sideImagesJpeg: sides,
+            );
+      // Front photo stays in memory for the face map on the result screen.
+      ref.read(latestAnalysisPhotoProvider.notifier).set(result.analysisId, photo);
       ref.read(pendingPhotoProvider.notifier).clear();
+      ref.read(pendingSidePhotosProvider.notifier).clear();
       ref.read(latestAnalysisProvider.notifier).set(result);
       // History keeps the result JSON only; the photo is never stored.
       await ref.read(historyProvider.notifier).add(result);
@@ -92,7 +99,10 @@ class _AnalyzingPageState extends ConsumerState<AnalyzingPage> {
       context.go(AppRoutes.result);
     } on Failure catch (f) {
       // A rejected photo is useless: drop it. Keep it for network retries.
-      if (f is QualityRejected) ref.read(pendingPhotoProvider.notifier).clear();
+      if (f is QualityRejected) {
+        ref.read(pendingPhotoProvider.notifier).clear();
+        ref.read(pendingSidePhotosProvider.notifier).clear();
+      }
       if (mounted) setState(() => _failure = f);
     } finally {
       _ticker?.cancel();

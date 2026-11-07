@@ -14,6 +14,9 @@ enum GuidanceStatus {
   tooClose,
   offCenter,
   notFrontal,
+  turnHead,
+  turnOtherSide,
+  turnLess,
   ready;
 
   bool get isReady => this == ready;
@@ -27,9 +30,19 @@ enum GuidanceStatus {
     tooClose => AppStrings.guideTooClose,
     offCenter => AppStrings.guideOffCenter,
     notFrontal => AppStrings.guideNotFrontal,
+    turnHead => AppStrings.guideTurnHead,
+    turnOtherSide => AppStrings.guideTurnOtherSide,
+    turnLess => AppStrings.guideTurnLess,
     ready => AppStrings.guideReady,
   };
 }
+
+/// Which photo of the three-view capture is being taken.
+///
+/// `side` covers both side photos: the user turns to either side first, then
+/// to the other one. The server works out which cheek is facing the camera,
+/// so the app never has to tell left from right (the front camera mirrors).
+enum CapturePose { front, side }
 
 /// One detected face, already converted to the preview's coordinate space:
 /// [box] normalized 0-1, x mirrored for the front camera.
@@ -55,6 +68,8 @@ class GuidanceConfig {
     this.maxFaceToOvalWidth = 1.15,
     this.maxCenterOffset = 0.30,
     this.maxAngle = 15,
+    this.minSideAngle = 20,
+    this.maxSideAngle = 50,
   });
 
   /// Guide oval, normalized to the preview.
@@ -74,16 +89,27 @@ class GuidanceConfig {
 
   /// Max |yaw| and |pitch| in degrees.
   final double maxAngle;
+
+  /// Side photo: |yaw| must be within [minSideAngle, maxSideAngle] degrees.
+  /// Around 30° shows the cheek and jawline while the server can still find
+  /// the face landmarks.
+  final double minSideAngle;
+  final double maxSideAngle;
 }
 
 /// Pure guidance rule: faces + frame luminance -> status.
 ///
 /// [luminance] is null when it could not be measured; the brightness check
 /// is skipped then (the server-side quality gate still applies).
+///
+/// For [CapturePose.side], [avoidYawSign] is the sign of the yaw of the side
+/// photo already taken (if any): the next one must turn the other way.
 GuidanceStatus evaluateGuidance({
   required List<FaceObservation> faces,
   required double? luminance,
   GuidanceConfig config = const GuidanceConfig(),
+  CapturePose pose = CapturePose.front,
+  double? avoidYawSign,
 }) {
   if (luminance != null && luminance < config.minLuminance) {
     // Too dark comes first: face detection itself is unreliable in the dark.
@@ -107,10 +133,25 @@ GuidanceStatus evaluateGuidance({
     math.pow(d.dx / (oval.width / 2), 2) +
         math.pow(d.dy / (oval.height / 2), 2),
   );
-  if (offset > config.maxCenterOffset) return GuidanceStatus.offCenter;
+  // A turned head shifts the detected box sideways: allow more slack.
+  final maxOffset = pose == CapturePose.side
+      ? config.maxCenterOffset * 1.5
+      : config.maxCenterOffset;
+  if (offset > maxOffset) return GuidanceStatus.offCenter;
 
   final yaw = face.yaw ?? 0;
   final pitch = face.pitch ?? 0;
+  if (pose == CapturePose.side) {
+    // No yaw reported: cannot verify the turn, let the server decide.
+    if (face.yaw == null) return GuidanceStatus.ready;
+    if (avoidYawSign != null && yaw.sign == avoidYawSign.sign) {
+      return GuidanceStatus.turnOtherSide;
+    }
+    if (yaw.abs() < config.minSideAngle) return GuidanceStatus.turnHead;
+    if (yaw.abs() > config.maxSideAngle) return GuidanceStatus.turnLess;
+    if (pitch.abs() > config.maxAngle) return GuidanceStatus.notFrontal;
+    return GuidanceStatus.ready;
+  }
   if (yaw.abs() > config.maxAngle || pitch.abs() > config.maxAngle) {
     return GuidanceStatus.notFrontal;
   }

@@ -194,6 +194,21 @@ abstract final class AppStrings {
   static const String guideOffCenter = 'Posisikan wajah di dalam oval';
   static const String guideNotFrontal = 'Hadapkan wajah lurus';
   static const String guideReady = 'Pas! Tahan sebentar, lalu ambil foto';
+  static const String guideTurnHead = 'Tolehkan kepala ke samping (±30°)';
+  static const String guideTurnOtherSide = 'Sekarang toleh ke sisi sebaliknya';
+  static const String guideTurnLess = 'Kurangi tolehan, cukup ±30°';
+
+  // Capture: three views (front required, two side views optional).
+  static const String captureStepFront = 'Foto 1 dari 3 · Tampak depan';
+  static const String captureStepSide1 = 'Foto 2 dari 3 · Tampak samping';
+  static const String captureStepSide2 = 'Foto 3 dari 3 · Sisi lainnya';
+  static const String captureSideHint =
+      'Foto samping membantu membaca pipi dan rahang. Boleh dilewati.';
+  static const String frontPhotoSaved =
+      'Foto depan tersimpan. Sekarang tolehkan kepala ke samping.';
+  static const String sidePhotoSaved =
+      'Foto samping tersimpan. Sekarang toleh ke sisi lainnya.';
+  static const String skipSidePhotos = 'Lewati, analisis sekarang';
   static const String shutter = 'Ambil foto';
   static const String shutterDisabledHint =
       'Tombol aktif setelah posisi wajah dan cahaya pas';

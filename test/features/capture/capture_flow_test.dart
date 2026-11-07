@@ -5,6 +5,7 @@ import 'package:afaskin/data/repositories/analysis_repository_mock.dart';
 import 'package:afaskin/features/analysis/analysis_flow.dart';
 import 'package:afaskin/features/capture/capture_page.dart';
 import 'package:afaskin/features/capture/capture_services.dart';
+import 'package:afaskin/features/capture/face_guidance.dart';
 import 'package:afaskin/features/history/history_controller.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,17 +43,34 @@ class _MockRepo extends Mock implements AnalysisRepository;
 final _raw = Uint8List.fromList([1, 2, 3]);
 final _processed = Uint8List.fromList([9, 9, 9]);
 
-/// Stand-in for the live camera: a button that "captures" [_raw].
+/// Poses the fake camera was asked for, in order (reset per test).
+final _poses = <CapturePose>[];
+
+/// Stand-in for the live camera: a button that "captures" [_raw]. Reports a
+/// yaw of +30° for side photos, like ML Kit would for a turned head.
 Widget _fakeCamera({
   required bool active,
   required ValueChanged<Uint8List> onCaptured,
   required VoidCallback onUnavailable,
+  CapturePose pose = CapturePose.front,
+  double? avoidYawSign,
+  ValueChanged<double?>? onYawCaptured,
 }) => Center(
   child: TextButton(
-    onPressed: () => onCaptured(_raw),
+    onPressed: () {
+      _poses.add(pose);
+      onYawCaptured?.call(pose == CapturePose.side ? 30 : 0);
+      onCaptured(_raw);
+    },
     child: Text(active ? 'FAKE SHUTTER' : 'PAUSED'),
   ),
 );
+
+/// Front photo, then skip the optional side photos.
+Future<void> _captureFrontOnly(WidgetTester tester) async {
+  await tapVisible(tester, find.text('FAKE SHUTTER'));
+  await tapVisible(tester, find.text('Lewati, analisis sekarang'));
+}
 
 Future<ProviderContainer> _openCapture(
   WidgetTester tester, {
@@ -85,8 +103,11 @@ Future<ProviderContainer> _openCapture(
 }
 
 void main() {
+  setUp(_poses.clear);
+
   setUpAll(() {
     registerFallbackValue(Uint8List(0));
+    registerFallbackValue(<Uint8List>[]);
     registerFallbackValue(
       const AnalyzePayload(
         profile: UserProfile(age: 1, gender: Gender.unspecified, budgetMax: 1),
@@ -109,12 +130,20 @@ void main() {
     await tapVisible(tester, find.text('Izinkan kamera'));
     expect(find.text('FAKE SHUTTER'), findsOneWidget);
 
+    // Three views: front, then both sides (each side photo turns the other way).
+    expect(find.text('Foto 1 dari 3 · Tampak depan'), findsOneWidget);
+    await tapVisible(tester, find.text('FAKE SHUTTER'));
+    expect(find.text('Foto 2 dari 3 · Tampak samping'), findsOneWidget);
+    await tapVisible(tester, find.text('FAKE SHUTTER'));
+    expect(find.text('Foto 3 dari 3 · Sisi lainnya'), findsOneWidget);
     await tapVisible(tester, find.text('FAKE SHUTTER'));
     await waitFor(tester, find.text('Hasil analisis'));
+    expect(_poses, [CapturePose.front, CapturePose.side, CapturePose.side]);
 
-    // Photo is dropped from memory once the server accepted it, and the
+    // Photos are dropped from memory once the server accepted them, and the
     // result (not the photo) lands in history.
     expect(container.read(pendingPhotoProvider), isNull);
+    expect(container.read(pendingSidePhotosProvider), isEmpty);
     expect(container.read(historyProvider), hasLength(1));
     expect(
       container.read(latestAnalysisProvider)!.skinType.label,
@@ -148,7 +177,7 @@ void main() {
         latency: Duration.zero,
       ),
     );
-    await tapVisible(tester, find.text('FAKE SHUTTER'));
+    await _captureFrontOnly(tester);
     await waitFor(tester, find.text('Foto perlu diambil ulang'));
 
     expect(find.text('Foto terlalu gelap'), findsOneWidget);
@@ -156,8 +185,9 @@ void main() {
     expect(container.read(pendingPhotoProvider), isNull);
 
     await tapVisible(tester, find.text('Ambil ulang foto'));
-    // Back on the camera, stream resumed.
+    // Back on the camera at the front photo, stream resumed.
     expect(find.text('FAKE SHUTTER'), findsOneWidget);
+    expect(find.text('Foto 1 dari 3 · Tampak depan'), findsOneWidget);
   });
 
   testWidgets('network error keeps the photo and retries', (tester) async {
@@ -182,7 +212,7 @@ void main() {
       permission: _FakePermission(CameraPermissionState.granted),
       repo: repo,
     );
-    await tapVisible(tester, find.text('FAKE SHUTTER'));
+    await _captureFrontOnly(tester);
     await waitFor(tester, find.text('Coba lagi'));
     expect(find.text('Koneksi terputus'), findsOneWidget);
     expect(container.read(pendingPhotoProvider), _processed);
@@ -201,5 +231,43 @@ void main() {
             as AnalyzePayload;
     expect(payload.profile.budgetMax, 150000);
     expect(payload.questionnaire, {'q1': 4, 'q2': 2});
+  });
+
+  testWidgets('side photos are sent together with the front photo', (
+    tester,
+  ) async {
+    final repo = _MockRepo();
+    when(
+      () => repo.analyze(
+        imageJpeg: any(named: 'imageJpeg'),
+        payload: any(named: 'payload'),
+        sideImagesJpeg: any(named: 'sideImagesJpeg'),
+      ),
+    ).thenAnswer(
+      (inv) => fastMockRepo().analyze(
+        imageJpeg: _processed,
+        payload: inv.namedArguments[#payload] as AnalyzePayload,
+      ),
+    );
+    await _openCapture(
+      tester,
+      permission: _FakePermission(CameraPermissionState.granted),
+      repo: repo,
+    );
+    await tapVisible(tester, find.text('FAKE SHUTTER')); // front
+    await tapVisible(tester, find.text('FAKE SHUTTER')); // first side
+    await tapVisible(tester, find.text('Lewati, analisis sekarang'));
+    await waitFor(tester, find.text('Hasil analisis'));
+
+    final sides =
+        verify(
+              () => repo.analyze(
+                imageJpeg: any(named: 'imageJpeg'),
+                payload: any(named: 'payload'),
+                sideImagesJpeg: captureAny(named: 'sideImagesJpeg'),
+              ),
+            ).captured.single
+            as List<Uint8List>;
+    expect(sides, [_processed]);
   });
 }

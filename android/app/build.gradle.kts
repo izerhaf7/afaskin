@@ -64,6 +64,16 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
+            // R8 meng-obfuscate kelas internal ML Kit pada build release
+            // (build/app/outputs/mapping/release/mapping.txt:
+            // com.google.mlkit.vision.common.InputImage -> b). Akibatnya
+            // InputImage.fromByteArray melempar NullPointerException di
+            // InputImageConverter, deteksi wajah tidak pernah menghasilkan
+            // status, dan tombol shutter tidak pernah aktif. Debug tidak
+            // terkena karena tidak menjalankan R8. Dimatikan sampai ada
+            // proguard-rules.pro yang benar-benar menjaga ML Kit dan TFLite.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:afaskin/core/l10n/app_strings.dart';
 import 'package:afaskin/core/router/app_router.dart';
 import 'package:afaskin/core/theme/app_colors.dart';
@@ -24,19 +26,27 @@ class ResultPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = result ?? ref.watch(latestAnalysisProvider);
+    // The user's own photo exists (in memory) only for the latest analysis.
+    final photo = ref.watch(latestAnalysisPhotoProvider);
     return Scaffold(
       appBar: AppBar(title: const Text(AppStrings.resultTitle)),
       body: r == null
           ? const EmptyView(title: AppStrings.historyEmptyTitle)
-          : ResultView(result: r),
+          : ResultView(
+              result: r,
+              photo: photo?.analysisId == r.analysisId ? photo!.jpeg : null,
+            ),
     );
   }
 }
 
 class ResultView extends StatefulWidget {
-  const ResultView({required this.result, super.key});
+  const ResultView({required this.result, super.key, this.photo});
 
   final AnalysisResult result;
+
+  /// Front photo of this analysis (memory only), drawn under the face map.
+  final Uint8List? photo;
 
   @override
   State<ResultView> createState() => _ResultViewState();
@@ -77,8 +87,9 @@ class _ResultViewState extends State<ResultView> {
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 240),
+                  constraints: BoxConstraints(maxWidth: widget.photo == null ? 240 : 300),
                   child: FaceMap(
+                    photo: widget.photo,
                     rois: r.rois,
                     highlighted: highlighted,
                     emphasized: selected?.regions.toSet() ?? const {},

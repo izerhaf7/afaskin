@@ -15,6 +15,13 @@ with `--dart-define=USE_MOCK=true` (the default) and by `tools/mock_server`.
 
 `prd_004` (retinal) carries a conflict warning.
 
+`POST /analyze` also accepts two optional multipart files, `image_side_1` and
+`image_side_2`: the head turned about 30° to each side, in either order. The
+real backend (`PJBL/app/backend`) scans the cheek that faces the camera in
+those photos and ignores a side photo that fails its quality gate. It
+reports what it used in an extra `views` field, which the app ignores. The
+mock ignores both side files.
+
 Optional additions the app understands (backward compatible):
 
 - `scale.labels` in the questionnaire: a label for every answer value.

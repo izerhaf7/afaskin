@@ -1,0 +1,780 @@
+{
+ "version": "afaskin-ondevice-2026.11",
+ "skin_type": {
+  "model": "skin_type.tflite",
+  "arch": "ResNet50",
+  "classes": [
+   "dry",
+   "normal",
+   "oily"
+  ],
+  "input_size": 224,
+  "T": 1.2567972424476885,
+  "alpha": 0.25,
+  "rule": "geometric",
+  "skin_mu": {
+   "dry": 1.5,
+   "normal": 3.0,
+   "oily": 4.5
+  },
+  "skin_sigma": 0.9
+ },
+ "condition": {
+  "default_model": "MobileNetV2",
+  "classes": [
+   "Acne",
+   "Birthmark",
+   "Blackhead",
+   "Cysts",
+   "Milium",
+   "Papular",
+   "Purulent",
+   "Scars",
+   "Whitehead",
+   "Clear"
+  ],
+  "input_size": 224,
+  "beta": 3.0,
+  "acne_group": [
+   "Acne",
+   "Papular",
+   "Purulent",
+   "Cysts"
+  ],
+  "comedo_group": [
+   "Blackhead",
+   "Whitehead"
+  ],
+  "models": {
+   "MobileNetV2": {
+    "model": "condition_mobilenetv2.tflite",
+    "T": 0.978,
+    "alpha": 0.35,
+    "rule": "geometric"
+   },
+   "ResNet50": {
+    "model": "condition_resnet50.tflite",
+    "T": 1.2019063630491331,
+    "alpha": 0.3,
+    "rule": "geometric"
+   }
+  }
+ },
+ "roi": {
+  "roi": {
+   "forehead": {
+    "landmarks": [
+     10,
+     151
+    ],
+    "size_rel_face_width": 0.3
+   },
+   "cheek_left": {
+    "landmarks": [
+     50,
+     205
+    ],
+    "size_rel_face_width": 0.24
+   },
+   "cheek_right": {
+    "landmarks": [
+     280,
+     425
+    ],
+    "size_rel_face_width": 0.24
+   },
+   "nose": {
+    "landmarks": [
+     5,
+     195
+    ],
+    "size_rel_face_width": 0.16
+   },
+   "chin": {
+    "landmarks": [
+     152,
+     199
+    ],
+    "size_rel_face_width": 0.2
+   }
+  },
+  "face_width_landmarks": [
+   234,
+   454
+  ],
+  "min_face_px": 90,
+  "blur_min": 20.0,
+  "brightness_range": [
+   40,
+   225
+  ],
+  "min_valid_roi": 3
+ },
+ "face": {
+  "landmark_model": "face_landmarks.tflite",
+  "refine_iters": 2,
+  "refine_scale": 1.5
+ },
+ "scan": {
+  "area_rel": {
+   "forehead": 0.45,
+   "left_cheek": 0.36,
+   "right_cheek": 0.36,
+   "nose": 0.22,
+   "chin": 0.3
+  },
+  "tile_rel": 0.15,
+  "stride": 0.5,
+  "top_k": 3,
+  "min_condition_p": 0.12,
+  "max_conditions": 4,
+  "skin_min": 0.6,
+  "aggregation": "mean",
+  "gate_conf": 0.6,
+  "gate_frac": 0.1,
+  "gate_min_patches": 5,
+  "_catatan": "Dipilih dari uji on-device (Nov 2026): top-3 per kelas selalu 'menemukan' lesi di wajah bersih; mean + gating bukti visual mencegah kondisi muncul hanya dari kuesioner. Titik ML Kit diperhalus model landmark MediaPipe; patch dibatasi masker wajah & dilewati bila kilap.",
+  "feature_mask": true,
+  "glare_level": 215,
+  "glare_max": 0.06,
+  "hair_l_rel": 0.6,
+  "questionnaire_only": {
+   "Scars": {
+    "answer": "Q7",
+    "min": 3
+   }
+  }
+ },
+ "recommender": {
+  "weights": [
+   0.5,
+   0.5,
+   0.0
+  ],
+  "actives": [
+   "Niacinamide",
+   "Salicylic Acid",
+   "Hyaluronic Acid",
+   "Retinol",
+   "Centella Asiatica",
+   "Ceramide",
+   "AHA",
+   "Azelaic Acid",
+   "Vitamin C",
+   "Zinc",
+   "Tea Tree",
+   "Panthenol",
+   "Benzoyl Peroxide",
+   "Alpha Arbutin",
+   "Glycerin",
+   "Squalane",
+   "Sunscreen Filter",
+   "Comedogenic Oil",
+   "Heavy Occlusive",
+   "Essential Oil",
+   "Fragrance",
+   "Alcohol Denat"
+  ],
+  "mapping": [
+   {
+    "target": "Acne",
+    "target_type": "condition",
+    "ingredient": "Salicylic Acid",
+    "role": "recommended",
+    "weight": 1.0,
+    "note": "BHA larut minyak; eksfoliasi pori",
+    "source": "Zaenglein et al. 2016; Reynolds et al. 2024"
+   },
+   {
+    "target": "Acne",
+    "target_type": "condition",
+    "ingredient": "Benzoyl Peroxide",
+    "role": "recommended",
+    "weight": 1.0,
+    "note": "antibakteri C. acnes",
+    "source": "Zaenglein et al. 2016; Reynolds et al. 2024"
+   },
+   {
+    "target": "Acne",
+    "target_type": "condition",
+    "ingredient": "Azelaic Acid",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "antibakteri & anti-inflamasi",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Acne",
+    "target_type": "condition",
+    "ingredient": "Niacinamide",
+    "role": "recommended",
+    "weight": 0.6,
+    "note": "anti-inflamasi; mengurangi sebum",
+    "source": "Draelos et al. 2006"
+   },
+   {
+    "target": "Acne",
+    "target_type": "condition",
+    "ingredient": "Retinol",
+    "role": "recommended",
+    "weight": 0.6,
+    "note": "retinoid topikal (bentuk kosmetik)",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Acne",
+    "target_type": "condition",
+    "ingredient": "Tea Tree",
+    "role": "recommended",
+    "weight": 0.4,
+    "note": "bukti terbatas",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Acne",
+    "target_type": "condition",
+    "ingredient": "Comedogenic Oil",
+    "role": "avoid",
+    "weight": 1.0,
+    "note": "minyak/ester komedogenik",
+    "source": "Draelos & DiNardo 2006"
+   },
+   {
+    "target": "Papular",
+    "target_type": "condition",
+    "ingredient": "Salicylic Acid",
+    "role": "recommended",
+    "weight": 1.0,
+    "note": "lesi inflamasi",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Papular",
+    "target_type": "condition",
+    "ingredient": "Benzoyl Peroxide",
+    "role": "recommended",
+    "weight": 1.0,
+    "note": "lesi inflamasi",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Papular",
+    "target_type": "condition",
+    "ingredient": "Azelaic Acid",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "anti-inflamasi",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Papular",
+    "target_type": "condition",
+    "ingredient": "Niacinamide",
+    "role": "recommended",
+    "weight": 0.6,
+    "note": "anti-inflamasi",
+    "source": "Draelos et al. 2006"
+   },
+   {
+    "target": "Papular",
+    "target_type": "condition",
+    "ingredient": "Comedogenic Oil",
+    "role": "avoid",
+    "weight": 1.0,
+    "note": "",
+    "source": "Draelos & DiNardo 2006"
+   },
+   {
+    "target": "Purulent",
+    "target_type": "condition",
+    "ingredient": "Benzoyl Peroxide",
+    "role": "recommended",
+    "weight": 1.0,
+    "note": "pustul (bakteri)",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Purulent",
+    "target_type": "condition",
+    "ingredient": "Salicylic Acid",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Purulent",
+    "target_type": "condition",
+    "ingredient": "Azelaic Acid",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Purulent",
+    "target_type": "condition",
+    "ingredient": "Tea Tree",
+    "role": "recommended",
+    "weight": 0.4,
+    "note": "bukti terbatas",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Purulent",
+    "target_type": "condition",
+    "ingredient": "Comedogenic Oil",
+    "role": "avoid",
+    "weight": 1.0,
+    "note": "",
+    "source": "Draelos & DiNardo 2006"
+   },
+   {
+    "target": "Cysts",
+    "target_type": "condition",
+    "ingredient": "Benzoyl Peroxide",
+    "role": "recommended",
+    "weight": 0.6,
+    "note": "butuh terapi dokter (oral); skincare hanya pendukung",
+    "source": "Reynolds et al. 2024"
+   },
+   {
+    "target": "Cysts",
+    "target_type": "condition",
+    "ingredient": "Azelaic Acid",
+    "role": "recommended",
+    "weight": 0.6,
+    "note": "pendukung",
+    "source": "Reynolds et al. 2024"
+   },
+   {
+    "target": "Cysts",
+    "target_type": "condition",
+    "ingredient": "Comedogenic Oil",
+    "role": "avoid",
+    "weight": 1.0,
+    "note": "",
+    "source": "Draelos & DiNardo 2006"
+   },
+   {
+    "target": "Blackhead",
+    "target_type": "condition",
+    "ingredient": "Salicylic Acid",
+    "role": "recommended",
+    "weight": 1.0,
+    "note": "komedo terbuka",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Blackhead",
+    "target_type": "condition",
+    "ingredient": "Retinol",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "komedolitik",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Blackhead",
+    "target_type": "condition",
+    "ingredient": "AHA",
+    "role": "recommended",
+    "weight": 0.5,
+    "note": "eksfoliasi permukaan",
+    "source": "Kornhauser et al. 2010"
+   },
+   {
+    "target": "Blackhead",
+    "target_type": "condition",
+    "ingredient": "Niacinamide",
+    "role": "recommended",
+    "weight": 0.4,
+    "note": "",
+    "source": "Draelos et al. 2006"
+   },
+   {
+    "target": "Blackhead",
+    "target_type": "condition",
+    "ingredient": "Comedogenic Oil",
+    "role": "avoid",
+    "weight": 1.0,
+    "note": "",
+    "source": "Draelos & DiNardo 2006"
+   },
+   {
+    "target": "Whitehead",
+    "target_type": "condition",
+    "ingredient": "Salicylic Acid",
+    "role": "recommended",
+    "weight": 1.0,
+    "note": "komedo tertutup",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Whitehead",
+    "target_type": "condition",
+    "ingredient": "Retinol",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "komedolitik",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Whitehead",
+    "target_type": "condition",
+    "ingredient": "AHA",
+    "role": "recommended",
+    "weight": 0.5,
+    "note": "",
+    "source": "Kornhauser et al. 2010"
+   },
+   {
+    "target": "Whitehead",
+    "target_type": "condition",
+    "ingredient": "Comedogenic Oil",
+    "role": "avoid",
+    "weight": 1.0,
+    "note": "",
+    "source": "Draelos & DiNardo 2006"
+   },
+   {
+    "target": "Milium",
+    "target_type": "condition",
+    "ingredient": "Retinol",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "mempercepat pergantian sel; ekstraksi oleh dokter lebih efektif",
+    "source": "Berk & Bayliss 2008"
+   },
+   {
+    "target": "Milium",
+    "target_type": "condition",
+    "ingredient": "AHA",
+    "role": "recommended",
+    "weight": 0.6,
+    "note": "",
+    "source": "Berk & Bayliss 2008"
+   },
+   {
+    "target": "Milium",
+    "target_type": "condition",
+    "ingredient": "Heavy Occlusive",
+    "role": "avoid",
+    "weight": 0.8,
+    "note": "krim sangat oklusif dapat memicu milia",
+    "source": "Berk & Bayliss 2008"
+   },
+   {
+    "target": "Scars",
+    "target_type": "condition",
+    "ingredient": "Vitamin C",
+    "role": "recommended",
+    "weight": 1.0,
+    "note": "hiperpigmentasi pasca-inflamasi (PIH)",
+    "source": "Telang 2013"
+   },
+   {
+    "target": "Scars",
+    "target_type": "condition",
+    "ingredient": "Niacinamide",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "menghambat transfer melanosom",
+    "source": "Hakozaki et al. 2002"
+   },
+   {
+    "target": "Scars",
+    "target_type": "condition",
+    "ingredient": "Azelaic Acid",
+    "role": "recommended",
+    "weight": 0.6,
+    "note": "PIH",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Scars",
+    "target_type": "condition",
+    "ingredient": "Retinol",
+    "role": "recommended",
+    "weight": 0.6,
+    "note": "tekstur & PIH",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Scars",
+    "target_type": "condition",
+    "ingredient": "AHA",
+    "role": "recommended",
+    "weight": 0.5,
+    "note": "",
+    "source": "Kornhauser et al. 2010"
+   },
+   {
+    "target": "Scars",
+    "target_type": "condition",
+    "ingredient": "Alpha Arbutin",
+    "role": "recommended",
+    "weight": 0.5,
+    "note": "pencerah PIH",
+    "source": "Telang 2013"
+   },
+   {
+    "target": "Scars",
+    "target_type": "condition",
+    "ingredient": "Sunscreen Filter",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "mencegah PIH makin gelap",
+    "source": "Telang 2013"
+   },
+   {
+    "target": "Birthmark",
+    "target_type": "condition",
+    "ingredient": "Sunscreen Filter",
+    "role": "recommended",
+    "weight": 0.5,
+    "note": "tidak ada skincare yang menghilangkan tanda lahir; rujuk dokter bila berubah",
+    "source": "(rujukan dokter)"
+   },
+   {
+    "target": "Clear",
+    "target_type": "condition",
+    "ingredient": "Sunscreen Filter",
+    "role": "recommended",
+    "weight": 0.6,
+    "note": "perawatan dasar",
+    "source": "(perawatan dasar)"
+   },
+   {
+    "target": "Clear",
+    "target_type": "condition",
+    "ingredient": "Hyaluronic Acid",
+    "role": "recommended",
+    "weight": 0.3,
+    "note": "perawatan dasar",
+    "source": "(perawatan dasar)"
+   },
+   {
+    "target": "Oily",
+    "target_type": "skin_type",
+    "ingredient": "Niacinamide",
+    "role": "recommended",
+    "weight": 1.0,
+    "note": "mengurangi sebum",
+    "source": "Draelos et al. 2006"
+   },
+   {
+    "target": "Oily",
+    "target_type": "skin_type",
+    "ingredient": "Salicylic Acid",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Oily",
+    "target_type": "skin_type",
+    "ingredient": "Zinc",
+    "role": "recommended",
+    "weight": 0.5,
+    "note": "",
+    "source": "(sebum regulator)"
+   },
+   {
+    "target": "Oily",
+    "target_type": "skin_type",
+    "ingredient": "Hyaluronic Acid",
+    "role": "recommended",
+    "weight": 0.3,
+    "note": "hidrasi ringan",
+    "source": "(hidrasi)"
+   },
+   {
+    "target": "Oily",
+    "target_type": "skin_type",
+    "ingredient": "Comedogenic Oil",
+    "role": "avoid",
+    "weight": 0.8,
+    "note": "",
+    "source": "Draelos & DiNardo 2006"
+   },
+   {
+    "target": "Dry",
+    "target_type": "skin_type",
+    "ingredient": "Ceramide",
+    "role": "recommended",
+    "weight": 1.0,
+    "note": "memperbaiki skin barrier",
+    "source": "Draelos 2018"
+   },
+   {
+    "target": "Dry",
+    "target_type": "skin_type",
+    "ingredient": "Hyaluronic Acid",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "humektan",
+    "source": "Draelos 2018"
+   },
+   {
+    "target": "Dry",
+    "target_type": "skin_type",
+    "ingredient": "Glycerin",
+    "role": "recommended",
+    "weight": 0.6,
+    "note": "humektan",
+    "source": "Draelos 2018"
+   },
+   {
+    "target": "Dry",
+    "target_type": "skin_type",
+    "ingredient": "Squalane",
+    "role": "recommended",
+    "weight": 0.6,
+    "note": "emolien",
+    "source": "Draelos 2018"
+   },
+   {
+    "target": "Dry",
+    "target_type": "skin_type",
+    "ingredient": "Panthenol",
+    "role": "recommended",
+    "weight": 0.5,
+    "note": "",
+    "source": "Draelos 2018"
+   },
+   {
+    "target": "Dry",
+    "target_type": "skin_type",
+    "ingredient": "Alcohol Denat",
+    "role": "avoid",
+    "weight": 0.8,
+    "note": "mengeringkan",
+    "source": "Draelos 2018"
+   },
+   {
+    "target": "Normal",
+    "target_type": "skin_type",
+    "ingredient": "Hyaluronic Acid",
+    "role": "recommended",
+    "weight": 0.5,
+    "note": "perawatan dasar",
+    "source": "(perawatan dasar)"
+   },
+   {
+    "target": "Normal",
+    "target_type": "skin_type",
+    "ingredient": "Glycerin",
+    "role": "recommended",
+    "weight": 0.3,
+    "note": "perawatan dasar",
+    "source": "(perawatan dasar)"
+   },
+   {
+    "target": "Sensitive",
+    "target_type": "sensitivity",
+    "ingredient": "Centella Asiatica",
+    "role": "recommended",
+    "weight": 1.0,
+    "note": "menenangkan",
+    "source": "Bylka et al. 2013"
+   },
+   {
+    "target": "Sensitive",
+    "target_type": "sensitivity",
+    "ingredient": "Panthenol",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "",
+    "source": "Draelos 2018"
+   },
+   {
+    "target": "Sensitive",
+    "target_type": "sensitivity",
+    "ingredient": "Ceramide",
+    "role": "recommended",
+    "weight": 0.8,
+    "note": "",
+    "source": "Draelos 2018"
+   },
+   {
+    "target": "Sensitive",
+    "target_type": "sensitivity",
+    "ingredient": "Fragrance",
+    "role": "avoid",
+    "weight": 1.0,
+    "note": "alergen kosmetik paling umum",
+    "source": "de Groot 2019"
+   },
+   {
+    "target": "Sensitive",
+    "target_type": "sensitivity",
+    "ingredient": "Essential Oil",
+    "role": "avoid",
+    "weight": 0.8,
+    "note": "",
+    "source": "de Groot 2019"
+   },
+   {
+    "target": "Sensitive",
+    "target_type": "sensitivity",
+    "ingredient": "Alcohol Denat",
+    "role": "avoid",
+    "weight": 0.8,
+    "note": "",
+    "source": "Draelos 2018"
+   },
+   {
+    "target": "Sensitive",
+    "target_type": "sensitivity",
+    "ingredient": "Retinol",
+    "role": "avoid",
+    "weight": 0.6,
+    "note": "berisiko iritasi; perkenalkan bertahap",
+    "source": "Zaenglein et al. 2016"
+   },
+   {
+    "target": "Sensitive",
+    "target_type": "sensitivity",
+    "ingredient": "AHA",
+    "role": "avoid",
+    "weight": 0.6,
+    "note": "berisiko iritasi",
+    "source": "Kornhauser et al. 2010"
+   }
+  ],
+  "usd_to_idr": 16000,
+  "class_to_tag": {
+   "Acne": {
+    "acne": 1
+   },
+   "Papular": {
+    "acne": 1
+   },
+   "Purulent": {
+    "acne": 1
+   },
+   "Cysts": {
+    "acne": 1
+   },
+   "Blackhead": {
+    "pores": 1,
+    "acne": 0.5
+   },
+   "Whitehead": {
+    "pores": 1,
+    "acne": 0.5
+   },
+   "Scars": {
+    "dark_spots": 1,
+    "texture": 0.5
+   },
+   "Milium": {
+    "texture": 1
+   },
+   "Birthmark": {},
+   "Clear": {}
+  }
+ }
+}

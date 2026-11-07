@@ -8,6 +8,7 @@ import 'package:afaskin/core/widgets/afa_button.dart';
 import 'package:afaskin/core/widgets/state_views.dart';
 import 'package:afaskin/features/analysis/analysis_flow.dart';
 import 'package:afaskin/features/capture/capture_services.dart';
+import 'package:afaskin/features/capture/face_guidance.dart';
 import 'package:afaskin/features/capture/live_camera_view.dart';
 import 'package:afaskin/features/capture/photo_processing.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,16 +20,25 @@ typedef CameraViewBuilder = Widget Function({
   required bool active,
   required ValueChanged<Uint8List> onCaptured,
   required VoidCallback onUnavailable,
+  CapturePose pose,
+  double? avoidYawSign,
+  ValueChanged<double?>? onYawCaptured,
 });
 
 Widget _defaultCamera({
   required bool active,
   required ValueChanged<Uint8List> onCaptured,
   required VoidCallback onUnavailable,
+  CapturePose pose = CapturePose.front,
+  double? avoidYawSign,
+  ValueChanged<double?>? onYawCaptured,
 }) => LiveCameraView(
   active: active,
   onCaptured: onCaptured,
   onUnavailable: onUnavailable,
+  pose: pose,
+  avoidYawSign: avoidYawSign,
+  onYawCaptured: onYawCaptured,
 );
 
 /// Live camera factory; tests override it with a fake (no camera in tests).
@@ -57,6 +67,23 @@ class _CapturePageState extends ConsumerState<CapturePage>
 
   /// False while the analyzing page is on top (camera stream paused).
   bool _active = true;
+
+  /// Three-view capture: 0 = front (required), 1 and 2 = side photos
+  /// (optional, the user may skip to the analysis after the front one).
+  int _shot = 0;
+
+  /// Yaw sign of the first side photo, so the second one turns the other way.
+  double? _firstSideYawSign;
+  double? _lastCapturedYaw;
+
+  CapturePose get _pose => _shot == 0 ? CapturePose.front : CapturePose.side;
+
+  void _resetShots() {
+    _shot = 0;
+    _firstSideYawSign = null;
+    _lastCapturedYaw = null;
+    ref.read(pendingSidePhotosProvider.notifier).clear();
+  }
 
   CameraPermissionService get _permission => ref.read(cameraPermissionProvider);
 
@@ -106,16 +133,25 @@ class _CapturePageState extends ConsumerState<CapturePage>
     );
   }
 
+  /// A gallery photo is used as the front view only, analyzed right away.
   Future<void> _fromGallery() async {
     final raw = await ref.read(galleryPickerProvider).pick();
-    if (raw != null) await _submit(raw);
+    if (raw == null) return;
+    _resetShots();
+    await _submit(raw, analyzeNow: true);
   }
 
-  Future<void> _submit(Uint8List raw) async {
+  Future<void> _submit(Uint8List raw, {bool analyzeNow = false}) async {
     setState(() => _processing = true);
     try {
       final jpeg = await ref.read(photoProcessorProvider)(raw);
-      ref.read(pendingPhotoProvider.notifier).set(jpeg);
+      if (_shot == 0) {
+        ref.read(pendingPhotoProvider.notifier).set(jpeg);
+        ref.read(pendingSidePhotosProvider.notifier).clear();
+      } else {
+        ref.read(pendingSidePhotosProvider.notifier).add(jpeg);
+        if (_shot == 1) _firstSideYawSign = _lastCapturedYaw?.sign;
+      }
     } on PhotoDecodeException {
       if (mounted) {
         setState(() => _processing = false);
@@ -126,13 +162,31 @@ class _CapturePageState extends ConsumerState<CapturePage>
       return;
     }
     if (!mounted) return;
+    if (!analyzeNow && _shot < 2) {
+      // Next view of the three-view capture. The step header says the photo
+      // was saved (a snackbar would cover the skip button).
+      setState(() {
+        _processing = false;
+        _shot++;
+      });
+      return;
+    }
+    await _analyze();
+  }
+
+  Future<void> _analyze() async {
     setState(() {
       _processing = false;
       _active = false;
     });
     // Comes back here only for a retake (success replaces the stack).
     await context.push(AppRoutes.analyzing);
-    if (mounted) setState(() => _active = true);
+    if (mounted) {
+      setState(() {
+        _active = true;
+        _resetShots();
+      });
+    }
   }
 
   @override
@@ -151,13 +205,21 @@ class _CapturePageState extends ConsumerState<CapturePage>
                 ),
                 child: Column(
                   children: [
+                    if (_phase == _Phase.camera) _StepHeader(shot: _shot),
                     Expanded(child: _body()),
                     const SizedBox(height: AppSpacing.sm),
-                    AfaButton.secondary(
-                      label: AppStrings.pickFromGallery,
-                      icon: Icons.photo_library_outlined,
-                      onPressed: _fromGallery,
-                    ),
+                    if (_shot == 0)
+                      AfaButton.secondary(
+                        label: AppStrings.pickFromGallery,
+                        icon: Icons.photo_library_outlined,
+                        onPressed: _fromGallery,
+                      )
+                    else
+                      AfaButton.secondary(
+                        label: AppStrings.skipSidePhotos,
+                        icon: Icons.skip_next_rounded,
+                        onPressed: () => unawaited(_analyze()),
+                      ),
                   ],
                 ),
               ),
@@ -187,10 +249,55 @@ class _CapturePageState extends ConsumerState<CapturePage>
     ),
     _Phase.camera => ref.read(cameraViewBuilderProvider)(
       active: _active,
+      pose: _pose,
+      avoidYawSign: _shot == 2 ? _firstSideYawSign : null,
+      onYawCaptured: (yaw) => _lastCapturedYaw = yaw,
       onCaptured: (raw) => unawaited(_submit(raw)),
       onUnavailable: () {
         if (mounted) setState(() => _phase = _Phase.cameraUnavailable);
       },
     ),
   };
+}
+
+/// "Foto 1 dari 3 · Tampak depan" plus a hint on the optional side photos.
+class _StepHeader extends StatelessWidget {
+  const _StepHeader({required this.shot});
+
+  final int shot;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final title = switch (shot) {
+      0 => AppStrings.captureStepFront,
+      1 => AppStrings.captureStepSide1,
+      _ => AppStrings.captureStepSide2,
+    };
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Semantics(
+        liveRegion: true,
+        child: Column(
+          children: [
+            Text(title, style: text.titleMedium, textAlign: TextAlign.center),
+            if (shot > 0) ...[
+              Text(
+                shot == 1
+                    ? AppStrings.frontPhotoSaved
+                    : AppStrings.sidePhotoSaved,
+                style: text.bodyMedium,
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                AppStrings.captureSideHint,
+                style: text.bodySmall,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -1,43 +1,43 @@
 {
-  "version": "2026-11",
+  "version": "2026-11-afaskin-fusion",
   "questions": [
     {
       "id": "q1",
-      "text": "Seberapa sering wajahmu terlihat berminyak di siang hari?",
+      "text": "Bagaimana kondisi kulit wajahmu 2–3 jam setelah mencuci muka?",
       "scale": {
         "min": 1,
         "max": 5,
-        "min_label": "Tidak pernah",
-        "max_label": "Hampir selalu",
+        "min_label": "Sangat kering / ketarik",
+        "max_label": "Sangat berminyak / mengkilap",
         "labels": [
-          "Tidak pernah",
-          "Jarang",
-          "Kadang-kadang",
-          "Sering",
-          "Hampir selalu"
+          "Sangat kering / ketarik",
+          "Agak kering",
+          "Normal / nyaman",
+          "Agak berminyak",
+          "Sangat berminyak / mengkilap"
         ]
       }
     },
     {
       "id": "q2",
-      "text": "Seberapa sering kulitmu terasa kencang atau kering setelah cuci muka?",
+      "text": "Seberapa sering kulitmu iritasi (perih, gatal, atau memerah) setelah memakai produk skincare?",
       "scale": {
         "min": 1,
         "max": 5,
         "min_label": "Tidak pernah",
-        "max_label": "Hampir selalu",
+        "max_label": "Sangat sering",
         "labels": [
           "Tidak pernah",
           "Jarang",
           "Kadang-kadang",
           "Sering",
-          "Hampir selalu"
+          "Sangat sering"
         ]
       }
     },
     {
       "id": "q3",
-      "text": "Seberapa sering jerawat muncul dalam sebulan terakhir?",
+      "text": "Seberapa sering kamu mengalami jerawat yang meradang (merah, bengkak, atau bernanah)?",
       "scale": {
         "min": 1,
         "max": 5,
@@ -54,41 +54,24 @@
     },
     {
       "id": "q4",
-      "text": "Seberapa sering kulitmu perih atau memerah setelah mencoba produk baru?",
+      "text": "Seberapa berminyak area T-zone (dahi, hidung, dagu) di siang hari?",
       "scale": {
         "min": 1,
         "max": 5,
-        "min_label": "Tidak pernah",
-        "max_label": "Hampir selalu",
+        "min_label": "Tidak berminyak",
+        "max_label": "Sangat berminyak",
         "labels": [
-          "Tidak pernah",
-          "Jarang",
-          "Kadang-kadang",
-          "Sering",
-          "Hampir selalu"
+          "Tidak berminyak",
+          "Sedikit",
+          "Cukup",
+          "Berminyak",
+          "Sangat berminyak"
         ]
       }
     },
     {
       "id": "q5",
-      "text": "Seberapa terlihat komedo atau pori-pori besar di area hidung dan dahi?",
-      "scale": {
-        "min": 1,
-        "max": 5,
-        "min_label": "Tidak terlihat",
-        "max_label": "Sangat terlihat",
-        "labels": [
-          "Tidak terlihat",
-          "Sedikit",
-          "Cukup terlihat",
-          "Terlihat",
-          "Sangat terlihat"
-        ]
-      }
-    },
-    {
-      "id": "q6",
-      "text": "Seberapa sering kulitmu bersisik atau mengelupas?",
+      "text": "Seberapa sering kulitmu terasa kering, kasar, atau mengelupas?",
       "scale": {
         "min": 1,
         "max": 5,
@@ -104,19 +87,36 @@
       }
     },
     {
-      "id": "q7",
-      "text": "Seberapa sering kamu beraktivitas di bawah sinar matahari?",
+      "id": "q6",
+      "text": "Seberapa banyak komedo hitam atau putih di wajahmu?",
       "scale": {
         "min": 1,
         "max": 5,
-        "min_label": "Hampir tidak pernah",
-        "max_label": "Setiap hari",
+        "min_label": "Tidak ada",
+        "max_label": "Sangat banyak",
         "labels": [
-          "Hampir tidak pernah",
-          "Jarang",
-          "Kadang-kadang",
-          "Sering",
-          "Setiap hari"
+          "Tidak ada",
+          "Sedikit",
+          "Cukup banyak",
+          "Banyak",
+          "Sangat banyak"
+        ]
+      }
+    },
+    {
+      "id": "q7",
+      "text": "Seberapa banyak bekas jerawat (noda gelap atau bopeng) di wajahmu?",
+      "scale": {
+        "min": 1,
+        "max": 5,
+        "min_label": "Tidak ada",
+        "max_label": "Sangat banyak",
+        "labels": [
+          "Tidak ada",
+          "Sedikit",
+          "Cukup banyak",
+          "Banyak",
+          "Sangat banyak"
         ]
       }
     }
