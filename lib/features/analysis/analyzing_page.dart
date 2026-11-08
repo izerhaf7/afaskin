@@ -88,7 +88,9 @@ class _AnalyzingPageState extends ConsumerState<AnalyzingPage> {
               sideImagesJpeg: sides,
             );
       // Front photo stays in memory for the face map on the result screen.
-      ref.read(latestAnalysisPhotoProvider.notifier).set(result.analysisId, photo);
+      ref
+          .read(latestAnalysisPhotoProvider.notifier)
+          .set(result.analysisId, photo);
       ref.read(pendingPhotoProvider.notifier).clear();
       ref.read(pendingSidePhotosProvider.notifier).clear();
       ref.read(latestAnalysisProvider.notifier).set(result);

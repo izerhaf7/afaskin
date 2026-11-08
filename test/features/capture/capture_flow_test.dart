@@ -43,6 +43,17 @@ class _MockRepo extends Mock implements AnalysisRepository;
 final _raw = Uint8List.fromList([1, 2, 3]);
 final _processed = Uint8List.fromList([9, 9, 9]);
 
+/// PNG 1x1 valid untuk jalur galeri: layar "Atur posisi" men-decode byte ini
+/// untuk mendapat ukuran gambar, jadi tidak boleh byte acak.
+final _galleryImage = Uint8List.fromList(const [
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+  0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xDE, 0x00, 0x00, 0x00,
+  0x0C, 0x49, 0x44, 0x41, 0x54, 0x08, 0xD7, 0x63, 0xF8, 0xCF, 0xC0, 0x00,
+  0x00, 0x03, 0x01, 0x01, 0x00, 0x18, 0xDD, 0x8D, 0xB4, 0x00, 0x00, 0x00,
+  0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+]);
+
 /// Poses the fake camera was asked for, in order (reset per test).
 final _poses = <CapturePose>[];
 
@@ -89,9 +100,21 @@ Future<ProviderContainer> _openCapture(
       galleryPickerProvider.overrideWithValue(_FakeGallery(gallery)),
       cameraViewBuilderProvider.overrideWithValue(_fakeCamera),
       photoProcessorProvider.overrideWithValue((raw) async {
-        expect(raw, _raw);
-        return _processed;
+        // Jalur galeri memakai PNG valid supaya layar "Atur posisi" bisa
+        // membaca ukuran gambar; jalur kamera memakai byte penanda biasa.
+        final isGallery = raw == _galleryImage;
+        expect(isGallery || raw == _raw, isTrue);
+        return isGallery ? _galleryImage : _processed;
       }),
+      // Layar "Atur posisi" tidak bisa men-decode byte palsu di test VM, jadi
+      // crop-nya diganti: yang diuji di sini adalah alurnya, bukan geometri.
+      photoCropProvider.overrideWithValue(
+        (raw, rect, {int target = 1200}) async {
+          expect(raw, _galleryImage);
+          return _processed;
+        },
+      ),
+      photoSizeProvider.overrideWithValue((_) async => const Size(400, 600)),
     ],
   );
   await tester.pump(const Duration(seconds: 2));
@@ -155,13 +178,15 @@ void main() {
     tester,
   ) async {
     final permission = _FakePermission(CameraPermissionState.permanentlyDenied);
-    await _openCapture(tester, permission: permission, gallery: _raw);
+    await _openCapture(tester, permission: permission, gallery: _galleryImage);
 
     expect(find.text('Akses kamera ditolak'), findsOneWidget);
     await tapVisible(tester, find.text('Buka pengaturan HP'));
     expect(permission.settingsOpened, 1);
 
     await tapVisible(tester, find.text('Pilih dari galeri'));
+    await waitFor(tester, find.text('Atur posisi'));
+    await tapVisible(tester, find.text('Gunakan foto ini'));
     await waitFor(tester, find.text('Hasil analisis'));
   });
 

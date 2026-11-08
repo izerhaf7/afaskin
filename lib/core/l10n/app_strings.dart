@@ -34,6 +34,7 @@ abstract final class AppStrings {
     'multiple_faces': 'Terdeteksi lebih dari satu wajah',
     'face_too_small': 'Wajah terlalu jauh dari kamera',
     'not_frontal': 'Wajah tidak menghadap lurus ke kamera',
+    'face_covered': 'Area kulit wajah tertutup rambut, tangan, atau masker',
   };
 
   // Style guide (debug only).
@@ -219,6 +220,20 @@ abstract final class AppStrings {
   static const String photoReadError =
       'Foto tidak bisa dibaca. Coba foto lain.';
 
+  /// Awalan pesan saat model gagal dijalankan; sebabnya ditambahkan di belakang.
+  static const String errorLocalAnalysis =
+      'Analisis gagal di perangkat, karena';
+
+  // Capture: atur posisi foto dari galeri.
+  static const String adjustTitle = 'Atur posisi';
+  static const String adjustBody =
+      'Geser dan cubit foto supaya wajah pas di dalam kotak. Bagian di luar '
+      'kotak tidak ikut dianalisis.';
+  static const String adjustUse = 'Gunakan foto ini';
+  static const String adjustReset = 'Kembalikan';
+  static const String adjustCropError =
+      'Gagal memotong foto. Coba pilih foto lain.';
+
   // Capture: permission.
   static const String permissionTitle = 'Izinkan akses kamera';
   static const String permissionBody =
@@ -261,6 +276,24 @@ abstract final class AppStrings {
   static const String faceMapHeading = 'Peta wajah';
   static const String faceMapHint =
       'Ketuk kondisi untuk melihat areanya di wajah.';
+  static const String closeupHeading = 'Sorotan area';
+  static const String closeupHint =
+      'Potongan foto pada area yang terdeteksi, diperbesar. Ketuk untuk '
+      'menyorot kondisi terkait.';
+  static const String closeupNoPhoto =
+      'Sorotan foto hanya tersedia untuk analisis terbaru.';
+  static const String ingredientsNeededHeading = 'Kandungan yang dibutuhkan';
+  static const String ingredientsHint =
+      'Kandungan aktif yang membantu tiap kondisi, beserta manfaat dan '
+      'rujukannya.';
+  static const String ingredientsBasic =
+      'Tidak ada kondisi khusus yang perlu ditangani. Perawatan dasar ini '
+      'cukup untuk menjaga kulitmu.';
+  static const String ingredientAvoid = 'Sebaiknya dihindari';
+  static const String recommendationHeading = 'Rekomendasi produk';
+  static const String recommendationHint =
+      'Dipilih dari katalog produk lokal berdasarkan kondisi kulitmu.';
+  static const String viewAllProducts = 'Lihat semua produk';
   static const String dermatologistTitle = 'Pertimbangkan ke dokter kulit';
   static const String dermatologistBody =
       'Terdeteksi tanda yang sebaiknya diperiksa langsung oleh dokter '

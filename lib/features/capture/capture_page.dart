@@ -10,6 +10,7 @@ import 'package:afaskin/features/analysis/analysis_flow.dart';
 import 'package:afaskin/features/capture/capture_services.dart';
 import 'package:afaskin/features/capture/face_guidance.dart';
 import 'package:afaskin/features/capture/live_camera_view.dart';
+import 'package:afaskin/features/capture/photo_adjust_page.dart';
 import 'package:afaskin/features/capture/photo_processing.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -49,6 +50,17 @@ final cameraViewBuilderProvider = Provider<CameraViewBuilder>(
 /// Resize + EXIF strip, off the UI thread. Overridable for tests.
 final photoProcessorProvider = Provider<Future<Uint8List> Function(Uint8List)>(
   (ref) => preparePhotoInBackground,
+);
+
+/// Crop persegi dari layar "Atur posisi", off the UI thread.
+final photoCropProvider =
+    Provider<Future<Uint8List> Function(Uint8List, Rect, {int target})>(
+      (ref) => cropPhotoInBackground,
+    );
+
+/// Pembaca ukuran gambar untuk layar "Atur posisi". Overridable di test.
+final photoSizeProvider = Provider<Future<Size> Function(Uint8List)>(
+  (ref) => decodeImageSize,
 );
 
 enum _Phase { checking, rationale, denied, camera, cameraUnavailable }
@@ -133,18 +145,50 @@ class _CapturePageState extends ConsumerState<CapturePage>
     );
   }
 
-  /// A gallery photo is used as the front view only, analyzed right away.
+  /// A gallery photo is used as the front view only. The user positions it
+  /// first: gallery shots are often off-centre or zoomed out, which the quality
+  /// gate rejects, so cropping here is what makes them usable.
   Future<void> _fromGallery() async {
     final raw = await ref.read(galleryPickerProvider).pick();
-    if (raw == null) return;
+    if (raw == null || !mounted) return;
+    setState(() => _processing = true);
+    Uint8List prepared;
+    try {
+      prepared = await ref.read(photoProcessorProvider)(raw);
+    } on PhotoDecodeException {
+      if (mounted) {
+        setState(() => _processing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(AppStrings.photoReadError)),
+        );
+      }
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _processing = false);
+    final cropped = await Navigator.of(context).push<Uint8List>(
+      MaterialPageRoute<Uint8List>(
+        builder: (_) => PhotoAdjustPage(
+          bytes: prepared,
+          onCrop: ref.read(photoCropProvider),
+          decodeSize: ref.read(photoSizeProvider),
+        ),
+      ),
+    );
+    if (cropped == null || !mounted) return;
     _resetShots();
-    await _submit(raw, analyzeNow: true);
+    // Sudah di-crop dan di-resize di layar atur posisi: jangan diproses ulang.
+    await _submit(cropped, analyzeNow: true, prepared: true);
   }
 
-  Future<void> _submit(Uint8List raw, {bool analyzeNow = false}) async {
+  Future<void> _submit(
+    Uint8List raw, {
+    bool analyzeNow = false,
+    bool prepared = false,
+  }) async {
     setState(() => _processing = true);
     try {
-      final jpeg = await ref.read(photoProcessorProvider)(raw);
+      final jpeg = prepared ? raw : await ref.read(photoProcessorProvider)(raw);
       if (_shot == 0) {
         ref.read(pendingPhotoProvider.notifier).set(jpeg);
         ref.read(pendingSidePhotosProvider.notifier).clear();

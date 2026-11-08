@@ -19,11 +19,18 @@ class CatalogProduct {
       matched = (j['matched'] as Map).map(
         (k, v) => MapEntry(k as String, (v as List).cast<String>()),
       ),
-      ingredients = (j['ingredients'] as List).cast<String>();
+      ingredients = (j['ingredients'] as List).cast<String>(),
+      imageUrl = (j['image_url'] as String?)?.trim().isEmpty ?? true
+          ? null
+          : (j['image_url'] as String).trim();
 
   final String id, name, brand, category;
   final int price, reviews;
   final double? rating;
+
+  /// Foto produk. Null kalau katalog tidak menyediakan gambar (katalog Sephora
+  /// tidak punya kolom gambar), dan kartu produk lalu memakai bentuk daftar.
+  final String? imageUrl;
 
   /// Skor model relevansi kondisi (persentil 0-1) per tag manfaat.
   final Map<String, double> tag;
@@ -198,7 +205,7 @@ class Recommender {
           : 'rating ${x.rating!.toStringAsFixed(1).replaceAll('.', ',')}';
       reasons.add(
         'Disukai ${MlTexts.skin[topSkin]}: lebih baik dari ${(q * 100).round()}% '
-        'produk lain berdasarkan ulasan pengguna Sephora '
+        'produk lain berdasarkan ulasan pengguna Sociolla '
         '($rating dari ${_thousands(x.reviews)} ulasan).',
       );
     }
@@ -209,7 +216,7 @@ class Recommender {
       'category': x.category,
       'price': x.price,
       'match_score': (score * 1000).roundToDouble() / 1000,
-      'image_url': null,
+      'image_url': x.imageUrl,
       'matched_ingredients': matched,
       'reasons': reasons,
       'warnings': _ownWarnings(x, p),

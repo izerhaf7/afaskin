@@ -1,5 +1,6 @@
 import 'dart:isolate';
 import 'dart:typed_data';
+import 'dart:ui' show Rect;
 
 import 'package:image/image.dart' as img;
 
@@ -61,3 +62,49 @@ Uint8List preparePhotoForUpload(
 /// Runs [preparePhotoForUpload] off the UI thread.
 Future<Uint8List> preparePhotoInBackground(Uint8List input) =>
     Isolate.run(() => preparePhotoForUpload(input));
+
+/// Crop persegi pada foto yang sudah disiapkan: mengambil bagian yang dipilih
+/// pengguna di layar "Atur posisi", lalu menghapus metadata lagi.
+///
+/// [rect] dalam piksel gambar, [target] sisi keluaran (mis. 1200 untuk foto
+/// wajah 3 sudut). Crop dilakukan setelah [img.bakeOrientation] sehingga
+/// koordinatnya sama dengan yang terlihat di layar.
+Uint8List cropPhoto(
+  Uint8List input,
+  Rect rect, {
+  int target = 1200,
+  int quality = kJpegQuality,
+}) {
+  final decoded = img.decodeImage(input);
+  if (decoded == null) throw const PhotoDecodeException();
+  var image = img.bakeOrientation(decoded);
+
+  final x = rect.left.round().clamp(0, image.width - 1);
+  final y = rect.top.round().clamp(0, image.height - 1);
+  final w = rect.width.round().clamp(1, image.width - x);
+  final h = rect.height.round().clamp(1, image.height - y);
+  image = img.copyCrop(image, x: x, y: y, width: w, height: h);
+
+  // Keluaran persegi: model kondisi memotong patch dari area wajah, jadi
+  // resolusi wajah yang cukup lebih penting daripada mempertahankan rasio.
+  if (image.width < target) {
+    image = img.copyResize(
+      image,
+      width: target,
+      height: target,
+      interpolation: img.Interpolation.cubic,
+    );
+  }
+
+  image
+    ..exif = img.ExifData()
+    ..iccProfile = null
+    ..textData = null;
+
+  return img.encodeJpg(image, quality: quality);
+}
+
+/// Runs [cropPhoto] off the UI thread.
+Future<Uint8List> cropPhotoInBackground(Uint8List input, Rect rect, {int target = 1200}) =>
+    Isolate.run(() => cropPhoto(input, rect, target: target));
+

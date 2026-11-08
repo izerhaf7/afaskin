@@ -137,6 +137,29 @@ void main() {
   });
 
   group('Product card', () {
+    testWidgets('list tile carries the same information without a photo', (
+      tester,
+    ) async {
+      final withWarning = _items.firstWhere((p) => p.hasWarnings);
+      await _pumpPlain(
+        tester,
+        ProductListTile(product: withWarning, onTap: () {}),
+      );
+      expect(find.text('Ada konflik bahan'), findsOneWidget);
+      expect(find.text(withWarning.name), findsOneWidget);
+      expect(find.text('${withWarning.brand} · Serum'), findsOneWidget);
+      expect(find.byType(MatchBadge), findsOneWidget);
+      // Tanpa foto: tidak boleh ada kotak gambar placeholder.
+      expect(find.byType(ProductImage), findsNothing);
+    });
+
+    test('hasImage only when the catalog carries a URL', () {
+      final p = _items.first;
+      expect(p.copyWith(imageUrl: null).hasImage, isFalse);
+      expect(p.copyWith(imageUrl: '').hasImage, isFalse);
+      expect(p.copyWith(imageUrl: 'https://x/y.jpg').hasImage, isTrue);
+    });
+
     testWidgets('shows "Ada konflik bahan" only when warnings exist', (
       tester,
     ) async {

@@ -38,6 +38,11 @@ abstract class Product with _$Product {
 
   bool get hasWarnings => warnings.isNotEmpty;
 
+  /// True when the catalog carries a real photo URL. Cards fall back to a
+  /// row layout (no image) when this is false, instead of showing a striped
+  /// placeholder where the product photo should be.
+  bool get hasImage => imageUrl != null && imageUrl!.isNotEmpty;
+
   bool isMatchedIngredient(String ingredient) {
     final i = ingredient.toLowerCase().trim();
     return matchedIngredients.any((m) => i.contains(m.toLowerCase().trim()));

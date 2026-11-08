@@ -12,6 +12,9 @@ import 'package:afaskin/core/widgets/state_views.dart';
 import 'package:afaskin/data/models/models.dart';
 import 'package:afaskin/features/analysis/analysis_flow.dart';
 import 'package:afaskin/features/analysis/face_map.dart';
+import 'package:afaskin/features/analysis/ingredient_section.dart';
+import 'package:afaskin/features/analysis/problem_closeups.dart';
+import 'package:afaskin/features/analysis/recommendation_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -54,6 +57,7 @@ class ResultView extends StatefulWidget {
 
 class _ResultViewState extends State<ResultView> {
   SkinConditionLabel? _selected;
+  FaceRegion? _selectedRegion;
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +69,17 @@ class _ResultViewState extends State<ResultView> {
     final needsDoctor = conditions.any(
       (c) => c.label.suggestsDermatologist && c.probability >= 0.3,
     );
+
+    // Nama kondisi per area, urut dari probabilitas tertinggi, dipakai untuk
+    // memberi judul pada potongan close-up.
+    final labelsByRegion = <FaceRegion, List<String>>{};
+    for (final c in conditions) {
+      final name = AppStrings.condition(c.label);
+      for (final region in c.regions) {
+        (labelsByRegion[region] ??= <String>[]).add(name);
+      }
+    }
+    final selectedRegion = selected?.regions.firstOrNull ?? _selectedRegion;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -87,7 +102,9 @@ class _ResultViewState extends State<ResultView> {
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: widget.photo == null ? 240 : 300),
+                  constraints: BoxConstraints(
+                    maxWidth: widget.photo == null ? 240 : 300,
+                  ),
                   child: FaceMap(
                     photo: widget.photo,
                     rois: r.rois,
@@ -126,6 +143,27 @@ class _ResultViewState extends State<ResultView> {
             ],
           ),
         ),
+        if (labelsByRegion.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.lg),
+          Text(AppStrings.closeupHeading, style: text.titleLarge),
+          const SizedBox(height: AppSpacing.xxs),
+          Text(AppStrings.closeupHint, style: text.bodySmall),
+          const SizedBox(height: AppSpacing.xs),
+          ProblemCloseups(
+            photo: widget.photo,
+            rois: r.rois,
+            labelsByRegion: labelsByRegion,
+            selected: selectedRegion,
+            onTapRegion: (region) => setState(() {
+              _selectedRegion = _selectedRegion == region ? null : region;
+              // Menyorot area juga menyorot kondisi yang ada di sana.
+              final first = conditions
+                  .where((c) => c.regions.contains(region))
+                  .firstOrNull;
+              _selected = _selectedRegion == null ? null : first?.label;
+            }),
+          ),
+        ],
         const SizedBox(height: AppSpacing.lg),
         Text(AppStrings.conditionsHeading, style: text.titleLarge),
         const SizedBox(height: AppSpacing.xs),
@@ -137,23 +175,38 @@ class _ResultViewState extends State<ResultView> {
           _ConditionCard(
             condition: c,
             selected: c.label == _selected,
-            onTap: () => setState(
-              () => _selected = _selected == c.label ? null : c.label,
-            ),
+            onTap: () => setState(() {
+              _selected = _selected == c.label ? null : c.label;
+              _selectedRegion = _selected == null
+                  ? null
+                  : c.regions.firstOrNull;
+            }),
           ),
           const SizedBox(height: AppSpacing.xs),
         ],
-        const SizedBox(height: AppSpacing.md),
-        Text(AppStrings.fusionNote(r.fusion.alpha), style: text.bodySmall),
-        const SizedBox(height: AppSpacing.xxs),
-        Text(r.disclaimer, style: text.bodySmall),
         const SizedBox(height: AppSpacing.lg),
+        Text(AppStrings.ingredientsNeededHeading, style: text.titleLarge),
+        const SizedBox(height: AppSpacing.xxs),
+        Text(AppStrings.ingredientsHint, style: text.bodySmall),
+        const SizedBox(height: AppSpacing.xs),
+        IngredientSection(conditions: conditions),
+        const SizedBox(height: AppSpacing.lg),
+        Text(AppStrings.recommendationHeading, style: text.titleLarge),
+        const SizedBox(height: AppSpacing.xxs),
+        Text(AppStrings.recommendationHint, style: text.bodySmall),
+        const SizedBox(height: AppSpacing.xs),
+        RecommendationPreview(analysisId: r.analysisId),
+        const SizedBox(height: AppSpacing.sm),
         AfaButton(
-          label: AppStrings.seeRecommendations,
+          label: AppStrings.viewAllProducts,
           icon: Icons.shopping_bag_outlined,
           onPressed: () =>
               context.push(AppRoutes.recommendations(r.analysisId)),
         ),
+        const SizedBox(height: AppSpacing.md),
+        Text(AppStrings.fusionNote(r.fusion.alpha), style: text.bodySmall),
+        const SizedBox(height: AppSpacing.xxs),
+        Text(r.disclaimer, style: text.bodySmall),
       ],
     );
   }

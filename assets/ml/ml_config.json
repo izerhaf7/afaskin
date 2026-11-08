@@ -131,20 +131,20 @@
   "max_conditions": 4,
   "skin_min": 0.6,
   "aggregation": "mean",
-  "gate_conf": 0.4,
+  "gate_conf": 0.35,
   "gate_frac": 0.05,
-  "gate_min_patches": 4,
+  "gate_min_patches": 3,
   "_catatan": "Dipilih dari uji on-device (Nov 2026): top-3 per kelas selalu 'menemukan' lesi di wajah bersih; mean + gating bukti visual mencegah kondisi muncul hanya dari kuesioner. Titik ML Kit diperhalus model landmark MediaPipe; patch dibatasi masker wajah & dilewati bila kilap.",
   "feature_mask": true,
   "glare_level": 215,
   "glare_max": 0.06,
   "hair_l_rel": 0.6,
-  "_catatan_gate": "Ambang dipilih dari sapuan pada 158 gambar berlabel dengan model v2: alpha 0.6, gate_conf 0.40, gate_frac 0.05, gate_min_patches 4 memberi acne 12/40, Scars 19/40, tahi lalat 5/39, dan hanya 3/39 wajah tanpa lesi ikut menampilkan kondisi. Pada foto asli pengguna (3 sudut) Scars muncul dari bukti visual 4 patch per sudut."
+  "_catatan_gate": "Ambang dilonggarkan dari conf 0.40/min 4 karena pada foto asli dari galeri jerawat sering luput: model v2 menilai sebagian besar patch 'Clear' saat lesi kecil. Diukur pada 158 gambar berlabel (model v2, pipeline patch sama): conf 0.35/min 3 menaikkan acne tertangkap 12->15 dari 40 dan Scars 19->26 dari 40, dengan biaya wajah tanpa lesi yang ikut menampilkan kondisi 3->7 dari 39. Batas sebenarnya ada di model, bukan gate: pada foto close-up acnenew lesi mengisi sebagian besar patch, sedangkan di selfie lesi hanya beberapa piksel. Perbaikan tuntas perlu model yang dilatih khusus patch selfie berjarak normal (notebook 04)."
  },
  "recommender": {
   "weights": [
-   0.5,
-   0.5,
+   0.7,
+   0.3,
    0.0
   ],
   "actives": [
@@ -772,6 +772,6 @@
    "Birthmark": {},
    "Clear": {}
   },
-  "_catatan": "Bobot 0.5/0.5/0.0 dari notebook 06 varian Sephora (outputs/recommender), yaitu katalog yang dipakai aplikasi: P@10 0,517 NDCG@10 0,559, nol pelanggaran keamanan. Varian notebook 06 local (0.7/0.3) dioptimalkan pada katalog Sociolla 824 produk yang tidak beririsan dengan 1427 produk Sephora di catalog.json, jadi TIDAK diterapkan."
+  "_catatan": "Katalog kini produk lokal Sociolla (824 produk, semuanya berfoto), jadi bobot 0.7/0.3/0.0 dari notebook 06 varian local dipakai: P@10 0,63 NDCG@10 0,684, nol pelanggaran keamanan, coverage 0,358. Sebelumnya katalog Sephora memakai 0.5/0.5."
  }
 }

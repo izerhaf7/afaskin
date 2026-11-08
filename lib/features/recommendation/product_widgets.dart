@@ -209,6 +209,81 @@ class ProductCard extends StatelessWidget {
   }
 }
 
+/// Row layout for products whose catalog entry has no photo: instead of a
+/// card with an empty image slot, the whole row becomes the tappable surface.
+class ProductListTile extends StatelessWidget {
+  const ProductListTile({required this.product, required this.onTap, super.key});
+
+  final Product product;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final p = product;
+    return Material(
+      color: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: AppRadius.cardAll,
+        side: BorderSide(color: AppColors.outline),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 12, 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${p.brand} · ${AppStrings.category(p.category)}',
+                      style: text.bodySmall?.copyWith(color: AppColors.inkMuted),
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    Text(
+                      p.name,
+                      style: text.titleSmall?.copyWith(fontSize: 15, height: 1.4),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(formatRupiah(p.price), style: text.bodyLarge),
+                    if (p.hasWarnings) ...[
+                      const SizedBox(height: AppSpacing.xxs),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            size: 14,
+                            color: AppColors.danger,
+                          ),
+                          const SizedBox(width: AppSpacing.xxs),
+                          Flexible(
+                            child: Text(
+                              AppStrings.hasConflict,
+                              style: text.bodySmall?.copyWith(
+                                color: AppColors.danger,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              MatchBadge(score: p.matchScore),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Danger banner: warning title in danger, explanation in ink.
 class ConflictBanner extends StatelessWidget {
   const ConflictBanner({required this.warnings, super.key});

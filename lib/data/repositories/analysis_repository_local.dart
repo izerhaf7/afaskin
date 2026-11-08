@@ -3,8 +3,10 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:afaskin/core/config/env.dart';
+import 'package:afaskin/core/l10n/app_strings.dart';
 import 'package:afaskin/core/network/failures.dart';
 import 'package:afaskin/data/models/models.dart';
+import 'package:afaskin/features/capture/photo_processing.dart';
 import 'package:afaskin/data/repositories/analysis_repository.dart';
 import 'package:afaskin/ml/face_mesh.dart';
 import 'package:afaskin/ml/fusion.dart';
@@ -41,9 +43,13 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
       rethrow;
     } on Object catch (e, st) {
       debugPrint('Local analysis error: $e\n$st');
-      throw const ServerFailure(message: 'Analisis gagal di perangkat. Coba lagi.');
+      // Sebutkan sebabnya: "coba lagi" saja tidak memberi tahu apa yang salah.
+      throw ServerFailure(
+        message: '${AppStrings.errorLocalAnalysis} ${localFailureCause(e)}',
+      );
     }
   }
+
 
   @override
   Future<HealthStatus> health() => _guard(() async {
@@ -252,3 +258,15 @@ String _uuid() {
   final h = b.map((x) => x.toRadixString(16).padLeft(2, '0')).join();
   return '${h.substring(0, 8)}-${h.substring(8, 12)}-${h.substring(12, 16)}-${h.substring(16, 20)}-${h.substring(20)}';
 }
+
+/// Sebab kegagalan analisis lokal dalam bahasa yang bisa dibaca pengguna.
+///
+/// Dipisah dari kelas supaya bisa diuji tanpa menjalankan model: pengguna perlu
+/// tahu kenapa analisisnya gagal, bukan hanya "coba lagi".
+String localFailureCause(Object error) => switch (error) {
+  StateError(:final message) when message.contains('no_face') =>
+    'wajah tidak terdeteksi di foto.',
+  StateError(:final message) => 'model menolak foto ($message).',
+  PhotoDecodeException() => 'foto tidak bisa dibaca.',
+  _ => 'terjadi kesalahan saat menjalankan model (${error.runtimeType}).',
+};

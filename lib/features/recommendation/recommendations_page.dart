@@ -197,31 +197,48 @@ class _RecommendationsPageState extends ConsumerState<RecommendationsPage> {
                       AppSpacing.md,
                       0,
                     ),
-                    sliver: SliverList.separated(
-                      itemCount: (value.length + 1) ~/ 2,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: AppSpacing.sm),
-                      itemBuilder: (context, row) {
-                        Widget cell(int i) => i < value.length
-                            ? ProductCard(
-                                product: value[i],
-                                onTap: () => context.push(
-                                  AppRoutes.product(value[i].id),
+                    // Katalog tanpa foto produk ditampilkan sebagai daftar satu
+                    // kolom (baris), bukan grid dua kolom yang menyisakan kotak
+                    // gambar kosong. Kalau semua produk punya foto, grid tetap.
+                    sliver: value.every((p) => p.hasImage)
+                        ? SliverList.separated(
+                            itemCount: (value.length + 1) ~/ 2,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: AppSpacing.sm),
+                            itemBuilder: (context, row) {
+                              Widget cell(int i) => i < value.length
+                                  ? ProductCard(
+                                      product: value[i],
+                                      onTap: () => context.push(
+                                        AppRoutes.product(value[i].id),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink();
+                              return IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Expanded(child: cell(row * 2)),
+                                    const SizedBox(width: AppSpacing.sm),
+                                    Expanded(child: cell(row * 2 + 1)),
+                                  ],
                                 ),
-                              )
-                            : const SizedBox.shrink();
-                        return IntrinsicHeight(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Expanded(child: cell(row * 2)),
-                              const SizedBox(width: AppSpacing.sm),
-                              Expanded(child: cell(row * 2 + 1)),
-                            ],
+                              );
+                            },
+                          )
+                        : SliverList.separated(
+                            itemCount: value.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: AppSpacing.xs),
+                            itemBuilder: (context, i) {
+                              final p = value[i];
+                              void open() =>
+                                  context.push(AppRoutes.product(p.id));
+                              return p.hasImage
+                                  ? ProductCard(product: p, onTap: open)
+                                  : ProductListTile(product: p, onTap: open);
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
                 ],
                 AsyncError(:final error) => [

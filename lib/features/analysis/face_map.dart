@@ -221,7 +221,12 @@ class _PhotoFaceMapState extends State<_PhotoFaceMap> {
     final t = (c.dy * im.height - side / 2).clamp(0, im.height - 1).toDouble();
     final r = math.min(l + side, im.width.toDouble());
     final b = math.min(t + side * 1.1, im.height.toDouble());
-    return Rect.fromLTRB(l / im.width, t / im.height, r / im.width, b / im.height);
+    return Rect.fromLTRB(
+      l / im.width,
+      t / im.height,
+      r / im.width,
+      b / im.height,
+    );
   }
 
   @override
@@ -240,7 +245,10 @@ class _PhotoFaceMapState extends State<_PhotoFaceMap> {
       );
     }
     if (im == null) {
-      return const AspectRatio(aspectRatio: 3 / 4, child: Center(child: CircularProgressIndicator()));
+      return const AspectRatio(
+        aspectRatio: 3 / 4,
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
     final crop = _crop(im);
     return ClipRRect(
@@ -284,7 +292,12 @@ class _PhotoMapPainter extends CustomPainter {
       crop.right * image.width,
       crop.bottom * image.height,
     );
-    canvas.drawImageRect(image, src, Offset.zero & size, Paint()..filterQuality = FilterQuality.medium);
+    canvas.drawImageRect(
+      image,
+      src,
+      Offset.zero & size,
+      Paint()..filterQuality = FilterQuality.medium,
+    );
     Rect toView(Rect r) => Rect.fromLTRB(
       (r.left - crop.left) / crop.width * size.width,
       (r.top - crop.top) / crop.height * size.height,
@@ -294,10 +307,16 @@ class _PhotoMapPainter extends CustomPainter {
     for (final roi in rois) {
       if (!highlighted.contains(roi.name)) continue;
       final strong = emphasized.contains(roi.name);
-      final rr = RRect.fromRectAndRadius(toView(roi.rect), const Radius.circular(10));
+      final rr = RRect.fromRectAndRadius(
+        toView(roi.rect),
+        const Radius.circular(10),
+      );
       final color = strong ? AppColors.danger : AppColors.caution;
       canvas
-        ..drawRRect(rr, Paint()..color = color.withValues(alpha: strong ? 0.25 : 0.12))
+        ..drawRRect(
+          rr,
+          Paint()..color = color.withValues(alpha: strong ? 0.25 : 0.12),
+        )
         ..drawRRect(
           rr,
           Paint()
