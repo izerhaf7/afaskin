@@ -1,7 +1,7 @@
 /// Static app information for the About page.
 abstract final class AppInfo {
   /// Keep in sync with `version:` in pubspec.yaml.
-  static const String version = '1.0.0';
+  static const String version = '1.1.0';
 
   static const String course = 'Pembelajaran Mesin';
   static const String team =

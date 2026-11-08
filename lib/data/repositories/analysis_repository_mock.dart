@@ -56,6 +56,7 @@ class AnalysisRepositoryMock implements AnalysisRepository {
     required Uint8List imageJpeg,
     required AnalyzePayload payload,
     List<Uint8List> sideImagesJpeg = const [],
+    void Function(AnalysisStage stage)? onStage,
   }) async {
     if (scenario == MockScenario.qualityFail) {
       final body = QualityRejectionBody.fromJson(

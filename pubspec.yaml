@@ -1,7 +1,7 @@
 name: afaskin
 description: "Afa Skin: analisis kondisi kulit wajah dari selfie dan rekomendasi skincare berbasis bahan aktif."
 publish_to: 'none'
-version: 1.0.0+2
+version: 1.1.0+3
 
 environment:
   sdk: ^3.13.7

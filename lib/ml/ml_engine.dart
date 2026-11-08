@@ -85,7 +85,13 @@ class MlEngine {
       await asset(skinFile),
       await asset(condFile),
       if (lmFile != null) await asset(lmFile) else null,
-      jsonEncode({'roi': cfg['roi'], 'scan': cfg['scan'], 'face': faceCfg, 'size': cond['input_size']}),
+      jsonEncode({
+        'roi': cfg['roi'],
+        'scan': cfg['scan'],
+        'face': faceCfg,
+        'size': cond['input_size'],
+        'threads': (cond['threads'] as int?) ?? 4,
+      }),
     ], debugName: 'afaskin-ml');
     final stream = rx.asBroadcastStream();
     final port = await stream.first as SendPort;
@@ -150,9 +156,14 @@ class MlEngine {
 
 Future<void> _workerMain(List<Object?> args) async {
   final main = args[0]! as SendPort;
+  final cfg0 = jsonDecode(args[4]! as String) as Map<String, dynamic>;
+  final threads = (cfg0['threads'] as int?) ?? 4;
   Interpreter make(TransferableTypedData t) => Interpreter.fromBuffer(
     t.materialize().asUint8List(),
-    options: InterpreterOptions()..addDelegate(XNNPackDelegate(options: XNNPackDelegateOptions(numThreads: 4))),
+    options: InterpreterOptions()
+      ..addDelegate(
+        XNNPackDelegate(options: XNNPackDelegateOptions(numThreads: threads)),
+      ),
   );
   final skin = make(args[1]! as TransferableTypedData);
   final cond = make(args[2]! as TransferableTypedData);

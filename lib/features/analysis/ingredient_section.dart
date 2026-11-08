@@ -128,14 +128,6 @@ class _IngredientRow extends StatelessWidget {
                   ),
                 ),
                 Text(info.benefit, style: text.bodyMedium),
-                if (info.source.trim().isNotEmpty)
-                  Text(
-                    info.source,
-                    style: text.bodySmall?.copyWith(
-                      fontSize: 11,
-                      color: AppColors.inkMuted,
-                    ),
-                  ),
               ],
             ),
           ),

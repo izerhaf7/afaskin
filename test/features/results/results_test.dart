@@ -13,6 +13,7 @@ import 'package:afaskin/features/analysis/analysis_flow.dart';
 import 'package:afaskin/features/analysis/result_page.dart';
 import 'package:afaskin/features/recommendation/product_detail_page.dart';
 import 'package:afaskin/features/recommendation/product_widgets.dart';
+import 'package:afaskin/features/recommendation/recommendation_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -49,6 +50,28 @@ Future<void> _pumpPlain(
   );
 }
 
+/// ResultView sekarang membangun seluruh isinya sekaligus (scroll stabil),
+/// jadi bagian rekomendasi ikut dibangun dan butuh scope + data.
+Future<void> _pumpResult(
+  WidgetTester tester,
+  Widget child, {
+  double scale = 1,
+}) => _pumpPlain(
+  tester,
+  ProviderScope(
+    overrides: [
+      recommendationsProvider(
+        analysisId: _result.analysisId,
+      ).overrideWith((ref) async => _items),
+      recommendationsProvider(
+        analysisId: 'with-cyst',
+      ).overrideWith((ref) async => _items),
+    ],
+    child: child,
+  ),
+  scale: scale,
+);
+
 Future<void> _scrollAll(WidgetTester tester) async {
   for (var i = 0; i < 10; i++) {
     await tester.drag(find.byType(Scrollable).first, const Offset(0, -400));
@@ -61,7 +84,7 @@ void main() {
     testWidgets('skin type, confidence and conditions sorted by probability', (
       tester,
     ) async {
-      await _pumpPlain(tester, ResultView(result: _result));
+      await _pumpResult(tester, ResultView(result: _result));
 
       expect(find.text('Berminyak'), findsWidgets);
       expect(find.text('78% keyakinan'), findsOneWidget);
@@ -74,7 +97,7 @@ void main() {
         'Jerawat', // 0.30
       ];
       await tester.dragUntilVisible(
-        find.text('Jerawat'),
+        find.text('Jerawat').first,
         find.byType(Scrollable).first,
         const Offset(0, -200),
       );
@@ -82,7 +105,8 @@ void main() {
         for (final t in order) tester.getTopLeft(find.text(t).first).dy,
       ];
       expect(ys, orderedEquals([...ys]..sort()));
-      expect(find.text('71%'), findsOneWidget);
+      // Persentase kini muncul dua kali: kartu kondisi dan kartu kandungan.
+      expect(find.text('71%'), findsWidgets);
       // API description is used when present.
       expect(
         find.text('Komedo terbuka akibat pori tersumbat sebum.'),
@@ -93,9 +117,9 @@ void main() {
     testWidgets('tapping a condition selects it (face map emphasis)', (
       tester,
     ) async {
-      await _pumpPlain(tester, ResultView(result: _result));
+      await _pumpResult(tester, ResultView(result: _result));
       await tester.dragUntilVisible(
-        find.text('Komedo hitam'),
+        find.text('Komedo hitam').first,
         find.byType(Scrollable).first,
         const Offset(0, -200),
       );
@@ -114,7 +138,7 @@ void main() {
     });
 
     testWidgets('no overflow at 130% text scale', (tester) async {
-      await _pumpPlain(tester, ResultView(result: _result), scale: 1.3);
+      await _pumpResult(tester, ResultView(result: _result), scale: 1.3);
       await _scrollAll(tester);
       expect(tester.takeException(), isNull);
     });
@@ -129,9 +153,9 @@ void main() {
           ),
         ],
       );
-      await _pumpPlain(tester, ResultView(result: withCyst));
+      await _pumpResult(tester, ResultView(result: withCyst));
       expect(find.text('Pertimbangkan ke dokter kulit'), findsOneWidget);
-      await _pumpPlain(tester, ResultView(result: _result));
+      await _pumpResult(tester, ResultView(result: _result));
       expect(find.text('Pertimbangkan ke dokter kulit'), findsNothing);
     });
   });

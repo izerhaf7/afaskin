@@ -70,8 +70,10 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
     required Uint8List imageJpeg,
     required AnalyzePayload payload,
     List<Uint8List> sideImagesJpeg = const [],
+    void Function(AnalysisStage stage)? onStage,
   }) => _guard(() async {
     final e = await _engine;
+    onStage?.call(AnalysisStage.quality);
     final sw = Stopwatch()..start();
 
     final debug = <String, Object?>{};
@@ -88,6 +90,7 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
         serverMessage: '${q.reasons.map((r) => MlTexts.qualityMessage[r] ?? r).join('. ')}.',
       );
     }
+    onStage?.call(AnalysisStage.regions);
     final views = <String, String>{'front': 'ok'};
     final tiles = [...front.tileProbs];
     final regions = [...front.tileRegions];
@@ -112,6 +115,7 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
       }
     }
 
+    onStage?.call(AnalysisStage.condition);
     final condClasses = (e.condCfg['classes'] as List).cast<String>();
     final scan = e.scanCfg;
     final agg = aggregateTiles(

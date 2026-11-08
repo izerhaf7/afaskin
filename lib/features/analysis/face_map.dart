@@ -15,6 +15,26 @@ import 'package:material_ui/material_ui.dart';
 /// the face. Without it (history) a schematic face is drawn: ROI `bbox` values
 /// are normalized to the photo, which was framed with the face filling the
 /// guide oval, so the silhouette lines up closely enough.
+
+/// Area yang diketuk: kotak yang memuat titik, atau pusat terdekat dalam
+/// toleransi 12% supaya ketukan di tepi kotak tetap terasa.
+FaceRegion? hitTestRegion(List<Roi> rois, Set<FaceRegion> allowed, Offset p) {
+  for (final r in rois) {
+    if (allowed.contains(r.name) && r.rect.contains(p)) return r.name;
+  }
+  FaceRegion? best;
+  var bestD = double.infinity;
+  for (final r in rois) {
+    if (!allowed.contains(r.name)) continue;
+    final d = (r.rect.center - p).distance;
+    if (d < bestD) {
+      bestD = d;
+      best = r.name;
+    }
+  }
+  return bestD <= 0.12 ? best : null;
+}
+
 class FaceMap extends StatelessWidget {
   const FaceMap({
     required this.rois,
@@ -22,6 +42,7 @@ class FaceMap extends StatelessWidget {
     super.key,
     this.emphasized = const {},
     this.photo,
+    this.onTapRegion,
   });
 
   /// Front photo (JPEG) of this analysis, or null.
@@ -34,6 +55,10 @@ class FaceMap extends StatelessWidget {
 
   /// Regions of the condition the user tapped (drawn stronger).
   final Set<FaceRegion> emphasized;
+
+  /// Called when the user taps a highlighted region on the map, so the
+  /// close-up strip can follow the same selection. Null = map is not tappable.
+  final ValueChanged<FaceRegion>? onTapRegion;
 
   @override
   Widget build(BuildContext context) {
@@ -51,19 +76,41 @@ class FaceMap extends StatelessWidget {
           rois: rois,
           highlighted: highlighted,
           emphasized: emphasized,
+          onTapRegion: onTapRegion,
         ),
       );
     }
     return Semantics(
       image: true,
       label: '${AppStrings.faceMapHeading}: ${labels.join(', ')}',
+      // LayoutBuilder HARUS di dalam AspectRatio: di luar, tingginya tak
+      // terbatas, sehingga pembagi tinggi menjadi tak hingga dan setiap ketukan
+      // dianggap di luar semua kotak.
       child: AspectRatio(
         aspectRatio: 3 / 4,
-        child: CustomPaint(
-          painter: FaceMapPainter(
-            rois: rois,
-            highlighted: highlighted,
-            emphasized: emphasized,
+        child: LayoutBuilder(
+          builder: (context, box) => GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapUp: onTapRegion == null
+                ? null
+                : (d) {
+                    final region = hitTestRegion(
+                      rois,
+                      highlighted,
+                      Offset(
+                        d.localPosition.dx / box.maxWidth,
+                        d.localPosition.dy / box.maxHeight,
+                      ),
+                    );
+                    if (region != null) onTapRegion!(region);
+                  },
+            child: CustomPaint(
+              painter: FaceMapPainter(
+                rois: rois,
+                highlighted: highlighted,
+                emphasized: emphasized,
+              ),
+            ),
           ),
         ),
       ),
@@ -151,12 +198,14 @@ class _PhotoFaceMap extends StatefulWidget {
     required this.rois,
     required this.highlighted,
     required this.emphasized,
+    required this.onTapRegion,
   });
 
   final Uint8List jpeg;
   final List<Roi> rois;
   final Set<FaceRegion> highlighted;
   final Set<FaceRegion> emphasized;
+  final ValueChanged<FaceRegion>? onTapRegion;
 
   @override
   State<_PhotoFaceMap> createState() => _PhotoFaceMapState();
@@ -253,15 +302,38 @@ class _PhotoFaceMapState extends State<_PhotoFaceMap> {
     final crop = _crop(im);
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
+      // Sama seperti cabang skema: ukur di dalam AspectRatio, karena di luar
+      // tingginya tak terbatas dan pembaginya menjadi tak hingga.
       child: AspectRatio(
         aspectRatio: (crop.width * im.width) / (crop.height * im.height),
-        child: CustomPaint(
-          painter: _PhotoMapPainter(
-            image: im,
-            crop: crop,
-            rois: widget.rois,
-            highlighted: widget.highlighted,
-            emphasized: widget.emphasized,
+        child: LayoutBuilder(
+          builder: (context, box) => GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapUp: widget.onTapRegion == null
+                ? null
+                : (d) {
+                    // Posisi di layar -> koordinat foto, dibalik lewat crop.
+                    final p = Offset(
+                      crop.left + d.localPosition.dx / box.maxWidth * crop.width,
+                      crop.top +
+                          d.localPosition.dy / box.maxHeight * crop.height,
+                    );
+                    final region = hitTestRegion(
+                      widget.rois,
+                      widget.highlighted,
+                      p,
+                    );
+                    if (region != null) widget.onTapRegion!(region);
+                  },
+            child: CustomPaint(
+              painter: _PhotoMapPainter(
+                image: im,
+                crop: crop,
+                rois: widget.rois,
+                highlighted: widget.highlighted,
+                emphasized: widget.emphasized,
+              ),
+            ),
           ),
         ),
       ),

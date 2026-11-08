@@ -12,6 +12,7 @@ import 'package:afaskin/core/widgets/afa_parts.dart';
 import 'package:afaskin/core/widgets/alfa_mascot.dart';
 import 'package:afaskin/core/widgets/quatrefoil_shape.dart';
 import 'package:afaskin/data/models/models.dart';
+import 'package:afaskin/data/repositories/analysis_repository.dart';
 import 'package:afaskin/data/repositories/providers.dart';
 import 'package:afaskin/features/analysis/analysis_flow.dart';
 import 'package:afaskin/features/history/history_controller.dart';
@@ -65,8 +66,15 @@ class _AnalyzingPageState extends ConsumerState<AnalyzingPage> {
       _step = 0;
     });
     _ticker?.cancel();
-    // Steps advance on a timer while the request runs; the last one stays
-    // active until the server answers.
+    // Langkah mengikuti tahap nyata dari repository. Timer hanya jaring
+    // pengaman: kalau satu tahap lama, penanda bergerak sendiri supaya layar
+    // tidak terlihat beku.
+    void mark(AnalysisStage stage) {
+      final i = stage.index;
+      if (!mounted || i <= _step) return;
+      setState(() => _step = i);
+    }
+
     _ticker = Timer.periodic(widget.stepInterval, (_) {
       if (_step < AppStrings.analyzingSteps.length - 1) {
         setState(() => _step++);
@@ -81,11 +89,16 @@ class _AnalyzingPageState extends ConsumerState<AnalyzingPage> {
         questionnaire: session.answers?.answers ?? const {},
       );
       final result = sides.isEmpty
-          ? await repo.analyze(imageJpeg: photo, payload: payload)
+          ? await repo.analyze(
+              imageJpeg: photo,
+              payload: payload,
+              onStage: mark,
+            )
           : await repo.analyze(
               imageJpeg: photo,
               payload: payload,
               sideImagesJpeg: sides,
+              onStage: mark,
             );
       // Front photo stays in memory for the face map on the result screen.
       ref

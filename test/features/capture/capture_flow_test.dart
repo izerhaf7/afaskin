@@ -222,6 +222,7 @@ void main() {
       () => repo.analyze(
         imageJpeg: any(named: 'imageJpeg'),
         payload: any(named: 'payload'),
+        onStage: any(named: 'onStage'),
       ),
     ).thenAnswer((inv) async {
       expect(inv.namedArguments[#imageJpeg], _processed);
@@ -251,6 +252,7 @@ void main() {
               () => repo.analyze(
                 imageJpeg: any(named: 'imageJpeg'),
                 payload: captureAny(named: 'payload'),
+                onStage: any(named: 'onStage'),
               ),
             ).captured.last
             as AnalyzePayload;
@@ -267,6 +269,7 @@ void main() {
         imageJpeg: any(named: 'imageJpeg'),
         payload: any(named: 'payload'),
         sideImagesJpeg: any(named: 'sideImagesJpeg'),
+        onStage: any(named: 'onStage'),
       ),
     ).thenAnswer(
       (inv) => fastMockRepo().analyze(
@@ -290,6 +293,7 @@ void main() {
                 imageJpeg: any(named: 'imageJpeg'),
                 payload: any(named: 'payload'),
                 sideImagesJpeg: captureAny(named: 'sideImagesJpeg'),
+                onStage: any(named: 'onStage'),
               ),
             ).captured.single
             as List<Uint8List>;

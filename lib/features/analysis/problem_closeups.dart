@@ -43,6 +43,9 @@ class ProblemCloseups extends StatefulWidget {
 }
 
 class _ProblemCloseupsState extends State<ProblemCloseups> {
+  static const double _cardWidth = 132;
+  static const double _gap = AppSpacing.xs;
+  final ScrollController _scroll = ScrollController();
   ui.Image? _image;
 
   @override
@@ -55,6 +58,23 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
   void didUpdateWidget(ProblemCloseups old) {
     super.didUpdateWidget(old);
     if (!identical(old.photo, widget.photo)) unawaited(_decode());
+    // Dipilih dari peta wajah: geser baris close-up supaya kartunya terlihat.
+    if (old.selected != widget.selected && widget.selected != null) {
+      final i = widget.labelsByRegion.keys.toList().indexOf(widget.selected!);
+      if (i >= 0 && _scroll.hasClients) {
+        final target = math.min(
+          i * (_cardWidth + _gap),
+          _scroll.position.maxScrollExtent,
+        );
+        unawaited(
+          _scroll.animateTo(
+            target,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _decode() async {
@@ -79,6 +99,7 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
 
   @override
   void dispose() {
+    _scroll.dispose();
     _image?.dispose();
     super.dispose();
   }
@@ -122,6 +143,7 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
     return SizedBox(
       height: 176,
       child: ListView.separated(
+        controller: _scroll,
         scrollDirection: Axis.horizontal,
         itemCount: regions.length,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.xs),
@@ -172,7 +194,7 @@ class _CloseupCard extends StatelessWidget {
       button: onTap != null,
       label: semantics,
       child: SizedBox(
-        width: 132,
+        width: _ProblemCloseupsState._cardWidth,
         child: Material(
           color: AppColors.white,
           clipBehavior: Clip.antiAlias,

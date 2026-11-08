@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:afaskin/core/config/app_info.dart';
 import 'package:afaskin/data/local/local_stores.dart';
 import 'package:afaskin/data/models/models.dart';
 import 'package:afaskin/features/history/history_page.dart';
@@ -194,7 +195,7 @@ void main() {
     ) async {
       await _openTab(tester, 'Pengaturan', scale: 1.3);
       await tapVisible(tester, find.text('Tentang Afa Skin'));
-      expect(find.text('Versi 1.0.0'), findsOneWidget);
+      expect(find.text('Versi ${AppInfo.version}'), findsOneWidget);
       await waitFor(tester, find.text('Model: mock-2026.11'));
       await tester.dragUntilVisible(
         find.textContaining('CC BY 4.0'),

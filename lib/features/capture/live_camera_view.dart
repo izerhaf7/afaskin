@@ -57,9 +57,16 @@ class _LiveCameraViewState extends State<LiveCameraView>
     options: FaceDetectorOptions(minFaceSize: 0.15),
   );
 
-  /// Only every Nth frame goes to ML Kit, to keep the preview smooth.
-  static const int _frameStride = 3;
-  int _frameCount = 0;
+  /// Jeda minimum antar deteksi. Satu deteksi ML Kit pada frame 1080p menyalin
+  /// ~3 MB ke platform dan butuh ~60-100 ms. Tanpa jeda, 30 fps berarti 15
+  /// deteksi/detik = sekitar 1,5-2 detik kerja per detik: pratinjau pasti
+  /// tersendat. 300 ms membatasi ke ~3 detik/detik dan cukup responsif untuk
+  /// memandu posisi wajah.
+  ///
+  /// Catatan: jangan menyalakan/mematikan startImageStream berulang sebagai
+  /// pengganti jeda ini — start/stop sendiri membuat pratinjau tersendat.
+  static const Duration _minDetectGap = Duration(milliseconds: 300);
+  DateTime? _lastDetect;
   bool _detecting = false;
   bool _capturing = false;
   bool _streaming = false;
@@ -154,7 +161,10 @@ class _LiveCameraViewState extends State<LiveCameraView>
 
   Future<void> _onFrame(CameraImage image) async {
     if (_detecting || _capturing) return;
-    if (++_frameCount % _frameStride != 0) return;
+    final now = DateTime.now();
+    final last = _lastDetect;
+    if (last != null && now.difference(last) < _minDetectGap) return;
+    _lastDetect = now;
     _detecting = true;
     try {
       final status = await _evaluate(image);

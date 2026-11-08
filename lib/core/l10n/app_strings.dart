@@ -284,8 +284,7 @@ abstract final class AppStrings {
       'Sorotan foto hanya tersedia untuk analisis terbaru.';
   static const String ingredientsNeededHeading = 'Kandungan yang dibutuhkan';
   static const String ingredientsHint =
-      'Kandungan aktif yang membantu tiap kondisi, beserta manfaat dan '
-      'rujukannya.';
+      'Kandungan aktif yang membantu tiap kondisi, beserta manfaatnya.';
   static const String ingredientsBasic =
       'Tidak ada kondisi khusus yang perlu ditangani. Perawatan dasar ini '
       'cukup untuk menjaga kulitmu.';
@@ -353,6 +352,9 @@ abstract final class AppStrings {
     SkinConditionLabel.unknown => '',
   };
 
+  /// Label area untuk pengguna. `leftCheek`/`rightCheek` mengikuti sisi gambar:
+  /// kotak di kiri layar disebut "Pipi kiri". Ini yang diharapkan pengguna saat
+  /// melihat hasilnya, karena foto selfie tampil seperti di cermin.
   static String region(FaceRegion r) => switch (r) {
     FaceRegion.forehead => 'Dahi',
     FaceRegion.leftCheek => 'Pipi kiri',

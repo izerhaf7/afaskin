@@ -58,6 +58,24 @@ class ResultView extends StatefulWidget {
 class _ResultViewState extends State<ResultView> {
   SkinConditionLabel? _selected;
   FaceRegion? _selectedRegion;
+  // Area yang disorot di peta wajah. Mengetuk close-up menyorot satu area
+  // itu saja; mengetuk kartu kondisi menyorot semua area kondisi tersebut.
+  Set<FaceRegion> _emphasized = const {};
+
+  /// Menyorot satu area: dari kartu close-up maupun dari peta wajah.
+  void _selectRegion(FaceRegion region, List<SkinCondition> conditions) {
+    setState(() {
+      final off = _selectedRegion == region;
+      _selectedRegion = off ? null : region;
+      _emphasized = off ? const {} : {region};
+      _selected = off
+          ? null
+          : conditions
+                .where((c) => c.regions.contains(region))
+                .firstOrNull
+                ?.label;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,16 +97,20 @@ class _ResultViewState extends State<ResultView> {
         (labelsByRegion[region] ??= <String>[]).add(name);
       }
     }
-    final selectedRegion = selected?.regions.firstOrNull ?? _selectedRegion;
+    // Area yang diketuk menang; kalau tidak ada, pakai area pertama dari
+    // kondisi yang dipilih lewat kartu kondisi.
+    final selectedRegion = _selectedRegion ?? selected?.regions.firstOrNull;
 
-    return ListView(
+    return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
         AppSpacing.xs,
         AppSpacing.md,
         AppSpacing.xl,
       ),
-      children: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
         _SkinTypeCard(skinType: r.skinType),
         if (needsDoctor) ...[
           const SizedBox(height: AppSpacing.sm),
@@ -109,7 +131,9 @@ class _ResultViewState extends State<ResultView> {
                     photo: widget.photo,
                     rois: r.rois,
                     highlighted: highlighted,
-                    emphasized: selected?.regions.toSet() ?? const {},
+                    emphasized: _emphasized,
+                    onTapRegion: (region) =>
+                        _selectRegion(region, conditions),
                   ),
                 ),
               ),
@@ -125,7 +149,9 @@ class _ResultViewState extends State<ResultView> {
                     for (final region in highlighted)
                       AfaChip(
                         label: AppStrings.region(region),
-                        tone: (selected?.regions.contains(region) ?? false)
+                        // Selaras dengan peta: chip menyala hanya untuk area
+                        // yang benar-benar disorot, bukan semua area kondisi.
+                        tone: _emphasized.contains(region)
                             ? AfaChipTone.danger
                             : AfaChipTone.caution,
                       ),
@@ -154,14 +180,7 @@ class _ResultViewState extends State<ResultView> {
             rois: r.rois,
             labelsByRegion: labelsByRegion,
             selected: selectedRegion,
-            onTapRegion: (region) => setState(() {
-              _selectedRegion = _selectedRegion == region ? null : region;
-              // Menyorot area juga menyorot kondisi yang ada di sana.
-              final first = conditions
-                  .where((c) => c.regions.contains(region))
-                  .firstOrNull;
-              _selected = _selectedRegion == null ? null : first?.label;
-            }),
+            onTapRegion: (region) => _selectRegion(region, conditions),
           ),
         ],
         const SizedBox(height: AppSpacing.lg),
@@ -176,10 +195,10 @@ class _ResultViewState extends State<ResultView> {
             condition: c,
             selected: c.label == _selected,
             onTap: () => setState(() {
-              _selected = _selected == c.label ? null : c.label;
-              _selectedRegion = _selected == null
-                  ? null
-                  : c.regions.firstOrNull;
+              final off = _selected == c.label;
+              _selected = off ? null : c.label;
+              _selectedRegion = off ? null : c.regions.firstOrNull;
+              _emphasized = off ? const {} : c.regions.toSet();
             }),
           ),
           const SizedBox(height: AppSpacing.xs),
@@ -207,7 +226,8 @@ class _ResultViewState extends State<ResultView> {
         Text(AppStrings.fusionNote(r.fusion.alpha), style: text.bodySmall),
         const SizedBox(height: AppSpacing.xxs),
         Text(r.disclaimer, style: text.bodySmall),
-      ],
+        ],
+      ),
     );
   }
 }

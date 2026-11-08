@@ -301,6 +301,10 @@ ViewResult processRgb(
       e.key: mean(((e.value as Map)['landmarks'] as List).cast<int>()),
   };
   final cheeks = ['cheek_left', 'cheek_right']..sort((p, q) => centers[p]!.$1.compareTo(centers[q]!.$1));
+  // 'left_cheek' = sisi KIRI GAMBAR. Ini juga yang ditampilkan ke pengguna
+  // sebagai "Pipi kiri". Konvensi ini dipakai bersama src/selfie_patches.py yang
+  // membuat patch latihan, jadi jangan diubah di sini saja: parity
+  // (vision_parity_test) akan gagal dan label area tidak lagi cocok dengan data.
   final names = {..._apiRegion, cheeks[0]: 'left_cheek', cheeks[1]: 'right_cheek'};
   String? skip;
   if (side) {
