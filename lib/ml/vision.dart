@@ -62,6 +62,41 @@ class RgbImage {
 
 const _apiRegion = {'forehead': 'forehead', 'nose': 'nose', 'chin': 'chin'};
 
+/// Pembagian area wajah menurut posisi relatif di dalam oval wajah.
+///
+/// Dulu nama area diambil dari pusat landmark tiap region. Pada foto kepala
+/// miring landmark bisa meleset jauh (terukur: titik dahi jatuh setengah lebar
+/// wajah ke kiri), sehingga patch dahi dilabeli pipi dan sorotan close-up
+/// menunjuk area yang salah. Kotak pembatas oval jauh lebih tahan terhadap
+/// kesalahan landmark, jadi pembagiannya memakai proporsi oval.
+const _bDash = 0.34; // di atas garis ini: dahi
+const _bDagu = 0.74; // di bawah garis ini: dagu
+const _bHidung = 0.17; // setengah lebar pita hidung (proporsi lebar wajah)
+const _vHidungAtas = 0.36; // pita hidung hanya di antara dua garis ini
+const _vHidungBawah = 0.72;
+
+/// Nama area untuk titik ([px], [py]) pada citra, menurut posisinya di dalam
+/// [oval]. `oval` = titik-titik kontur wajah (FaceMask.oval).
+String regionFromPosition(double px, double py, List<(double, double)> oval) {
+  var x0 = double.infinity, y0 = double.infinity;
+  var x1 = -double.infinity, y1 = -double.infinity;
+  for (final p in oval) {
+    x0 = math.min(x0, p.$1);
+    y0 = math.min(y0, p.$2);
+    x1 = math.max(x1, p.$1);
+    y1 = math.max(y1, p.$2);
+  }
+  final w = math.max(x1 - x0, 1e-6), h = math.max(y1 - y0, 1e-6);
+  final u = (px - x0) / w; // 0 kiri .. 1 kanan
+  final v = (py - y0) / h; // 0 atas .. 1 bawah
+  if (v <= _bDash) return 'forehead';
+  if (v >= _bDagu) return 'chin';
+  if (v >= _vHidungAtas && v <= _vHidungBawah && (u - 0.5).abs() <= _bHidung) {
+    return 'nose';
+  }
+  return u < 0.5 ? 'left_cheek' : 'right_cheek';
+}
+
 /// Kotak persegi berpusat (cx, cy), digeser agar tetap di dalam gambar.
 (int, int, int) cropBox(int w, int h, double cx, double cy, double side) {
   final s = math.min(math.max(side, 8), math.min(w, h).toDouble()).floor();
@@ -338,18 +373,18 @@ ViewResult processRgb(
   var valid = 0;
   for (final e in roiDef.entries) {
     if (e.key == skip) continue;
-    final region = names[e.key]!;
+    final region0 = names[e.key]!;
     final (cx, cy) = centers[e.key]!;
     final rel = ((e.value as Map)['size_rel_face_width'] as num).toDouble();
     final (bx, by, bs) = cropBox(w, h, cx, cy, rel * fw);
     rois.add({
-      'name': region,
+      'name': region0,
       'bbox': [bx / w, by / h, bs / w, bs / h].map((v) => (v * 10000).roundToDouble() / 10000).toList(),
     });
     final (rs, rd, _) = skinStats(im, bx, by, bs);
     if (rd < 0.1 && rs >= 0.4) valid++;
     // Sliding window di area ini (model kondisi dilatih dengan patch satu lesi).
-    final area = areaRel[region]!.toDouble() * fw, t = tileRel * fw;
+    final area = areaRel[region0]!.toDouble() * fw, t = tileRel * fw;
     final n = math.max(1, ((area - t) / (t * stride)).truncate() + 1);
     for (var iy = 0; iy < n; iy++) {
       for (var ix = 0; ix < n; ix++) {
@@ -359,6 +394,13 @@ ViewResult processRgb(
         final (ps, pd, pg) = skinStats(im, tx, ty, ts, glareLevel: glareLevel);
         // Buang patch berisi rambut/alis/mata/bibir (bukan kulit), area hitam, dan kilap minyak.
         if (pd < 0.1 && ps >= skinMin && pg <= glareMax) {
+          // Nama area dari POSISI patch di dalam oval wajah, bukan dari ROI yang
+          // memindainya maupun pusat landmark region (yang bisa meleset jauh
+          // saat kepala miring). Area pindai juga 2-2,6x lebih lebar dari kotak
+          // ROI, jadi patch dari grid pipi bisa berada di hidung atau rahang.
+          final region = mask != null
+              ? regionFromPosition(tx + ts / 2, ty + ts / 2, mask.oval)
+              : region0;
           candidates.add((x: tx, y: ty, s: ts, region: region));
         }
       }

@@ -69,24 +69,13 @@ class ResultView extends StatefulWidget {
 
 class _ResultViewState extends State<ResultView> {
   SkinConditionLabel? _selected;
-  FaceRegion? _selectedRegion;
 
-  /// Menyorot satu kondisi (dari kartu kondisi, kartu close-up, atau peta). Area close-up mengikuti area pertama kondisi itu,
-  /// karena peta kini memetakan lesi dan kondisi, bukan kotak wilayah.
+  /// Menyorot satu kondisi (dari kartu kondisi, kartu sorotan, atau peta).
   void _selectCondition(SkinConditionLabel? label, List<SkinCondition> conditions) {
     setState(() {
       // Ketukan pada kondisi yang sama melepas sorotan.
-      final nyala = label != null && _selected != label;
-      _selected = nyala ? label : null;
-      _selectedRegion = nyala
-          ? conditions.where((c) => c.label == label).firstOrNull?.regions.firstOrNull
-          : null;
+      _selected = label != null && _selected != label ? label : null;
     });
-  }
-
-  void _selectRegion(FaceRegion region, List<SkinCondition> conditions) {
-    final c = conditions.where((x) => x.regions.contains(region)).firstOrNull;
-    _selectCondition(_selectedRegion == region ? null : c?.label, conditions);
   }
 
   @override
@@ -94,23 +83,13 @@ class _ResultViewState extends State<ResultView> {
     final r = widget.result;
     final text = Theme.of(context).textTheme;
     final conditions = r.conditionsByProbability;
-    final selected = conditions.where((c) => c.label == _selected).firstOrNull;
     final needsDoctor = conditions.any(
       (c) => c.label.suggestsDermatologist && c.probability >= 0.3,
     );
 
-    // Nama kondisi per area, urut dari probabilitas tertinggi, dipakai untuk
-    // memberi judul pada potongan close-up.
-    final labelsByRegion = <FaceRegion, List<String>>{};
-    for (final c in conditions) {
-      final name = AppStrings.condition(c.label);
-      for (final region in c.regions) {
-        (labelsByRegion[region] ??= <String>[]).add(name);
-      }
-    }
-    // Area yang diketuk menang; kalau tidak ada, pakai area pertama dari
-    // kondisi yang dipilih lewat kartu kondisi.
-    final selectedRegion = _selectedRegion ?? selected?.regions.firstOrNull;
+    // Ada lesi yang bisa disorot? Sorotan butuh lokasi lesi; kondisi yang lolos
+    // gerbang tanpa satu pun kotak lesi tidak punya apa pun untuk dipotong.
+    final adaLesi = conditions.any((c) => c.spots.isNotEmpty);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
@@ -179,7 +158,7 @@ class _ResultViewState extends State<ResultView> {
             ],
           ),
         ),
-        if (labelsByRegion.isNotEmpty) ...[
+        if (adaLesi) ...[
           const SizedBox(height: AppSpacing.lg),
           Text(AppStrings.closeupHeading, style: text.titleLarge),
           const SizedBox(height: AppSpacing.xxs),
@@ -188,11 +167,9 @@ class _ResultViewState extends State<ResultView> {
           ProblemCloseups(
             photo: widget.photo,
             sidePhotos: widget.sidePhotos,
-            rois: r.rois,
-            labelsByRegion: labelsByRegion,
             conditions: conditions,
-            selected: selectedRegion,
-            onTapRegion: (region) => _selectRegion(region, conditions),
+            selected: _selected,
+            onTapCondition: (label) => _selectCondition(label, conditions),
           ),
         ],
         const SizedBox(height: AppSpacing.lg),

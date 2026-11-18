@@ -14,7 +14,7 @@ import 'package:material_ui/material_ui.dart';
 /// Peta wajah memetakan lesi, bukan kotak wilayah:
 /// 1. gumpalan diketuk -> kondisi itu yang tersorot (bukan kotak wilayah);
 /// 2. ketukan kedua pada gumpalan yang sama melepas sorotan;
-/// 3. sorotan peta diikuti kartu close-up (selected region kondisi itu).
+/// 3. sorotan peta diikuti kartu sorotan kondisi itu.
 Map<String, dynamic> _mock(String p) => jsonDecode(File('assets/mock/$p').readAsStringSync())
     as Map<String, dynamic>;
 
@@ -83,8 +83,8 @@ void main() {
     expect(_emphasized(tester), target.label);
     expect(
       tester.widget<ProblemCloseups>(find.byType(ProblemCloseups)).selected,
-      target.regions.firstOrNull,
-      reason: 'peta harus menyorot close-up kondisi yang diketuk',
+      target.label,
+      reason: 'peta harus menyorot sorotan kondisi yang diketuk',
     );
   });
 
