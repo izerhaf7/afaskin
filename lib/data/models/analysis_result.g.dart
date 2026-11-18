@@ -94,6 +94,11 @@ _SkinCondition _$SkinConditionFromJson(Map<String, dynamic> json) =>
             ),
           )
           .toList(),
+      spots:
+          (json['spots'] as List<dynamic>?)
+              ?.map((e) => ConditionSpot.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
       description: json['description'] as String?,
     );
 
@@ -102,6 +107,7 @@ Map<String, dynamic> _$SkinConditionToJson(_SkinCondition instance) =>
       'label': _$SkinConditionLabelEnumMap[instance.label]!,
       'probability': instance.probability,
       'regions': instance.regions.map((e) => _$FaceRegionEnumMap[e]!).toList(),
+      'spots': instance.spots.map((e) => e.toJson()).toList(),
       'description': instance.description,
     };
 
@@ -126,6 +132,34 @@ const _$FaceRegionEnumMap = {
   FaceRegion.chin: 'chin',
   FaceRegion.unknown: 'unknown',
 };
+
+_ConditionSpot _$ConditionSpotFromJson(Map<String, dynamic> json) =>
+    _ConditionSpot(
+      x: (json['x'] as num).toDouble(),
+      y: (json['y'] as num).toDouble(),
+      size: (json['size'] as num?)?.toDouble() ?? 0.15,
+      label: $enumDecode(
+        _$SkinConditionLabelEnumMap,
+        json['label'],
+        unknownValue: SkinConditionLabel.unknown,
+      ),
+      region: $enumDecode(
+        _$FaceRegionEnumMap,
+        json['region'],
+        unknownValue: FaceRegion.unknown,
+      ),
+      viewIndex: (json['view_index'] as num?)?.toInt() ?? 0,
+    );
+
+Map<String, dynamic> _$ConditionSpotToJson(_ConditionSpot instance) =>
+    <String, dynamic>{
+      'x': instance.x,
+      'y': instance.y,
+      'size': instance.size,
+      'label': _$SkinConditionLabelEnumMap[instance.label]!,
+      'region': _$FaceRegionEnumMap[instance.region]!,
+      'view_index': instance.viewIndex,
+    };
 
 _Roi _$RoiFromJson(Map<String, dynamic> json) => _Roi(
   name: $enumDecode(

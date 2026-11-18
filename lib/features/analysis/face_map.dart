@@ -8,63 +8,62 @@ import 'package:afaskin/core/theme/app_colors.dart';
 import 'package:afaskin/data/models/models.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Face map with the ROI boxes of the analysis.
+/// Peta wajah yang memetakan **lesi**, bukan pembagian wajah yang kasar.
 ///
-/// With [photo] (only right after an analysis; the photo lives in memory and
-/// is never saved) the boxes are drawn on the user's own photo, cropped around
-/// the face. Without it (history) a schematic face is drawn: ROI `bbox` values
-/// are normalized to the photo, which was framed with the face filling the
-/// guide oval, so the silhouette lines up closely enough.
+/// Tiap kondisi digambar sebagai kotak di lokasi patch yang
+/// benar-benar membawa bukti, jadi yang terlihat adalah area yang bermasalah.
+/// Kotak wilayah (forehead/cheek/chin/…) sengaja tidak digambar lagi.
+///
+/// Dengan [photo] (hanya tepat setelah analisis; foto hidup di memori dan tidak
+/// pernah disimpan) kotak lesi dilukis di atas foto pengguna. Tanpa foto,
+/// digambar di atas siluet wajah skematik dengan asumsi wajah memenuhi bingkai
+/// panduan — sama seperti saat memotret.
 
-/// Area yang diketuk: kotak yang memuat titik, atau pusat terdekat dalam
-/// toleransi 12% supaya ketukan di tepi kotak tetap terasa.
-FaceRegion? hitTestRegion(List<Roi> rois, Set<FaceRegion> allowed, Offset p) {
-  for (final r in rois) {
-    if (allowed.contains(r.name) && r.rect.contains(p)) return r.name;
-  }
-  FaceRegion? best;
-  var bestD = double.infinity;
-  for (final r in rois) {
-    if (!allowed.contains(r.name)) continue;
-    final d = (r.rect.center - p).distance;
-    if (d < bestD) {
-      bestD = d;
-      best = r.name;
+/// Kondisi pada titik [p] (dinormalisasi 0-1 terhadap foto), atau null kalau
+/// di luar semua kotak lesi.
+SkinConditionLabel? hitTestSpot(List<ConditionSpot> spots, Offset p) {
+  // Kotak lesi terkecil yang memuat titik menang, supaya kotak besar tidak
+  // menelan kotak kecil yang bertumpuk.
+  SkinConditionLabel? best;
+  var bestArea = double.infinity;
+  for (final s in spots) {
+    final half = math.max(s.size, 0.03) / 2;
+    if ((p.dx - s.x).abs() <= half && (p.dy - s.y).abs() <= half) {
+      final area = s.size * s.size;
+      if (area < bestArea) {
+        bestArea = area;
+        best = s.label;
+      }
     }
   }
-  return bestD <= 0.12 ? best : null;
+  return best;
 }
 
 class FaceMap extends StatelessWidget {
   const FaceMap({
-    required this.rois,
-    required this.highlighted,
+    required this.spots,
     super.key,
-    this.emphasized = const {},
     this.photo,
-    this.onTapRegion,
+    this.emphasizedLabel,
+    this.onTapCondition,
   });
 
-  /// Front photo (JPEG) of this analysis, or null.
+  /// Foto depan (JPEG) dari analisis ini, atau null.
   final Uint8List? photo;
 
-  final List<Roi> rois;
+  /// Lokasi + kondisi lesi yang terdeteksi.
+  final List<ConditionSpot> spots;
 
-  /// Regions with any detected condition.
-  final Set<FaceRegion> highlighted;
+  /// Kondisi yang sedang disorot (dari kartu lesi atau ketukan di peta).
+  final SkinConditionLabel? emphasizedLabel;
 
-  /// Regions of the condition the user tapped (drawn stronger).
-  final Set<FaceRegion> emphasized;
-
-  /// Called when the user taps a highlighted region on the map, so the
-  /// close-up strip can follow the same selection. Null = map is not tappable.
-  final ValueChanged<FaceRegion>? onTapRegion;
+  /// Dipanggil saat kotak lesi diketuk. Null = peta tidak bisa diketuk.
+  final ValueChanged<SkinConditionLabel>? onTapCondition;
 
   @override
   Widget build(BuildContext context) {
     final labels = [
-      for (final r in rois)
-        if (highlighted.contains(r.name)) AppStrings.region(r.name),
+      for (final c in {for (final s in spots) s.label}) AppStrings.condition(c),
     ];
     final photo = this.photo;
     if (photo != null) {
@@ -73,10 +72,9 @@ class FaceMap extends StatelessWidget {
         label: '${AppStrings.faceMapHeading}: ${labels.join(', ')}',
         child: _PhotoFaceMap(
           jpeg: photo,
-          rois: rois,
-          highlighted: highlighted,
-          emphasized: emphasized,
-          onTapRegion: onTapRegion,
+          spots: spots,
+          emphasizedLabel: emphasizedLabel,
+          onTapCondition: onTapCondition,
         ),
       );
     }
@@ -85,30 +83,26 @@ class FaceMap extends StatelessWidget {
       label: '${AppStrings.faceMapHeading}: ${labels.join(', ')}',
       // LayoutBuilder HARUS di dalam AspectRatio: di luar, tingginya tak
       // terbatas, sehingga pembagi tinggi menjadi tak hingga dan setiap ketukan
-      // dianggap di luar semua kotak.
+      // dianggap di luar semua kotak lesi.
       child: AspectRatio(
         aspectRatio: 3 / 4,
         child: LayoutBuilder(
           builder: (context, box) => GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTapUp: onTapRegion == null
+            onTapUp: onTapCondition == null
                 ? null
-                : (d) {
-                    final region = hitTestRegion(
-                      rois,
-                      highlighted,
-                      Offset(
-                        d.localPosition.dx / box.maxWidth,
-                        d.localPosition.dy / box.maxHeight,
-                      ),
-                    );
-                    if (region != null) onTapRegion!(region);
-                  },
+                : (d) => _tap(
+                    spots,
+                    onTapCondition!,
+                    Offset(
+                      d.localPosition.dx / box.maxWidth,
+                      d.localPosition.dy / box.maxHeight,
+                    ),
+                  ),
             child: CustomPaint(
-              painter: FaceMapPainter(
-                rois: rois,
-                highlighted: highlighted,
-                emphasized: emphasized,
+              painter: _SchematicPainter(
+                spots: spots,
+                emphasizedLabel: emphasizedLabel,
               ),
             ),
           ),
@@ -118,16 +112,40 @@ class FaceMap extends StatelessWidget {
   }
 }
 
-class FaceMapPainter extends CustomPainter {
-  FaceMapPainter({
-    required this.rois,
-    required this.highlighted,
-    required this.emphasized,
+void _tap(
+  List<ConditionSpot> spots,
+  ValueChanged<SkinConditionLabel> onTap,
+  Offset p,
+) {
+  final label = hitTestSpot(spots, p);
+  if (label != null) onTap(label);
+}
+
+/// Kotak lesi: isi tipis + garis tegas, lebih kuat saat kondisinya disorot.
+void _paintSpotBox(Canvas canvas, Rect box, Color color, bool strong) {
+  final rr = RRect.fromRectAndRadius(box, const Radius.circular(3));
+  canvas
+    ..drawRRect(
+      rr,
+      Paint()..color = color.withValues(alpha: strong ? 0.22 : 0.10),
+    )
+    ..drawRRect(
+      rr,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strong ? 2.0 : 1.2
+        ..color = color.withValues(alpha: strong ? 1.0 : 0.75),
+    );
+}
+
+class _SchematicPainter extends CustomPainter {
+  _SchematicPainter({
+    required this.spots,
+    required this.emphasizedLabel,
   });
 
-  final List<Roi> rois;
-  final Set<FaceRegion> highlighted;
-  final Set<FaceRegion> emphasized;
+  final List<ConditionSpot> spots;
+  final SkinConditionLabel? emphasizedLabel;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -144,7 +162,7 @@ class FaceMapPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..color = AppColors.sage;
 
-    // Head and simple features.
+    // Siluet wajah sebagai pembanding lokasi lesi.
     canvas
       ..drawOval(n(0.14, 0.04, 0.86, 0.96), Paint()..color = AppColors.white)
       ..drawOval(n(0.14, 0.04, 0.86, 0.96), line)
@@ -157,55 +175,38 @@ class FaceMapPainter extends CustomPainter {
       )
       ..drawArc(n(0.38, 0.62, 0.62, 0.72), 0.3, 2.5, false, line);
 
-    for (final roi in rois) {
-      if (!highlighted.contains(roi.name)) continue;
-      final strong = emphasized.contains(roi.name);
-      final r = Rect.fromLTWH(
-        roi.rect.left * size.width,
-        roi.rect.top * size.height,
-        roi.rect.width * size.width,
-        roi.rect.height * size.height,
+    for (final s in spots) {
+      final half = math.max(s.size / 2, 0.03);
+      final box = Rect.fromLTRB(
+        (s.x - half) * size.width,
+        (s.y - half) * size.height,
+        (s.x + half) * size.width,
+        (s.y + half) * size.height,
       );
-      final rr = RRect.fromRectAndRadius(r, const Radius.circular(10));
-      canvas
-        ..drawRRect(
-          rr,
-          Paint()
-            ..color = (strong ? AppColors.danger : AppColors.caution)
-                .withValues(alpha: strong ? 0.22 : 0.12),
-        )
-        ..drawRRect(
-          rr,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = strong ? 2.5 : 1.5
-            ..color = strong ? AppColors.danger : AppColors.caution,
-        );
+      final color =
+          AppColors.conditionColor(s.label.name);
+      _paintSpotBox(canvas, box, color, emphasizedLabel == s.label);
     }
   }
 
   @override
-  bool shouldRepaint(FaceMapPainter old) =>
-      old.rois != rois ||
-      old.highlighted != highlighted ||
-      old.emphasized != emphasized;
+  bool shouldRepaint(_SchematicPainter old) =>
+      old.spots != spots || old.emphasizedLabel != emphasizedLabel;
 }
 
-/// ROI boxes on the user's photo, cropped to the face (union of ROIs + margin).
+/// Kotak lesi di atas foto pengguna, dipangkas mengelilingi lesi.
 class _PhotoFaceMap extends StatefulWidget {
   const _PhotoFaceMap({
     required this.jpeg,
-    required this.rois,
-    required this.highlighted,
-    required this.emphasized,
-    required this.onTapRegion,
+    required this.spots,
+    required this.emphasizedLabel,
+    required this.onTapCondition,
   });
 
   final Uint8List jpeg;
-  final List<Roi> rois;
-  final Set<FaceRegion> highlighted;
-  final Set<FaceRegion> emphasized;
-  final ValueChanged<FaceRegion>? onTapRegion;
+  final List<ConditionSpot> spots;
+  final SkinConditionLabel? emphasizedLabel;
+  final ValueChanged<SkinConditionLabel>? onTapCondition;
 
   @override
   State<_PhotoFaceMap> createState() => _PhotoFaceMapState();
@@ -214,7 +215,7 @@ class _PhotoFaceMap extends StatefulWidget {
 class _PhotoFaceMapState extends State<_PhotoFaceMap> {
   ui.Image? _image;
 
-  /// Photo could not be decoded: fall back to the schematic face.
+  /// Foto tidak bisa dibaca: kembali ke siluet skematik.
   bool _failed = false;
 
   @override
@@ -254,27 +255,39 @@ class _PhotoFaceMapState extends State<_PhotoFaceMap> {
     super.dispose();
   }
 
-  /// Normalized crop: all ROIs plus 45% margin, clamped to the photo.
+  /// Pangkas: seluruh kotak lesi + margin, dijaga agar tetap di dalam foto.
   Rect _crop(ui.Image im) {
-    if (widget.rois.isEmpty) return const Rect.fromLTWH(0, 0, 1, 1);
-    var u = widget.rois.first.rect;
-    for (final r in widget.rois.skip(1)) {
-      u = u.expandToInclude(r.rect);
+    if (widget.spots.isEmpty) {
+      // Tanpa lesi, tunjukkan wajah seperti saat memotret.
+      return const Rect.fromLTWH(0.0, 0.05, 1.0, 0.9);
     }
-    // Square-ish in pixels so the face is not squeezed.
-    final wPx = u.width * im.width;
-    final hPx = u.height * im.height;
-    final side = math.max(wPx, hPx) * 1.45;
-    final c = u.center;
-    final l = (c.dx * im.width - side / 2).clamp(0, im.width - 1).toDouble();
-    final t = (c.dy * im.height - side / 2).clamp(0, im.height - 1).toDouble();
-    final r = math.min(l + side, im.width.toDouble());
-    final b = math.min(t + side * 1.1, im.height.toDouble());
+    var l = widget.spots.first.x - widget.spots.first.size;
+    var t = widget.spots.first.y - widget.spots.first.size;
+    var r = widget.spots.first.x + widget.spots.first.size;
+    var b = widget.spots.first.y + widget.spots.first.size;
+    for (final s in widget.spots.skip(1)) {
+      l = math.min(l, s.x - s.size);
+      t = math.min(t, s.y - s.size);
+      r = math.max(r, s.x + s.size);
+      b = math.max(b, s.y + s.size);
+    }
+    // Lebarkan supaya konteks di sekitar lesi ikut terlihat.
+    final mx = (r - l) * 0.35;
+    final my = (b - t) * 0.35;
+    final wPx = (r - l + 2 * mx) * im.width;
+    final hPx = (b - t + 2 * my) * im.height;
+    final side = math.max(wPx, hPx);
+    final cx = (l + r) / 2 * im.width;
+    final cy = (t + b) / 2 * im.height;
+    final left = (cx - side / 2).clamp(0, im.width - 1).toDouble();
+    final top = (cy - side / 2).clamp(0, im.height - 1).toDouble();
+    final right = math.min(left + side, im.width.toDouble());
+    final bottom = math.min(top + side * 1.1, im.height.toDouble());
     return Rect.fromLTRB(
-      l / im.width,
-      t / im.height,
-      r / im.width,
-      b / im.height,
+      left / im.width,
+      top / im.height,
+      right / im.width,
+      bottom / im.height,
     );
   }
 
@@ -285,10 +298,9 @@ class _PhotoFaceMapState extends State<_PhotoFaceMap> {
       return AspectRatio(
         aspectRatio: 3 / 4,
         child: CustomPaint(
-          painter: FaceMapPainter(
-            rois: widget.rois,
-            highlighted: widget.highlighted,
-            emphasized: widget.emphasized,
+          painter: _SchematicPainter(
+            spots: widget.spots,
+            emphasizedLabel: widget.emphasizedLabel,
           ),
         ),
       );
@@ -302,36 +314,28 @@ class _PhotoFaceMapState extends State<_PhotoFaceMap> {
     final crop = _crop(im);
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      // Sama seperti cabang skema: ukur di dalam AspectRatio, karena di luar
-      // tingginya tak terbatas dan pembaginya menjadi tak hingga.
       child: AspectRatio(
         aspectRatio: (crop.width * im.width) / (crop.height * im.height),
         child: LayoutBuilder(
           builder: (context, box) => GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTapUp: widget.onTapRegion == null
+            onTapUp: widget.onTapCondition == null
                 ? null
-                : (d) {
-                    // Posisi di layar -> koordinat foto, dibalik lewat crop.
-                    final p = Offset(
+                : (d) => _tap(
+                    widget.spots,
+                    widget.onTapCondition!,
+                    Offset(
                       crop.left + d.localPosition.dx / box.maxWidth * crop.width,
                       crop.top +
                           d.localPosition.dy / box.maxHeight * crop.height,
-                    );
-                    final region = hitTestRegion(
-                      widget.rois,
-                      widget.highlighted,
-                      p,
-                    );
-                    if (region != null) widget.onTapRegion!(region);
-                  },
+                    ),
+                  ),
             child: CustomPaint(
-              painter: _PhotoMapPainter(
+              painter: _PhotoPainter(
                 image: im,
                 crop: crop,
-                rois: widget.rois,
-                highlighted: widget.highlighted,
-                emphasized: widget.emphasized,
+                spots: widget.spots,
+                emphasizedLabel: widget.emphasizedLabel,
               ),
             ),
           ),
@@ -341,20 +345,18 @@ class _PhotoFaceMapState extends State<_PhotoFaceMap> {
   }
 }
 
-class _PhotoMapPainter extends CustomPainter {
-  _PhotoMapPainter({
+class _PhotoPainter extends CustomPainter {
+  _PhotoPainter({
     required this.image,
     required this.crop,
-    required this.rois,
-    required this.highlighted,
-    required this.emphasized,
+    required this.spots,
+    required this.emphasizedLabel,
   });
 
   final ui.Image image;
   final Rect crop;
-  final List<Roi> rois;
-  final Set<FaceRegion> highlighted;
-  final Set<FaceRegion> emphasized;
+  final List<ConditionSpot> spots;
+  final SkinConditionLabel? emphasizedLabel;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -370,40 +372,30 @@ class _PhotoMapPainter extends CustomPainter {
       Offset.zero & size,
       Paint()..filterQuality = FilterQuality.medium,
     );
+
     Rect toView(Rect r) => Rect.fromLTRB(
       (r.left - crop.left) / crop.width * size.width,
       (r.top - crop.top) / crop.height * size.height,
       (r.right - crop.left) / crop.width * size.width,
       (r.bottom - crop.top) / crop.height * size.height,
     );
-    for (final roi in rois) {
-      if (!highlighted.contains(roi.name)) continue;
-      final strong = emphasized.contains(roi.name);
-      final rr = RRect.fromRectAndRadius(
-        toView(roi.rect),
-        const Radius.circular(10),
-      );
-      final color = strong ? AppColors.danger : AppColors.caution;
-      canvas
-        ..drawRRect(
-          rr,
-          Paint()..color = color.withValues(alpha: strong ? 0.25 : 0.12),
-        )
-        ..drawRRect(
-          rr,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = strong ? 3 : 2
-            ..color = color,
-        );
+
+    for (final s in spots) {
+      final rect = toView(Rect.fromCenter(
+        center: Offset(s.x, s.y),
+        width: s.size,
+        height: s.size,
+      ));
+      final color =
+          AppColors.conditionColor(s.label.name);
+      _paintSpotBox(canvas, rect, color, emphasizedLabel == s.label);
     }
   }
 
   @override
-  bool shouldRepaint(_PhotoMapPainter old) =>
+  bool shouldRepaint(_PhotoPainter old) =>
       old.image != image ||
       old.crop != crop ||
-      old.rois != rois ||
-      old.highlighted != highlighted ||
-      old.emphasized != emphasized;
+      old.spots != spots ||
+      old.emphasizedLabel != emphasizedLabel;
 }

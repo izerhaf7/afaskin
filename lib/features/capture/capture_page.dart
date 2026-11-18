@@ -287,9 +287,14 @@ class _CapturePageState extends ConsumerState<CapturePage>
       actionLabel: AppStrings.openSettings,
       onAction: () => unawaited(_permission.openSettings()),
     ),
-    _Phase.cameraUnavailable => const EmptyView(
+    _Phase.cameraUnavailable => EmptyView(
       icon: Icons.no_photography_outlined,
       title: AppStrings.cameraUnavailable,
+      actionLabel: AppStrings.retry,
+      onAction: () {
+        // Bangun ulang LiveCameraView supaya _start() jalan lagi.
+        if (mounted) setState(() => _phase = _Phase.camera);
+      },
     ),
     _Phase.camera => ref.read(cameraViewBuilderProvider)(
       active: _active,

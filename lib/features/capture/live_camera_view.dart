@@ -110,38 +110,60 @@ class _LiveCameraViewState extends State<LiveCameraView>
     }
   }
 
+  /// Begitu izin kamera diberikan, Android kadang belum langsung bisa membuka
+  /// kamera (daftar kamera masih kosong atau initialize() melempar
+  /// CameraException). Mencoba ulang beberapa kali menahannya, karena
+  /// sebelumnya kegagalan pertama langsung dianggap "kamera tidak tersedia"
+  /// tanpa jalan pulih kecuali keluar-masuk layar.
+  static const int _initAttempts = 4;
+  static const Duration _initRetryDelay = Duration(milliseconds: 400);
+
   Future<void> _start() async {
-    try {
-      final cameras = await availableCameras();
-      if (cameras.isEmpty) {
-        widget.onUnavailable();
+    for (var attempt = 1; attempt <= _initAttempts; attempt++) {
+      if (!mounted) return;
+      CameraController? controller;
+      try {
+        final cameras = await availableCameras();
+        if (cameras.isEmpty) {
+          throw CameraException('no_camera', 'availableCameras() kosong');
+        }
+        _camera = cameras.firstWhere(
+          (c) => c.lensDirection == CameraLensDirection.front,
+          orElse: () => cameras.first,
+        );
+        controller = CameraController(
+          _camera,
+          // 1920x1080: skin patches are only ~15% of the face width, so 720p
+          // left lesions blurry (on-device diagnosis, Nov 2026).
+          ResolutionPreset.veryHigh,
+          enableAudio: false,
+          imageFormatGroup: Platform.isIOS
+              ? ImageFormatGroup.bgra8888
+              : ImageFormatGroup.nv21,
+        );
+        await controller.initialize();
+        await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
+        if (!mounted) {
+          await controller.dispose();
+          return;
+        }
+        setState(() => _controller = controller);
+        if (widget.active) await _startStream();
         return;
+      } on CameraException catch (e) {
+        debugPrint('Camera gagal (percobaan $attempt/$_initAttempts): '
+            '${e.code} ${e.description}');
+        if (controller != null) {
+          await controller.dispose().catchError((_) {});
+        }
+        if (!mounted) return;
+        setState(() => _controller = null);
+        if (attempt == _initAttempts) {
+          widget.onUnavailable();
+          return;
+        }
+        await Future<void>.delayed(_initRetryDelay);
       }
-      _camera = cameras.firstWhere(
-        (c) => c.lensDirection == CameraLensDirection.front,
-        orElse: () => cameras.first,
-      );
-      final controller = CameraController(
-        _camera,
-        // 1920x1080: skin patches are only ~15% of the face width, so 720p
-        // left lesions blurry (on-device diagnosis, Nov 2026).
-        ResolutionPreset.veryHigh,
-        enableAudio: false,
-        imageFormatGroup: Platform.isIOS
-            ? ImageFormatGroup.bgra8888
-            : ImageFormatGroup.nv21,
-      );
-      await controller.initialize();
-      await controller.lockCaptureOrientation(DeviceOrientation.portraitUp);
-      if (!mounted) {
-        await controller.dispose();
-        return;
-      }
-      setState(() => _controller = controller);
-      if (widget.active) await _startStream();
-    } on CameraException catch (e) {
-      debugPrint('Camera failed: ${e.code} ${e.description}');
-      widget.onUnavailable();
     }
   }
 

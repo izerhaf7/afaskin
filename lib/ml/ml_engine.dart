@@ -18,6 +18,7 @@ class ViewOutput {
     required this.pSkin,
     required this.tileProbs,
     required this.tileRegions,
+    required this.tileRects,
     required this.rois,
     required this.sharpness,
     required this.brightness,
@@ -29,6 +30,10 @@ class ViewOutput {
   final List<double>? pSkin;
   final List<List<double>> tileProbs;
   final List<String> tileRegions;
+
+  /// Kotak patch pada foto asli, dinormalisasi [x, y, w, h] — sejajar dengan
+  /// [tileProbs] dan [tileRegions].
+  final List<List<double>> tileRects;
   final List<Map<String, Object>> rois;
   final double sharpness, brightness;
 
@@ -138,6 +143,7 @@ class MlEngine {
       pSkin: (r['skin'] as List?)?.cast<double>(),
       tileProbs: [for (var i = 0; i < n; i++) probs.sublist(i * k, (i + 1) * k).map((e) => e.toDouble()).toList()],
       tileRegions: (r['regions']! as List).cast<String>(),
+      tileRects: [for (final e in (r['rects']! as List)) (e as List).cast<double>()],
       rois: [for (final m in r['rois']! as List) (m as Map).cast<String, Object>()],
       sharpness: r['sharp']! as double,
       brightness: r['light']! as double,
@@ -222,6 +228,7 @@ Future<void> _workerMain(List<Object?> args) async {
         'n': v.tiles.length,
         'probs': TransferableTypedData.fromList([probs]),
         'regions': v.tileRegions,
+        'rects': v.tileRects,
         'rois': v.rois,
         'points': points == null ? null : Float64List.fromList([for (final p in points) ...[p.$1, p.$2]]),
         'sharp': v.sharpness,

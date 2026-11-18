@@ -935,7 +935,9 @@ as Map<String, double>,
 /// @nodoc
 mixin _$SkinCondition {
 
-@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) SkinConditionLabel get label; double get probability;@JsonKey(unknownEnumValue: FaceRegion.unknown) List<FaceRegion> get regions; String? get description;
+@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) SkinConditionLabel get label; double get probability;@JsonKey(unknownEnumValue: FaceRegion.unknown) List<FaceRegion> get regions;/// Lokasi patch yang membawa bukti kondisi ini, dinormalisasi ke foto.
+/// viewIndex 0 = foto depan, 1 dan seterusnya = foto samping.
+ List<ConditionSpot> get spots; String? get description;
 /// Create a copy of SkinCondition
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -949,20 +951,20 @@ $SkinConditionCopyWith<SkinCondition> get copyWith => _$SkinConditionCopyWithImp
 @override
 bool operator ==(Object other) {
   final _this = this as SkinCondition;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SkinCondition&&(identical(other.label, _this.label) || other.label == _this.label)&&(identical(other.probability, _this.probability) || other.probability == _this.probability)&&const DeepCollectionEquality().equals(other.regions, _this.regions)&&(identical(other.description, _this.description) || other.description == _this.description));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SkinCondition&&(identical(other.label, _this.label) || other.label == _this.label)&&(identical(other.probability, _this.probability) || other.probability == _this.probability)&&const DeepCollectionEquality().equals(other.regions, _this.regions)&&const DeepCollectionEquality().equals(other.spots, _this.spots)&&(identical(other.description, _this.description) || other.description == _this.description));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as SkinCondition;
-  return Object.hash(runtimeType,_this.label,_this.probability,const DeepCollectionEquality().hash(_this.regions),_this.description);
+  return Object.hash(runtimeType,_this.label,_this.probability,const DeepCollectionEquality().hash(_this.regions),const DeepCollectionEquality().hash(_this.spots),_this.description);
 }
 
 @override
 String toString() {
   final _this = this as SkinCondition;
-  return 'SkinCondition(label: ${_this.label}, probability: ${_this.probability}, regions: ${_this.regions}, description: ${_this.description})';
+  return 'SkinCondition(label: ${_this.label}, probability: ${_this.probability}, regions: ${_this.regions}, spots: ${_this.spots}, description: ${_this.description})';
 }
 
 
@@ -973,7 +975,7 @@ abstract mixin class $SkinConditionCopyWith<$Res>  {
   factory $SkinConditionCopyWith(SkinCondition value, $Res Function(SkinCondition) _then) = _$SkinConditionCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) SkinConditionLabel label, double probability,@JsonKey(unknownEnumValue: FaceRegion.unknown) List<FaceRegion> regions, String? description
+@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) SkinConditionLabel label, double probability,@JsonKey(unknownEnumValue: FaceRegion.unknown) List<FaceRegion> regions, List<ConditionSpot> spots, String? description
 });
 
 
@@ -990,12 +992,13 @@ class _$SkinConditionCopyWithImpl<$Res>
 
 /// Create a copy of SkinCondition
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? label = null,Object? probability = null,Object? regions = null,Object? description = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? label = null,Object? probability = null,Object? regions = null,Object? spots = null,Object? description = freezed,}) {
   return _then(SkinCondition(
 label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
 as SkinConditionLabel,probability: null == probability ? _self.probability : probability // ignore: cast_nullable_to_non_nullable
 as double,regions: null == regions ? _self.regions : regions // ignore: cast_nullable_to_non_nullable
-as List<FaceRegion>,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as List<FaceRegion>,spots: null == spots ? _self.spots : spots // ignore: cast_nullable_to_non_nullable
+as List<ConditionSpot>,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -1081,10 +1084,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(unknownEnumValue: SkinConditionLabel.unknown)  SkinConditionLabel label,  double probability, @JsonKey(unknownEnumValue: FaceRegion.unknown)  List<FaceRegion> regions,  String? description)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(unknownEnumValue: SkinConditionLabel.unknown)  SkinConditionLabel label,  double probability, @JsonKey(unknownEnumValue: FaceRegion.unknown)  List<FaceRegion> regions,  List<ConditionSpot> spots,  String? description)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SkinCondition() when $default != null:
-return $default(_that.label,_that.probability,_that.regions,_that.description);case _:
+return $default(_that.label,_that.probability,_that.regions,_that.spots,_that.description);case _:
   return orElse();
 
 }
@@ -1102,10 +1105,10 @@ return $default(_that.label,_that.probability,_that.regions,_that.description);c
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(unknownEnumValue: SkinConditionLabel.unknown)  SkinConditionLabel label,  double probability, @JsonKey(unknownEnumValue: FaceRegion.unknown)  List<FaceRegion> regions,  String? description)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(unknownEnumValue: SkinConditionLabel.unknown)  SkinConditionLabel label,  double probability, @JsonKey(unknownEnumValue: FaceRegion.unknown)  List<FaceRegion> regions,  List<ConditionSpot> spots,  String? description)  $default,) {final _that = this;
 switch (_that) {
 case _SkinCondition():
-return $default(_that.label,_that.probability,_that.regions,_that.description);case _:
+return $default(_that.label,_that.probability,_that.regions,_that.spots,_that.description);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1122,10 +1125,10 @@ return $default(_that.label,_that.probability,_that.regions,_that.description);c
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(unknownEnumValue: SkinConditionLabel.unknown)  SkinConditionLabel label,  double probability, @JsonKey(unknownEnumValue: FaceRegion.unknown)  List<FaceRegion> regions,  String? description)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(unknownEnumValue: SkinConditionLabel.unknown)  SkinConditionLabel label,  double probability, @JsonKey(unknownEnumValue: FaceRegion.unknown)  List<FaceRegion> regions,  List<ConditionSpot> spots,  String? description)?  $default,) {final _that = this;
 switch (_that) {
 case _SkinCondition() when $default != null:
-return $default(_that.label,_that.probability,_that.regions,_that.description);case _:
+return $default(_that.label,_that.probability,_that.regions,_that.spots,_that.description);case _:
   return null;
 
 }
@@ -1137,7 +1140,7 @@ return $default(_that.label,_that.probability,_that.regions,_that.description);c
 @JsonSerializable()
 
 class _SkinCondition implements SkinCondition {
-  const _SkinCondition({@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) required this.label, required this.probability, @JsonKey(unknownEnumValue: FaceRegion.unknown) required  List<FaceRegion> regions, this.description}): _regions = regions;
+  const _SkinCondition({@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) required this.label, required this.probability, @JsonKey(unknownEnumValue: FaceRegion.unknown) required  List<FaceRegion> regions,  List<ConditionSpot> spots = const [], this.description}): _regions = regions,_spots = spots;
   factory _SkinCondition.fromJson(Map<String, dynamic> json) => _$SkinConditionFromJson(json);
 
 @override@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) final  SkinConditionLabel label;
@@ -1147,6 +1150,17 @@ class _SkinCondition implements SkinCondition {
   if (_regions is EqualUnmodifiableListView) return _regions;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableListView(_regions);
+}
+
+/// Lokasi patch yang membawa bukti kondisi ini, dinormalisasi ke foto.
+/// viewIndex 0 = foto depan, 1 dan seterusnya = foto samping.
+ final  List<ConditionSpot> _spots;
+/// Lokasi patch yang membawa bukti kondisi ini, dinormalisasi ke foto.
+/// viewIndex 0 = foto depan, 1 dan seterusnya = foto samping.
+@override@JsonKey() List<ConditionSpot> get spots {
+  if (_spots is EqualUnmodifiableListView) return _spots;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_spots);
 }
 
 @override final  String? description;
@@ -1164,18 +1178,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SkinCondition&&(identical(other.label, label) || other.label == label)&&(identical(other.probability, probability) || other.probability == probability)&&const DeepCollectionEquality().equals(other.regions, _regions)&&(identical(other.description, description) || other.description == description));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SkinCondition&&(identical(other.label, label) || other.label == label)&&(identical(other.probability, probability) || other.probability == probability)&&const DeepCollectionEquality().equals(other.regions, _regions)&&const DeepCollectionEquality().equals(other.spots, _spots)&&(identical(other.description, description) || other.description == description));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,label,probability,const DeepCollectionEquality().hash(_regions),description);
+    return Object.hash(runtimeType,label,probability,const DeepCollectionEquality().hash(_regions),const DeepCollectionEquality().hash(_spots),description);
 }
 
 @override
 String toString() {
-    return 'SkinCondition(label: $label, probability: $probability, regions: $regions, description: $description)';
+    return 'SkinCondition(label: $label, probability: $probability, regions: $regions, spots: $spots, description: $description)';
 }
 
 
@@ -1186,7 +1200,7 @@ abstract mixin class _$SkinConditionCopyWith<$Res> implements $SkinConditionCopy
   factory _$SkinConditionCopyWith(_SkinCondition value, $Res Function(_SkinCondition) _then) = __$SkinConditionCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) SkinConditionLabel label, double probability,@JsonKey(unknownEnumValue: FaceRegion.unknown) List<FaceRegion> regions, String? description
+@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) SkinConditionLabel label, double probability,@JsonKey(unknownEnumValue: FaceRegion.unknown) List<FaceRegion> regions, List<ConditionSpot> spots, String? description
 });
 
 
@@ -1203,13 +1217,305 @@ class __$SkinConditionCopyWithImpl<$Res>
 
 /// Create a copy of SkinCondition
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? label = null,Object? probability = null,Object? regions = null,Object? description = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? label = null,Object? probability = null,Object? regions = null,Object? spots = null,Object? description = freezed,}) {
   return _then(_SkinCondition(
 label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
 as SkinConditionLabel,probability: null == probability ? _self.probability : probability // ignore: cast_nullable_to_non_nullable
 as double,regions: null == regions ? _self._regions : regions // ignore: cast_nullable_to_non_nullable
-as List<FaceRegion>,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as List<FaceRegion>,spots: null == spots ? _self._spots : spots // ignore: cast_nullable_to_non_nullable
+as List<ConditionSpot>,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String?,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
+mixin _$ConditionSpot {
+
+ double get x; double get y;/// Sisi patch tempat lesi ditemukan, dinormalisasi terhadap lebar foto.
+/// Dipakai sebagai radius gumpalan di peta.
+ double get size;@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) SkinConditionLabel get label;@JsonKey(unknownEnumValue: FaceRegion.unknown) FaceRegion get region;/// 0 = foto depan, 1 dan seterusnya = foto samping.
+ int get viewIndex;
+/// Create a copy of ConditionSpot
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ConditionSpotCopyWith<ConditionSpot> get copyWith => _$ConditionSpotCopyWithImpl<ConditionSpot>(this as ConditionSpot, _$identity);
+
+  /// Serializes this ConditionSpot to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as ConditionSpot;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ConditionSpot&&(identical(other.x, _this.x) || other.x == _this.x)&&(identical(other.y, _this.y) || other.y == _this.y)&&(identical(other.size, _this.size) || other.size == _this.size)&&(identical(other.label, _this.label) || other.label == _this.label)&&(identical(other.region, _this.region) || other.region == _this.region)&&(identical(other.viewIndex, _this.viewIndex) || other.viewIndex == _this.viewIndex));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as ConditionSpot;
+  return Object.hash(runtimeType,_this.x,_this.y,_this.size,_this.label,_this.region,_this.viewIndex);
+}
+
+@override
+String toString() {
+  final _this = this as ConditionSpot;
+  return 'ConditionSpot(x: ${_this.x}, y: ${_this.y}, size: ${_this.size}, label: ${_this.label}, region: ${_this.region}, viewIndex: ${_this.viewIndex})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ConditionSpotCopyWith<$Res>  {
+  factory $ConditionSpotCopyWith(ConditionSpot value, $Res Function(ConditionSpot) _then) = _$ConditionSpotCopyWithImpl;
+@useResult
+$Res call({
+ double x, double y, double size,@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) SkinConditionLabel label,@JsonKey(unknownEnumValue: FaceRegion.unknown) FaceRegion region, int viewIndex
+});
+
+
+
+
+}
+/// @nodoc
+class _$ConditionSpotCopyWithImpl<$Res>
+    implements $ConditionSpotCopyWith<$Res> {
+  _$ConditionSpotCopyWithImpl(this._self, this._then);
+
+  final ConditionSpot _self;
+  final $Res Function(ConditionSpot) _then;
+
+/// Create a copy of ConditionSpot
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? x = null,Object? y = null,Object? size = null,Object? label = null,Object? region = null,Object? viewIndex = null,}) {
+  return _then(ConditionSpot(
+x: null == x ? _self.x : x // ignore: cast_nullable_to_non_nullable
+as double,y: null == y ? _self.y : y // ignore: cast_nullable_to_non_nullable
+as double,size: null == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
+as double,label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
+as SkinConditionLabel,region: null == region ? _self.region : region // ignore: cast_nullable_to_non_nullable
+as FaceRegion,viewIndex: null == viewIndex ? _self.viewIndex : viewIndex // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [ConditionSpot].
+extension ConditionSpotPatterns on ConditionSpot {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ConditionSpot value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ConditionSpot() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ConditionSpot value)  $default,){
+final _that = this;
+switch (_that) {
+case _ConditionSpot():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ConditionSpot value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ConditionSpot() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double x,  double y,  double size, @JsonKey(unknownEnumValue: SkinConditionLabel.unknown)  SkinConditionLabel label, @JsonKey(unknownEnumValue: FaceRegion.unknown)  FaceRegion region,  int viewIndex)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ConditionSpot() when $default != null:
+return $default(_that.x,_that.y,_that.size,_that.label,_that.region,_that.viewIndex);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double x,  double y,  double size, @JsonKey(unknownEnumValue: SkinConditionLabel.unknown)  SkinConditionLabel label, @JsonKey(unknownEnumValue: FaceRegion.unknown)  FaceRegion region,  int viewIndex)  $default,) {final _that = this;
+switch (_that) {
+case _ConditionSpot():
+return $default(_that.x,_that.y,_that.size,_that.label,_that.region,_that.viewIndex);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double x,  double y,  double size, @JsonKey(unknownEnumValue: SkinConditionLabel.unknown)  SkinConditionLabel label, @JsonKey(unknownEnumValue: FaceRegion.unknown)  FaceRegion region,  int viewIndex)?  $default,) {final _that = this;
+switch (_that) {
+case _ConditionSpot() when $default != null:
+return $default(_that.x,_that.y,_that.size,_that.label,_that.region,_that.viewIndex);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _ConditionSpot implements ConditionSpot {
+  const _ConditionSpot({required this.x, required this.y, this.size = 0.15, @JsonKey(unknownEnumValue: SkinConditionLabel.unknown) required this.label, @JsonKey(unknownEnumValue: FaceRegion.unknown) required this.region, this.viewIndex = 0});
+  factory _ConditionSpot.fromJson(Map<String, dynamic> json) => _$ConditionSpotFromJson(json);
+
+@override final  double x;
+@override final  double y;
+/// Sisi patch tempat lesi ditemukan, dinormalisasi terhadap lebar foto.
+/// Dipakai sebagai radius gumpalan di peta.
+@override@JsonKey() final  double size;
+@override@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) final  SkinConditionLabel label;
+@override@JsonKey(unknownEnumValue: FaceRegion.unknown) final  FaceRegion region;
+/// 0 = foto depan, 1 dan seterusnya = foto samping.
+@override@JsonKey() final  int viewIndex;
+
+/// Create a copy of ConditionSpot
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ConditionSpotCopyWith<_ConditionSpot> get copyWith => __$ConditionSpotCopyWithImpl<_ConditionSpot>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$ConditionSpotToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ConditionSpot&&(identical(other.x, x) || other.x == x)&&(identical(other.y, y) || other.y == y)&&(identical(other.size, size) || other.size == size)&&(identical(other.label, label) || other.label == label)&&(identical(other.region, region) || other.region == region)&&(identical(other.viewIndex, viewIndex) || other.viewIndex == viewIndex));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,x,y,size,label,region,viewIndex);
+}
+
+@override
+String toString() {
+    return 'ConditionSpot(x: $x, y: $y, size: $size, label: $label, region: $region, viewIndex: $viewIndex)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ConditionSpotCopyWith<$Res> implements $ConditionSpotCopyWith<$Res> {
+  factory _$ConditionSpotCopyWith(_ConditionSpot value, $Res Function(_ConditionSpot) _then) = __$ConditionSpotCopyWithImpl;
+@override @useResult
+$Res call({
+ double x, double y, double size,@JsonKey(unknownEnumValue: SkinConditionLabel.unknown) SkinConditionLabel label,@JsonKey(unknownEnumValue: FaceRegion.unknown) FaceRegion region, int viewIndex
+});
+
+
+
+
+}
+/// @nodoc
+class __$ConditionSpotCopyWithImpl<$Res>
+    implements _$ConditionSpotCopyWith<$Res> {
+  __$ConditionSpotCopyWithImpl(this._self, this._then);
+
+  final _ConditionSpot _self;
+  final $Res Function(_ConditionSpot) _then;
+
+/// Create a copy of ConditionSpot
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? x = null,Object? y = null,Object? size = null,Object? label = null,Object? region = null,Object? viewIndex = null,}) {
+  return _then(_ConditionSpot(
+x: null == x ? _self.x : x // ignore: cast_nullable_to_non_nullable
+as double,y: null == y ? _self.y : y // ignore: cast_nullable_to_non_nullable
+as double,size: null == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
+as double,label: null == label ? _self.label : label // ignore: cast_nullable_to_non_nullable
+as SkinConditionLabel,region: null == region ? _self.region : region // ignore: cast_nullable_to_non_nullable
+as FaceRegion,viewIndex: null == viewIndex ? _self.viewIndex : viewIndex // ignore: cast_nullable_to_non_nullable
+as int,
   ));
 }
 

@@ -1,5 +1,5 @@
 {
- "version": "afaskin-ondevice-2026.11-v2",
+ "version": "afaskin-ondevice-2026.11",
  "skin_type": {
   "model": "skin_type.tflite",
   "arch": "ResNet50",
@@ -17,7 +17,9 @@
    "normal": 3.0,
    "oily": 4.5
   },
-  "skin_sigma": 0.9
+  "skin_sigma": 0.9,
+  "T_fusion": 0.6,
+  "_catatan_T_fusion": "Kalibrasi kedua pada output fusion (bukan CNN). Akurasi test 82,7% tetapi keyakinan yang ditampilkan 67,2% -> under-confident 15,5 poin. T_fusion 0,6 dipilih agar selisih |keyakinan-akurasi| terkecil di seluruh rentang kualitas jawaban (sigma 0,5..2,5)."
  },
  "condition": {
   "default_model": "ResNet50",
@@ -47,21 +49,24 @@
   ],
   "models": {
    "MobileNetV2": {
-    "model": "condition_v2_mobilenetv2.tflite",
+    "model": "condition_mobilenetv2_v3.tflite",
     "T": 0.969,
     "alpha": 0.25,
     "rule": "geometric"
    },
    "ResNet50": {
-    "model": "condition_resnet50_v2.tflite",
-    "T": 1.2209863927470295,
-    "alpha": 0.6,
-    "rule": "geometric"
+    "model": "condition_resnet50_v31.tflite",
+    "T": 1.227167781585223,
+    "alpha": 0.25,
+    "rule": "geometric",
+    "T_fusion": 0.35
    }
   },
   "_catatan_v2": "Model kondisi v2 (notebook 04) menggantikan v1. ResNet50 v2: akurasi 70,5%, F1 macro 0,660, F1 selfie 0,699. Diuji pada 158 gambar berlabel acnenew dengan pipeline patch aplikasi: AUC Scars vs wajah tanpa lesi naik 0,374 -> 0,926, Acne 0,640 -> 0,773. Karena Scars kini benar-benar terlihat dari foto, jalur kuesioner untuk Scars dihapus.",
   "threads": 6,
-  "_catatan_threads": "XNNPack memakai 6 thread (HP kelas menengah punya 8 inti). Naik dari 4: inferensi kondisi float32 mendominasi waktu analisis (11,8 dari 16,3 detik pada 27 patch selfie), sementara preprocess/landmark hanya ratusan ms."
+  "_catatan_threads": "XNNPack memakai 6 thread (HP kelas menengah punya 8 inti). Naik dari 4: inferensi kondisi float32 mendominasi waktu analisis (11,8 dari 16,3 detik pada 27 patch selfie), sementara preprocess/landmark hanya ratusan ms.",
+  "_catatan_v3": "Model kondisi v3.1 (notebook 07): ResNet50 + kepala terlatih di 72.518 patch (25,3% selfie). Test 8.777 patch: accuracy 0,7517 (fp16, cos 0,9998 vs Keras) / 0,7250 (int8), F1 macro 0,7606, ROC-AUC 0,9643. Fusion dengan kuesioner: accuracy 0,8264 F1 macro 0,8257. T=1,2272 dan alpha=0,25 dihitung ulang di data valid.",
+  "_catatan_T_fusion": "Kalibrasi kedua pada output fusion. Akurasi test 82,4% tetapi keyakinan yang ditampilkan 41,4% -> under-confident 41 poin (ECE 0,410). T_fusion 0,35 menurunkan selisih terburuk menjadi 7,9 poin (ECE ~0,02)."
  },
  "roi": {
   "roi": {
@@ -141,7 +146,10 @@
   "glare_level": 215,
   "glare_max": 0.06,
   "hair_l_rel": 0.6,
-  "_catatan_gate": "Ambang dilonggarkan dari conf 0.40/min 4 karena pada foto asli dari galeri jerawat sering luput: model v2 menilai sebagian besar patch 'Clear' saat lesi kecil. Diukur pada 158 gambar berlabel (model v2, pipeline patch sama): conf 0.35/min 3 menaikkan acne tertangkap 12->15 dari 40 dan Scars 19->26 dari 40, dengan biaya wajah tanpa lesi yang ikut menampilkan kondisi 3->7 dari 39. Batas sebenarnya ada di model, bukan gate: pada foto close-up acnenew lesi mengisi sebagian besar patch, sedangkan di selfie lesi hanya beberapa piksel. Perbaikan tuntas perlu model yang dilatih khusus patch selfie berjarak normal (notebook 04)."
+  "_catatan_gate": "Ambang dilonggarkan dari conf 0.40/min 4 karena pada foto asli dari galeri jerawat sering luput: model v2 menilai sebagian besar patch 'Clear' saat lesi kecil. Diukur pada 158 gambar berlabel (model v2, pipeline patch sama): conf 0.35/min 3 menaikkan acne tertangkap 12->15 dari 40 dan Scars 19->26 dari 40, dengan biaya wajah tanpa lesi yang ikut menampilkan kondisi 3->7 dari 39. Batas sebenarnya ada di model, bukan gate: pada foto close-up acnenew lesi mengisi sebagian besar patch, sedangkan di selfie lesi hanya beberapa piksel. Perbaikan tuntas perlu model yang dilatih khusus patch selfie berjarak normal (notebook 04).",
+  "gate_top_k": 4,
+  "gate_top_conf": 0.38,
+  "_catatan_gate_v31": "Gate diganti: rata-rata top-4 patch terkuat per kelas >= 0.38, bukan lagi 'min 3 patch dengan p>=0.35'. Diukur pada 947 wajah uji (8.777 patch): kondisi asli muncul pada 57,9% -> 79,1% wajah berlesi; domain selfie 38,0% -> 56,1%; acne9 63,9% -> 88,6%. Wajah bersih yang tetap kosong turun 95,0% -> 88,4%. Kepala alternatif (sample_weight selfie x2,5) diuji: recall hanya +0,3 poin tapi spesifisitas -8,7 poin, jadi ditolak. Agregasi max/top-3/top-5/top-20% dan koreksi prior (logit adjustment tau 0,3-1,0) juga diuji dan tidak lebih baik."
  },
  "recommender": {
   "weights": [

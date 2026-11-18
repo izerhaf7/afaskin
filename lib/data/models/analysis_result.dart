@@ -71,11 +71,38 @@ abstract class SkinCondition with _$SkinCondition {
     required double probability,
     @JsonKey(unknownEnumValue: FaceRegion.unknown)
     required List<FaceRegion> regions,
+
+    /// Lokasi patch yang membawa bukti kondisi ini, dinormalisasi ke foto.
+    /// viewIndex 0 = foto depan, 1 dan seterusnya = foto samping.
+    @Default([]) List<ConditionSpot> spots,
     String? description,
   }) = _SkinCondition;
 
   factory SkinCondition.fromJson(Map<String, dynamic> json) =>
       _$SkinConditionFromJson(json);
+}
+
+/// Satu penanda lokasi lesi pada peta wajah.
+@freezed
+abstract class ConditionSpot with _$ConditionSpot {
+  const factory ConditionSpot({
+    required double x,
+    required double y,
+
+    /// Sisi patch tempat lesi ditemukan, dinormalisasi terhadap lebar foto.
+    /// Dipakai sebagai radius gumpalan di peta.
+    @Default(0.15) double size,
+    @JsonKey(unknownEnumValue: SkinConditionLabel.unknown)
+    required SkinConditionLabel label,
+    @JsonKey(unknownEnumValue: FaceRegion.unknown)
+    required FaceRegion region,
+
+    /// 0 = foto depan, 1 dan seterusnya = foto samping.
+    @Default(0) int viewIndex,
+  }) = _ConditionSpot;
+
+  factory ConditionSpot.fromJson(Map<String, dynamic> json) =>
+      _$ConditionSpotFromJson(json);
 }
 
 /// A face region with its bounding box `[x, y, w, h]`, normalized 0-1

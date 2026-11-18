@@ -123,13 +123,15 @@ void main() {
         find.byType(Scrollable).first,
         const Offset(0, -200),
       );
-      final card = find.ancestor(
-        of: find.text('Komedo hitam'),
-        matching: find.byType(AfaCard),
+      // 'Komedo hitam' juga dipakai chip legenda peta, jadi kartu kondisi
+      // dicari lewat label ProbabilityBar-nya.
+      final bar = find.byWidgetPredicate(
+        (w) => w is ProbabilityBar && w.label == 'Komedo hitam',
       );
+      final card = find.ancestor(of: bar, matching: find.byType(AfaCard));
       await tester.ensureVisible(card.first);
       await tester.pumpAndSettle();
-      await tester.tap(card.first);
+      await tester.tap(bar.first);
       await tester.pumpAndSettle();
       expect(
         tester.getSemantics(card.first),

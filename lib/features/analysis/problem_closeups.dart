@@ -21,12 +21,21 @@ class ProblemCloseups extends StatefulWidget {
     required this.labelsByRegion,
     super.key,
     this.photo,
+    this.sidePhotos = const [],
+    this.conditions = const [],
     this.selected,
     this.onTapRegion,
   });
 
   /// Front photo of this analysis, or null when it is no longer in memory.
   final Uint8List? photo;
+
+  /// Foto samping (memory only). Area yang lesinya terlihat dari samping ikut
+  /// disorot dari foto samping, bukan hanya foto depan.
+  final List<Uint8List> sidePhotos;
+
+  /// Kondisi beserta lokasi lesinya, dipakai untuk memilih foto samping.
+  final List<SkinCondition> conditions;
 
   final List<Roi> rois;
 
@@ -47,6 +56,7 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
   static const double _gap = AppSpacing.xs;
   final ScrollController _scroll = ScrollController();
   ui.Image? _image;
+  final List<ui.Image> _sideImages = [];
 
   @override
   void initState() {
@@ -58,6 +68,9 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
   void didUpdateWidget(ProblemCloseups old) {
     super.didUpdateWidget(old);
     if (!identical(old.photo, widget.photo)) unawaited(_decode());
+    if (old.sidePhotos.length != widget.sidePhotos.length) {
+      _decodeSides();
+    }
     // Dipilih dari peta wajah: geser baris close-up supaya kartunya terlihat.
     if (old.selected != widget.selected && widget.selected != null) {
       final i = widget.labelsByRegion.keys.toList().indexOf(widget.selected!);
@@ -97,10 +110,34 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
     });
   }
 
+  Future<void> _decodeSides() async {
+    for (final im in _sideImages) {
+      im.dispose();
+    }
+    _sideImages.clear();
+    for (final jpeg in widget.sidePhotos) {
+      try {
+        final codec = await ui.instantiateImageCodec(jpeg);
+        final frame = await codec.getNextFrame();
+        if (!mounted) {
+          frame.image.dispose();
+          return;
+        }
+        _sideImages.add(frame.image);
+      } on Object {
+        // Foto samping yang tidak bisa dibaca dilewati.
+      }
+    }
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
     _scroll.dispose();
     _image?.dispose();
+    for (final im in _sideImages) {
+      im.dispose();
+    }
     super.dispose();
   }
 
@@ -125,6 +162,27 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
     return Rect.fromLTWH(l, t, side, side);
   }
 
+  /// Crop di sekitar kelompok lesi yang terlihat pada foto samping.
+  Rect _cropAroundSpots(List<ConditionSpot> spots, ui.Image im) {
+    var cx = 0.0;
+    var cy = 0.0;
+    for (final s in spots) {
+      cx += s.x;
+      cy += s.y;
+    }
+    cx /= spots.length;
+    cy /= spots.length;
+    final side = im.width * 0.30;
+    final sq = side < 8 ? 8.0 : side;
+    final l = (cx * im.width - sq / 2)
+        .clamp(0.0, math.max(0.0, im.width - sq))
+        .toDouble();
+    final t = (cy * im.height - sq / 2)
+        .clamp(0.0, math.max(0.0, im.height - sq))
+        .toDouble();
+    return Rect.fromLTWH(l, t, sq, sq);
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
@@ -140,33 +198,72 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
     }
 
     final byName = {for (final r in widget.rois) r.name: r};
+    final cards = <_CardSpec>[];
+    for (final region in regions) {
+      final roi = byName[region];
+      if (roi != null) {
+        cards.add(_CardSpec(
+          image: im,
+          crop: _cropFor(roi, im),
+          region: region,
+          viewLabel: null,
+        ));
+      }
+      // Foto samping yang lesinya berada di area ini ikut disorot.
+      for (var v = 0; v < _sideImages.length; v++) {
+        final spots = <ConditionSpot>[
+          for (final c in widget.conditions)
+            for (final sp in c.spots)
+              if (sp.region == region && sp.viewIndex == v + 1) sp,
+        ];
+        if (spots.isEmpty) continue;
+        cards.add(_CardSpec(
+          image: _sideImages[v],
+          crop: _cropAroundSpots(spots, _sideImages[v]),
+          region: region,
+          viewLabel: 'Samping ${v + 1}',
+        ));
+      }
+    }
     return SizedBox(
       height: 176,
       child: ListView.separated(
         controller: _scroll,
         scrollDirection: Axis.horizontal,
-        itemCount: regions.length,
+        itemCount: cards.length,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.xs),
         itemBuilder: (context, i) {
-          final region = regions[i];
-          final roi = byName[region];
-          if (roi == null) return const SizedBox.shrink();
-          final labels = widget.labelsByRegion[region] ?? const <String>[];
-          final isSelected = widget.selected == region;
+          final c = cards[i];
           return _CloseupCard(
-            image: im,
-            crop: _cropFor(roi, im),
-            regionLabel: AppStrings.region(region),
-            conditions: labels,
-            selected: isSelected,
+            image: c.image,
+            crop: c.crop,
+            regionLabel: AppStrings.region(c.region),
+            viewLabel: c.viewLabel,
+            conditions: widget.labelsByRegion[c.region] ?? const <String>[],
+            selected: widget.selected == c.region,
             onTap: widget.onTapRegion == null
                 ? null
-                : () => widget.onTapRegion!(region),
+                : () => widget.onTapRegion!(c.region),
           );
         },
       ),
     );
   }
+}
+
+/// Satu kartu sorotan: foto mana yang dipotong dan area mana.
+class _CardSpec {
+  const _CardSpec({
+    required this.image,
+    required this.crop,
+    required this.region,
+    required this.viewLabel,
+  });
+
+  final ui.Image image;
+  final Rect crop;
+  final FaceRegion region;
+  final String? viewLabel;
 }
 
 class _CloseupCard extends StatelessWidget {
@@ -177,11 +274,15 @@ class _CloseupCard extends StatelessWidget {
     required this.conditions,
     required this.selected,
     required this.onTap,
+    this.viewLabel,
   });
 
   final ui.Image image;
   final Rect crop;
   final String regionLabel;
+
+  /// "Samping 1" dst. Null untuk foto depan.
+  final String? viewLabel;
   final List<String> conditions;
   final bool selected;
   final VoidCallback? onTap;
@@ -189,7 +290,8 @@ class _CloseupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final semantics = [regionLabel, ...conditions].join(', ');
+    final semantics = [if (viewLabel != null) viewLabel!, regionLabel, ...conditions]
+        .join(', ');
     return Semantics(
       button: onTap != null,
       label: semantics,
@@ -222,7 +324,11 @@ class _CloseupCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        regionLabel,
+                        viewLabel == null
+                            ? regionLabel
+                            : '$regionLabel · $viewLabel',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: text.titleSmall?.copyWith(fontSize: 13),
                       ),
                       const SizedBox(height: 2),

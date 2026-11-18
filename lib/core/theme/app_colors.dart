@@ -59,6 +59,32 @@ abstract final class AppColors {
   /// Conflict banner background ([danger] text: 4.7:1, ink body: 9.4:1).
   static const Color dangerTint = Color(0xFFF6E4E1);
 
+  /// Warna gumpalan per kondisi di peta wajah. Ramp earth-tone supaya tetap
+  /// selaras dengan palet aplikasi; `Clear` tidak dipakai (bukan lesi).
+  static const Map<String, Color> conditionColors = {
+    'Acne': Color(0xFFA8483B),
+    'Birthmark': Color(0xFF6B4A3A),
+    'Blackhead': Color(0xFF50392C),
+    'Cysts': Color(0xFFC26E4A),
+    'Milium': Color(0xFFC29A2B),
+    'Papular': Color(0xFFB5835A),
+    'Purulent': Color(0xFF8A3B2E),
+    'Scars': Color(0xFF7E6B8F),
+    'Whitehead': Color(0xFF5C7A6B),
+  };
+
+  /// Warna untuk satu kondisi.
+  ///
+  /// Kunci [conditionColors] memakai bentuk berhuruf besar ('Acne'), sedangkan
+  /// `SkinConditionLabel.name` menghasilkan huruf kecil ('acne'). Tanpa
+  /// pencocokan ini semua kotak lesi jatuh ke warna cadangan dan tampak sama.
+  static Color conditionColor(String name) {
+    if (conditionColors.containsKey(name)) return conditionColors[name]!;
+    if (name.isEmpty) return caution;
+    final rapi = name[0].toUpperCase() + name.substring(1);
+    return conditionColors[rapi] ?? caution;
+  }
+
   /// Pressed state on mist surfaces.
   static const Color mistPressed = Color(0xFFD3E4DF);
 

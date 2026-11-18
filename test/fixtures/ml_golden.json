@@ -22,7 +22,7 @@
     0.04890339204807542,
     0.0068436949435372865,
     0.007439809233083464,
-    2.577957533527372e-06,
+    0.000002577957533527372,
     0.004410714715331896,
     0.27288734803114556,
     0.22068580750538977,
@@ -221,21 +221,21 @@
   },
   "profile": {
    "p_skin": {
-    "dry": 0.0115,
-    "normal": 0.2808,
-    "oily": 0.7077
+    "dry": 0.0009,
+    "normal": 0.1763,
+    "oily": 0.8229
    },
    "p_cond": {
-    "Acne": 0.1373,
-    "Birthmark": 0.0891,
-    "Blackhead": 0.0696,
-    "Cysts": 0.1258,
-    "Milium": 0.1013,
-    "Papular": 0.1561,
-    "Purulent": 0.1065,
-    "Scars": 0.1022,
-    "Whitehead": 0.0658,
-    "Clear": 0.0463
+    "Acne": 0.2152,
+    "Birthmark": 0.0369,
+    "Blackhead": 0.0275,
+    "Cysts": 0.194,
+    "Milium": 0.0429,
+    "Papular": 0.2505,
+    "Purulent": 0.1592,
+    "Scars": 0.0433,
+    "Whitehead": 0.0257,
+    "Clear": 0.0049
    },
    "sensitive": true
   },
@@ -250,7 +250,7 @@
   "recommend": [
    {
     "id": "118151",
-    "match_score": 0.917,
+    "match_score": 0.924,
     "matched": [
      "asiaticoside",
      "centella asiatica extract",
@@ -267,21 +267,18 @@
     "warnings": 0
    },
    {
-    "id": "132555",
-    "match_score": 0.857,
+    "id": "113853",
+    "match_score": 0.915,
     "matched": [
-     "centella asiatica leaf extract",
-     "glycerin",
-     "niacinamide",
-     "panthenol",
+     "centella asiatica extract",
      "salicylic acid"
     ],
-    "reasons": 4,
+    "reasons": 3,
     "warnings": 0
    },
    {
     "id": "119840",
-    "match_score": 0.852,
+    "match_score": 0.879,
     "matched": [
      "niacinamide",
      "salicylic acid",
@@ -291,18 +288,20 @@
     "warnings": 0
    },
    {
-    "id": "113853",
-    "match_score": 0.851,
+    "id": "112498",
+    "match_score": 0.876,
     "matched": [
      "centella asiatica extract",
+     "glycerin",
+     "niacinamide",
      "salicylic acid"
     ],
-    "reasons": 3,
+    "reasons": 4,
     "warnings": 0
    },
    {
     "id": "120344",
-    "match_score": 0.834,
+    "match_score": 0.873,
     "matched": [
      "asiaticoside",
      "ceramide ap",
@@ -322,7 +321,7 @@
    },
    {
     "id": "115150",
-    "match_score": 0.821,
+    "match_score": 0.852,
     "matched": [
      "salicylic acid : salicylic acid anti inflamasi membantu mengurangi kemerahan sekaligus menenangkan kulit yang teriritasi serta pembengkakan. centella asiatica : dapat membantu menenangkan dan menenangkan kulit yang teriritasi atau meradang. witch hazel : efektif dalam menenangkan kulit yang teriritasi atau meradang. ini dapat membantu meringankan gatal dan iritasi tea tree oil : memiliki sifat anti-inflamasi yang dapat membantu menenangkan dan mengurangi kemerahan dan pembengkakan yang terkait dengan kondisi kulit inflamasi. hal ini juga dapat mengontrol produksi minyak berlebih"
     ],
@@ -331,7 +330,7 @@
    },
    {
     "id": "122927",
-    "match_score": 0.788,
+    "match_score": 0.832,
     "matched": [
      "salicylic acid"
     ],
@@ -339,18 +338,40 @@
     "warnings": 0
    },
    {
-    "id": "122786",
-    "match_score": 0.779,
+    "id": "117853",
+    "match_score": 0.824,
     "matched": [
-     "3-o-ethyl ascorbic acid",
-     "ascorbyl glucoside",
+     "centella asiatica extract",
+     "madecassoside",
+     "niacinamide",
+     "panthenol",
+     "salicylic acid"
+    ],
+    "reasons": 4,
+    "warnings": 0
+   },
+   {
+    "id": "112427",
+    "match_score": 0.821,
+    "matched": [
+     "glycerin",
+     "niacinamide",
+     "panthenol",
+     "salicylic acid"
+    ],
+    "reasons": 4,
+    "warnings": 0
+   },
+   {
+    "id": "122786",
+    "match_score": 0.796,
+    "matched": [
      "ceramide ap",
      "ceramide as",
      "ceramide eop",
      "ceramide np",
      "ceramide ns",
      "glycerin",
-     "magnesium ascorbyl phosphate",
      "niacinamide",
      "salicylic acid",
      "sodium hyaluronate",
@@ -360,8 +381,19 @@
     "warnings": 0
    },
    {
+    "id": "112426",
+    "match_score": 0.795,
+    "matched": [
+     "niacinamide",
+     "panthenol",
+     "salicylic acid"
+    ],
+    "reasons": 4,
+    "warnings": 0
+   },
+   {
     "id": "104199",
-    "match_score": 0.778,
+    "match_score": 0.777,
     "matched": [
      "centella asiatica extract",
      "ceramide ap",
@@ -376,62 +408,19 @@
     "warnings": 0
    },
    {
-    "id": "117853",
-    "match_score": 0.769,
-    "matched": [
-     "centella asiatica extract",
-     "madecassoside",
-     "niacinamide",
-     "panthenol",
-     "salicylic acid"
-    ],
-    "reasons": 4,
-    "warnings": 0
-   },
-   {
-    "id": "112427",
-    "match_score": 0.747,
-    "matched": [
-     "ethylhexyl methoxycinnamate",
-     "ethylhexyl triazone",
-     "glycerin",
-     "niacinamide",
-     "octocrylene",
-     "panthenol",
-     "salicylic acid"
-    ],
-    "reasons": 4,
-    "warnings": 0
-   },
-   {
-    "id": "112426",
-    "match_score": 0.741,
-    "matched": [
-     "ethylhexyl methoxycinnamate",
-     "ethylhexyl triazone",
-     "niacinamide",
-     "octocrylene",
-     "panthenol",
-     "salicylic acid"
-    ],
-    "reasons": 4,
-    "warnings": 0
-   },
-   {
     "id": "116613",
-    "match_score": 0.711,
+    "match_score": 0.77,
     "matched": [
      "centella asiatica extract",
      "glycerin",
-     "niacinamide",
-     "octocrylene"
+     "niacinamide"
     ],
     "reasons": 4,
     "warnings": 0
    },
    {
     "id": "109056",
-    "match_score": 0.697,
+    "match_score": 0.75,
     "matched": [
      "asiaticoside",
      "centella asiatica extract",
@@ -449,27 +438,33 @@
     "warnings": 0
    },
    {
-    "id": "112395",
-    "match_score": 0.677,
+    "id": "127679",
+    "match_score": 0.733,
     "matched": [
+     "centella asiatica extract",
+     "centella asiatica leaf extract",
+     "centella asiatica leaf vesicles",
      "glycerin",
      "niacinamide",
-     "salicylic acid"
+     "panthenol",
+     "salicylic acid",
+     "sodium hyaluronate",
+     "zinc gluconate"
     ],
-    "reasons": 4,
+    "reasons": 3,
     "warnings": 0
    }
   ],
   "recommend_serum_400k": [
    "118151",
-   "132555",
    "119840",
    "112498",
+   "132555",
    "112396",
    "112496",
+   "119816",
    "127682",
    "123718",
-   "119816",
    "89077"
   ]
  },
@@ -696,144 +691,201 @@
   },
   "profile": {
    "p_skin": {
-    "dry": 0.9022,
-    "normal": 0.0955,
-    "oily": 0.0022
+    "dry": 0.9768,
+    "normal": 0.0232,
+    "oily": 0.0
    },
    "p_cond": {
-    "Acne": 0.061,
-    "Birthmark": 0.1383,
-    "Blackhead": 0.0688,
-    "Cysts": 0.0674,
-    "Milium": 0.121,
-    "Papular": 0.0845,
-    "Purulent": 0.0706,
-    "Scars": 0.2544,
-    "Whitehead": 0.0769,
-    "Clear": 0.057
+    "Acne": 0.0033,
+    "Birthmark": 0.1066,
+    "Blackhead": 0.0038,
+    "Cysts": 0.0037,
+    "Milium": 0.0911,
+    "Papular": 0.0049,
+    "Purulent": 0.0039,
+    "Scars": 0.7676,
+    "Whitehead": 0.0044,
+    "Clear": 0.0107
    },
    "sensitive": false
   },
   "avoid": [
-   "Alcohol Denat",
-   "Comedogenic Oil"
+   "Alcohol Denat"
   ],
   "recommend": [
    {
-    "id": "100505",
-    "match_score": 0.93,
+    "id": "105856",
+    "match_score": 0.929,
+    "matched": [
+     "3-o-ethyl ascorbic acid",
+     "ascorbic acid",
+     "ceramide ap",
+     "ceramide as",
+     "ceramide eop",
+     "ceramide np",
+     "ceramide ns",
+     "glycerin",
+     "hydrolyzed sodium hyaluronate",
+     "sodium hyaluronate",
+     "sodium hyaluronate crosspolymer"
+    ],
+    "reasons": 4,
+    "warnings": 0
+   },
+   {
+    "id": "106505",
+    "match_score": 0.922,
+    "matched": [
+     "3-o ethyl ascorbic acid",
+     "alpha-arbutin glycerin",
+     "ascorbyl glucoside",
+     "ceramide ap",
+     "ceramide as",
+     "ceramide eop",
+     "ceramide ng",
+     "ceramide np",
+     "ceramide ns",
+     "hydrolyzed sodium hyaluronate",
+     "panthenol",
+     "sodium hyaluronate",
+     "sodium hyaluronate crosspolymer"
+    ],
+    "reasons": 4,
+    "warnings": 1
+   },
+   {
+    "id": "122404",
+    "match_score": 0.909,
+    "matched": [
+     "3-o-ethyl ascorbic acid",
+     "ascorbyl glucoside",
+     "ceramide np",
+     "glycerin",
+     "panthenol",
+     "sodium hyaluronate",
+     "squalane"
+    ],
+    "reasons": 4,
+    "warnings": 0
+   },
+   {
+    "id": "107384",
+    "match_score": 0.907,
+    "matched": [
+     "3-o-ethyl ascorbic acid",
+     "alpha-arbutin",
+     "ceramide ap",
+     "ceramide eop",
+     "ceramide eos",
+     "ceramide np",
+     "ceramide ns",
+     "glycerin",
+     "niacinamide"
+    ],
+    "reasons": 4,
+    "warnings": 0
+   },
+   {
+    "id": "107198",
+    "match_score": 0.903,
+    "matched": [
+     "ceramide ap",
+     "ceramide as",
+     "ceramide eop",
+     "ceramide np",
+     "ceramide ns",
+     "glycerin",
+     "niacinamide",
+     "panthenol",
+     "sodium hyaluronate"
+    ],
+    "reasons": 4,
+    "warnings": 0
+   },
+   {
+    "id": "113275",
+    "match_score": 0.898,
     "matched": [
      "glycerin",
      "glycolic acid",
-     "salicylic acid",
-     "zinc pca"
+     "hydrolyzed hyaluronic acid",
+     "niacinamide",
+     "panthenol"
+    ],
+    "reasons": 4,
+    "warnings": 1
+   },
+   {
+    "id": "116035",
+    "match_score": 0.894,
+    "matched": [
+     "glycerin",
+     "glycolic acid",
+     "panthenol",
+     "potassium azeloyl diglycinate"
+    ],
+    "reasons": 4,
+    "warnings": 1
+   },
+   {
+    "id": "122784",
+    "match_score": 0.893,
+    "matched": [
+     "3-o-ethyl ascorbic acid",
+     "ascorbyl glucoside",
+     "ceramide ap",
+     "ceramide as",
+     "ceramide eop",
+     "ceramide np",
+     "ceramide ns",
+     "glycerin",
+     "lactic acid",
+     "magnesium ascorbyl phosphate",
+     "niacinamide",
+     "panthenol",
+     "sodium hyaluronate"
+    ],
+    "reasons": 4,
+    "warnings": 1
+   },
+   {
+    "id": "101075",
+    "match_score": 0.88,
+    "matched": [
+     "alpha arbutin",
+     "glycerin",
+     "panthenol"
+    ],
+    "reasons": 4,
+    "warnings": 0
+   },
+   {
+    "id": "124645",
+    "match_score": 0.874,
+    "matched": [
+     "ceramide np",
+     "glycerin",
+     "hydroxypinacolone retinoate",
+     "niacinamide",
+     "retinol",
+     "titanium dioxide"
     ],
     "reasons": 4,
     "warnings": 2
    },
    {
-    "id": "111076",
-    "match_score": 0.916,
-    "matched": [
-     "alpha-arbutin",
-     "glycerin",
-     "lactic acid",
-     "mandelic acid",
-     "niacinamide",
-     "salicylic acid"
-    ],
-    "reasons": 4,
-    "warnings": 1
-   },
-   {
-    "id": "118151",
-    "match_score": 0.909,
+    "id": "100505",
+    "match_score": 0.869,
     "matched": [
      "glycerin",
-     "niacinamide",
-     "panthenol",
-     "salicylic acid",
-     "zinc pca"
+     "glycolic acid"
     ],
-    "reasons": 4,
-    "warnings": 0
-   },
-   {
-    "id": "116035",
-    "match_score": 0.898,
-    "matched": [
-     "glycerin",
-     "glycolic acid",
-     "panthenol",
-     "potassium azeloyl diglycinate",
-     "salicylic acid"
-    ],
-    "reasons": 4,
-    "warnings": 1
-   },
-   {
-    "id": "122076",
-    "match_score": 0.876,
-    "matched": [
-     "glycerin",
-     "glycolic acid",
-     "lactic acid",
-     "niacinamide",
-     "salicylic acid",
-     "sodium hyaluronate"
-    ],
-    "reasons": 4,
-    "warnings": 1
-   },
-   {
-    "id": "113413",
-    "match_score": 0.855,
-    "matched": [
-     "capryloyl salicylic acid",
-     "glycerin",
-     "glycolic acid",
-     "lactic acid",
-     "niacinamide",
-     "salicylic acid"
-    ],
-    "reasons": 4,
-    "warnings": 1
-   },
-   {
-    "id": "122781",
-    "match_score": 0.848,
-    "matched": [
-     "3-o-ethyl ascorbic acid",
-     "arbutin",
-     "ascorbic acid",
-     "ascorbyl glucoside",
-     "glycerin",
-     "magnesium ascorbyl phosphate",
-     "niacinamide",
-     "panthenol",
-     "salicylic acid",
-     "sodium ascorbyl phosphate",
-     "sodium hyaluronate"
-    ],
-    "reasons": 4,
-    "warnings": 0
-   },
-   {
-    "id": "112253",
-    "match_score": 0.836,
-    "matched": [
-     "glycerin",
-     "glycolic acid",
-     "lactic acid",
-     "panthenol",
-     "salicylic acid"
-    ],
-    "reasons": 4,
-    "warnings": 1
+    "reasons": 3,
+    "warnings": 2
    },
    {
     "id": "119190",
-    "match_score": 0.835,
+    "match_score": 0.869,
     "matched": [
      "3-o-ethyl ascorbic acid",
      "ceramide ap",
@@ -850,118 +902,65 @@
      "lactic acid",
      "niacinamide",
      "sodium hyaluronate",
-     "sodium hyaluronate crosspolymer",
-     "zinc pca"
-    ],
-    "reasons": 4,
-    "warnings": 1
-   },
-   {
-    "id": "131713",
-    "match_score": 0.828,
-    "matched": [
-     "bis-ethylhexyloxyphenol methoxyphenyl triazine",
-     "diethylamino hydroxybenzoyl hexyl benzoate",
-     "ethylhexyl triazone",
-     "glycerin",
-     "niacinamide",
-     "panthenol",
-     "salicylic acid",
-     "squalane",
-     "zinc pca"
-    ],
-    "reasons": 4,
-    "warnings": 1
-   },
-   {
-    "id": "122786",
-    "match_score": 0.827,
-    "matched": [
-     "3-o-ethyl ascorbic acid",
-     "ascorbyl glucoside",
-     "ceramide ap",
-     "ceramide as",
-     "ceramide eop",
-     "ceramide np",
-     "ceramide ns",
-     "glycerin",
-     "magnesium ascorbyl phosphate",
-     "niacinamide",
-     "salicylic acid",
-     "sodium hyaluronate",
-     "zinc pca"
-    ],
-    "reasons": 4,
-    "warnings": 0
-   },
-   {
-    "id": "116489",
-    "match_score": 0.806,
-    "matched": [
-     "ceramide np",
-     "glycerin",
-     "hyaluronic acid",
-     "hydrolyzed hyaluronic acid",
-     "hydrolyzed sodium hyaluronate",
-     "lactic acid",
-     "niacinamide",
-     "panthenol",
-     "salicylic acid",
-     "sodium hyaluronate",
      "sodium hyaluronate crosspolymer"
     ],
     "reasons": 4,
-    "warnings": 2
+    "warnings": 1
    },
    {
     "id": "33303",
-    "match_score": 0.796,
+    "match_score": 0.863,
     "matched": [
      "glycerin",
      "glycolic acid",
-     "niacinamide",
-     "salicylic acid"
+     "niacinamide"
     ],
     "reasons": 4,
     "warnings": 1
    },
    {
-    "id": "101075",
-    "match_score": 0.786,
+    "id": "92873",
+    "match_score": 0.842,
     "matched": [
-     "alpha arbutin",
+     "bis-ethylhexyloxyphenol methoxyphenyl triazine",
+     "ethylhexyl methoxycinnamate",
+     "ethylhexyl triazone",
      "glycerin",
-     "panthenol"
+     "octocrylene",
+     "titanium dioxide"
     ],
-    "reasons": 4,
+    "reasons": 3,
     "warnings": 0
    },
    {
-    "id": "120024",
-    "match_score": 0.719,
+    "id": "126630",
+    "match_score": 0.817,
     "matched": [
      "alpha-arbutin",
      "bis-ethylhexyloxyphenol methoxyphenyl triazine",
      "diethylamino hydroxybenzoyl hexyl benzoate",
+     "ethylhexyl methoxycinnamate",
      "ethylhexyl triazone",
-     "homosalate",
-     "niacinamide"
+     "glycerin",
+     "hydrolyzed hyaluronic acid",
+     "niacinamide",
+     "panthenol"
     ],
     "reasons": 4,
-    "warnings": 0
+    "warnings": 1
    }
   ],
   "recommend_serum_400k": [
-   "111076",
-   "118151",
-   "122781",
-   "112004",
-   "127644",
-   "106372",
+   "105856",
+   "106505",
+   "122404",
+   "122780",
    "119815",
-   "112498",
-   "119814",
-   "132555"
+   "97154",
+   "111076",
+   "122781",
+   "116488",
+   "127078"
   ]
  },
  {
@@ -989,7 +988,7 @@
     0.07157377987660095,
     0.3871770727200458,
     0.015533349725595941,
-    4.800120674871517e-05,
+    0.00004800120674871517,
     0.07656909508457399,
     0.16886880594630405,
     0.0024094018696704795,
@@ -999,7 +998,7 @@
     0.213889812312317,
     0.16692607724740216,
     0.12296075572545194,
-    1.0642953968644642e-06,
+    0.0000010642953968644642,
     0.005973037762821358,
     0.09075885571208885,
     0.004472485034729752,
@@ -1037,7 +1036,7 @@
     0.07100695537351316,
     0.0014001125431523976,
     0.4219379623387896,
-    1.0342523852124489e-05,
+    0.000010342523852124489,
     0.043006050459647734,
     0.0016932192491044844,
     0.3100514222526298,
@@ -1188,21 +1187,21 @@
   },
   "profile": {
    "p_skin": {
-    "dry": 0.1329,
-    "normal": 0.719,
-    "oily": 0.1481
+    "dry": 0.053,
+    "normal": 0.8836,
+    "oily": 0.0635
    },
    "p_cond": {
-    "Acne": 0.1015,
-    "Birthmark": 0.1046,
-    "Blackhead": 0.1214,
-    "Cysts": 0.1287,
-    "Milium": 0.118,
-    "Papular": 0.0784,
-    "Purulent": 0.1016,
-    "Scars": 0.0487,
-    "Whitehead": 0.1615,
-    "Clear": 0.0354
+    "Acne": 0.0596,
+    "Birthmark": 0.0617,
+    "Blackhead": 0.2574,
+    "Cysts": 0.0789,
+    "Milium": 0.0712,
+    "Papular": 0.0439,
+    "Purulent": 0.0596,
+    "Scars": 0.002,
+    "Whitehead": 0.3608,
+    "Clear": 0.0049
    },
    "sensitive": false
   },
@@ -1212,7 +1211,7 @@
   "recommend": [
    {
     "id": "100505",
-    "match_score": 0.969,
+    "match_score": 0.982,
     "matched": [
      "glycerin",
      "glycolic acid",
@@ -1224,10 +1223,9 @@
    },
    {
     "id": "118151",
-    "match_score": 0.957,
+    "match_score": 0.976,
     "matched": [
      "glycerin",
-     "melaleuca alternifolia leaf oil",
      "niacinamide",
      "panthenol",
      "salicylic acid",
@@ -1238,7 +1236,7 @@
    },
    {
     "id": "113412",
-    "match_score": 0.926,
+    "match_score": 0.956,
     "matched": [
      "lactic acid",
      "salicylic acid"
@@ -1248,7 +1246,7 @@
    },
    {
     "id": "112253",
-    "match_score": 0.907,
+    "match_score": 0.918,
     "matched": [
      "glycerin",
      "glycolic acid",
@@ -1260,17 +1258,8 @@
     "warnings": 1
    },
    {
-    "id": "119814",
-    "match_score": 0.9,
-    "matched": [
-     "meratakan warna kulit dan membuat kulit tampak lebih cerah. bha : mengangkat sel kulit mati hingga kedalam pori"
-    ],
-    "reasons": 3,
-    "warnings": 1
-   },
-   {
     "id": "113413",
-    "match_score": 0.9,
+    "match_score": 0.917,
     "matched": [
      "capryloyl salicylic acid",
      "glycerin",
@@ -1283,20 +1272,17 @@
     "warnings": 1
    },
    {
-    "id": "117116",
-    "match_score": 0.89,
+    "id": "119814",
+    "match_score": 0.907,
     "matched": [
-     "glycerin",
-     "lactic acid",
-     "niacinamide",
-     "salicylic acid"
+     "meratakan warna kulit dan membuat kulit tampak lebih cerah. bha : mengangkat sel kulit mati hingga kedalam pori"
     ],
-    "reasons": 4,
-    "warnings": 2
+    "reasons": 3,
+    "warnings": 1
    },
    {
     "id": "122786",
-    "match_score": 0.882,
+    "match_score": 0.896,
     "matched": [
      "ceramide ap",
      "ceramide as",
@@ -1314,11 +1300,8 @@
    },
    {
     "id": "131713",
-    "match_score": 0.878,
+    "match_score": 0.895,
     "matched": [
-     "bis-ethylhexyloxyphenol methoxyphenyl triazine",
-     "diethylamino hydroxybenzoyl hexyl benzoate",
-     "ethylhexyl triazone",
      "glycerin",
      "niacinamide",
      "panthenol",
@@ -1330,34 +1313,20 @@
     "warnings": 1
    },
    {
-    "id": "122076",
-    "match_score": 0.871,
+    "id": "117116",
+    "match_score": 0.894,
     "matched": [
      "glycerin",
-     "glycolic acid",
      "lactic acid",
      "niacinamide",
-     "salicylic acid",
-     "sodium hyaluronate"
+     "salicylic acid"
     ],
     "reasons": 4,
-    "warnings": 1
-   },
-   {
-    "id": "115879",
-    "match_score": 0.83,
-    "matched": [
-     "glycolic acid",
-     "niacinamide",
-     "salicylic acid",
-     "sodium hyaluronate"
-    ],
-    "reasons": 4,
-    "warnings": 1
+    "warnings": 2
    },
    {
     "id": "120344",
-    "match_score": 0.829,
+    "match_score": 0.887,
     "matched": [
      "ceramide ap",
      "ceramide as",
@@ -1365,7 +1334,6 @@
      "ceramide np",
      "ceramide ns",
      "glycerin",
-     "melaleuca alternifolia leaf oil",
      "panthenol",
      "salicylic acid"
     ],
@@ -1373,8 +1341,22 @@
     "warnings": 0
    },
    {
+    "id": "122076",
+    "match_score": 0.872,
+    "matched": [
+     "glycerin",
+     "glycolic acid",
+     "lactic acid",
+     "niacinamide",
+     "salicylic acid",
+     "sodium hyaluronate"
+    ],
+    "reasons": 4,
+    "warnings": 1
+   },
+   {
     "id": "92497",
-    "match_score": 0.814,
+    "match_score": 0.844,
     "matched": [
      "ceramide ap",
      "ceramide np",
@@ -1389,24 +1371,27 @@
     "warnings": 1
    },
    {
-    "id": "119190",
-    "match_score": 0.778,
+    "id": "33303",
+    "match_score": 0.828,
+    "matched": [
+     "glycerin",
+     "glycolic acid",
+     "niacinamide",
+     "salicylic acid"
+    ],
+    "reasons": 4,
+    "warnings": 1
+   },
+   {
+    "id": "124761",
+    "match_score": 0.785,
     "matched": [
      "ceramide ap",
      "ceramide as",
      "ceramide eop",
      "ceramide np",
      "ceramide ns",
-     "diethylamino hydroxybenzoyl hexyl benzoate",
-     "ethylhexyl methoxycinnamate",
      "glycerin",
-     "hyaluronic acid",
-     "hydrolyzed hyaluronic acid",
-     "hydrolyzed sodium hyaluronate",
-     "lactic acid",
-     "niacinamide",
-     "sodium hyaluronate",
-     "sodium hyaluronate crosspolymer",
      "zinc pca"
     ],
     "reasons": 4,
@@ -1414,16 +1399,13 @@
    },
    {
     "id": "118138",
-    "match_score": 0.751,
+    "match_score": 0.775,
     "matched": [
-     "bis-ethylhexyloxyphenol methoxyphenyl triazine",
      "ceramide ap",
      "ceramide as",
      "ceramide eop",
      "ceramide np",
      "ceramide ns",
-     "diethylamino hydroxybenzoyl hexyl benzoate",
-     "ethylhexyl methoxycinnamate",
      "glycerin",
      "hyaluronic acid",
      "hydrolyzed hyaluronic acid",
@@ -1432,7 +1414,6 @@
      "salicylic acid",
      "sodium hyaluronate",
      "sodium hyaluronate crosspolymer",
-     "titanium dioxide",
      "zinc oxide",
      "zinc pca"
     ],
@@ -1444,13 +1425,13 @@
    "118151",
    "119814",
    "117116",
-   "129338",
-   "111076",
-   "132555",
-   "119840",
-   "112396",
    "97927",
-   "112004"
+   "100242",
+   "129338",
+   "132555",
+   "112396",
+   "119840",
+   "129327"
   ]
  }
 ]

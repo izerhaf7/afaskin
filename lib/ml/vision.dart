@@ -26,6 +26,7 @@ class ViewResult {
     required this.rois,
     required this.tiles,
     required this.tileRegions,
+    required this.tileRects,
     required this.sharpness,
     required this.brightness,
   });
@@ -34,6 +35,10 @@ class ViewResult {
   final List<Map<String, Object>> rois;
   final List<Float32List> tiles;
   final List<String> tileRegions;
+
+  /// Kotak setiap patch pada foto asli, dinormalisasi [x, y, w, h].
+  /// Dipakai untuk menandai lokasi lesi di peta wajah dan memotong close-up.
+  final List<List<double>> tileRects;
   final double sharpness;
   final double brightness;
 }
@@ -372,6 +377,12 @@ ViewResult processRgb(
   }
   final tiles = [for (final c in kept) sampleSquare(im, c.x, c.y, c.s, inputSize)];
   final tileRegions = [for (final c in kept) c.region];
+  final tileRects = [
+    for (final c in kept)
+      [c.x / w, c.y / h, c.s / w, c.s / h]
+          .map((v) => (v * 10000).roundToDouble() / 10000)
+          .toList(),
+  ];
   final minValid = (roiCfg['min_valid_roi'] as int) - (side ? 1 : 0);
   if (valid < minValid || tiles.isEmpty) throw const QualityRejection(['face_covered']);
 
@@ -380,6 +391,7 @@ ViewResult processRgb(
     rois: rois,
     tiles: tiles,
     tileRegions: tileRegions,
+    tileRects: tileRects,
     sharpness: (sharp * 10).roundToDouble() / 10,
     brightness: (light * 10).roundToDouble() / 10,
   );

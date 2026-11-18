@@ -104,6 +104,14 @@ class _AnalyzingPageState extends ConsumerState<AnalyzingPage> {
       ref
           .read(latestAnalysisPhotoProvider.notifier)
           .set(result.analysisId, photo);
+      // Foto samping disimpan juga supaya sorotan area bisa memotongnya.
+      if (sides.isEmpty) {
+        ref.read(latestAnalysisSidePhotosProvider.notifier).clear();
+      } else {
+        ref
+            .read(latestAnalysisSidePhotosProvider.notifier)
+            .set(result.analysisId, sides);
+      }
       ref.read(pendingPhotoProvider.notifier).clear();
       ref.read(pendingSidePhotosProvider.notifier).clear();
       ref.read(latestAnalysisProvider.notifier).set(result);

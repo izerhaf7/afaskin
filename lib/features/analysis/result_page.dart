@@ -31,6 +31,7 @@ class ResultPage extends ConsumerWidget {
     final r = result ?? ref.watch(latestAnalysisProvider);
     // The user's own photo exists (in memory) only for the latest analysis.
     final photo = ref.watch(latestAnalysisPhotoProvider);
+    final sides = ref.watch(latestAnalysisSidePhotosProvider);
     return Scaffold(
       appBar: AppBar(title: const Text(AppStrings.resultTitle)),
       body: r == null
@@ -38,18 +39,29 @@ class ResultPage extends ConsumerWidget {
           : ResultView(
               result: r,
               photo: photo?.analysisId == r.analysisId ? photo!.jpeg : null,
+              sidePhotos: sides?.analysisId == r.analysisId
+                  ? sides!.jpegs
+                  : const <Uint8List>[],
             ),
     );
   }
 }
 
 class ResultView extends StatefulWidget {
-  const ResultView({required this.result, super.key, this.photo});
+  const ResultView({
+    required this.result,
+    super.key,
+    this.photo,
+    this.sidePhotos = const [],
+  });
 
   final AnalysisResult result;
 
   /// Front photo of this analysis (memory only), drawn under the face map.
   final Uint8List? photo;
+
+  /// Foto samping (memory only) — ikut dipakai sorotan area.
+  final List<Uint8List> sidePhotos;
 
   @override
   State<ResultView> createState() => _ResultViewState();
@@ -58,23 +70,23 @@ class ResultView extends StatefulWidget {
 class _ResultViewState extends State<ResultView> {
   SkinConditionLabel? _selected;
   FaceRegion? _selectedRegion;
-  // Area yang disorot di peta wajah. Mengetuk close-up menyorot satu area
-  // itu saja; mengetuk kartu kondisi menyorot semua area kondisi tersebut.
-  Set<FaceRegion> _emphasized = const {};
 
-  /// Menyorot satu area: dari kartu close-up maupun dari peta wajah.
-  void _selectRegion(FaceRegion region, List<SkinCondition> conditions) {
+  /// Menyorot satu kondisi (dari kartu kondisi, kartu close-up, atau peta). Area close-up mengikuti area pertama kondisi itu,
+  /// karena peta kini memetakan lesi dan kondisi, bukan kotak wilayah.
+  void _selectCondition(SkinConditionLabel? label, List<SkinCondition> conditions) {
     setState(() {
-      final off = _selectedRegion == region;
-      _selectedRegion = off ? null : region;
-      _emphasized = off ? const {} : {region};
-      _selected = off
-          ? null
-          : conditions
-                .where((c) => c.regions.contains(region))
-                .firstOrNull
-                ?.label;
+      // Ketukan pada kondisi yang sama melepas sorotan.
+      final nyala = label != null && _selected != label;
+      _selected = nyala ? label : null;
+      _selectedRegion = nyala
+          ? conditions.where((c) => c.label == label).firstOrNull?.regions.firstOrNull
+          : null;
     });
+  }
+
+  void _selectRegion(FaceRegion region, List<SkinCondition> conditions) {
+    final c = conditions.where((x) => x.regions.contains(region)).firstOrNull;
+    _selectCondition(_selectedRegion == region ? null : c?.label, conditions);
   }
 
   @override
@@ -82,7 +94,6 @@ class _ResultViewState extends State<ResultView> {
     final r = widget.result;
     final text = Theme.of(context).textTheme;
     final conditions = r.conditionsByProbability;
-    final highlighted = {for (final c in conditions) ...c.regions};
     final selected = conditions.where((c) => c.label == _selected).firstOrNull;
     final needsDoctor = conditions.any(
       (c) => c.label.suggestsDermatologist && c.probability >= 0.3,
@@ -129,35 +140,31 @@ class _ResultViewState extends State<ResultView> {
                   ),
                   child: FaceMap(
                     photo: widget.photo,
-                    rois: r.rois,
-                    highlighted: highlighted,
-                    emphasized: _emphasized,
-                    onTapRegion: (region) =>
-                        _selectRegion(region, conditions),
+                    spots: [
+                      for (final c in conditions) ...c.spots,
+                    ],
+                    emphasizedLabel: _selected,
+                    onTapCondition: (label) => _selectCondition(label, conditions),
                   ),
                 ),
               ),
-              if (highlighted.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.sm),
-                // Legend instead of labels inside the drawing (boxes such as
-                // the nose are too narrow for text).
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: AppSpacing.xxs,
-                  runSpacing: AppSpacing.xxs,
-                  children: [
-                    for (final region in highlighted)
-                      AfaChip(
-                        label: AppStrings.region(region),
-                        // Selaras dengan peta: chip menyala hanya untuk area
-                        // yang benar-benar disorot, bukan semua area kondisi.
-                        tone: _emphasized.contains(region)
-                            ? AfaChipTone.danger
-                            : AfaChipTone.caution,
-                      ),
-                  ],
-                ),
-              ],
+              const SizedBox(height: AppSpacing.sm),
+              // Legenda warna gumpalan; label kondisi singkat agar tidak
+              // menabrak gumpalan di atasnya.
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: AppSpacing.xxs,
+                runSpacing: AppSpacing.xxs,
+                children: [
+                  for (final c in conditions)
+                    _LegendChip(
+                      label: AppStrings.condition(c.label),
+                      color:
+                          AppColors.conditionColor(c.label.name),
+                      selected: _selected == c.label,
+                    ),
+                ],
+              ),
               if (conditions.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.xs),
                 Text(
@@ -177,8 +184,10 @@ class _ResultViewState extends State<ResultView> {
           const SizedBox(height: AppSpacing.xs),
           ProblemCloseups(
             photo: widget.photo,
+            sidePhotos: widget.sidePhotos,
             rois: r.rois,
             labelsByRegion: labelsByRegion,
+            conditions: conditions,
             selected: selectedRegion,
             onTapRegion: (region) => _selectRegion(region, conditions),
           ),
@@ -194,12 +203,10 @@ class _ResultViewState extends State<ResultView> {
           _ConditionCard(
             condition: c,
             selected: c.label == _selected,
-            onTap: () => setState(() {
-              final off = _selected == c.label;
-              _selected = off ? null : c.label;
-              _selectedRegion = off ? null : c.regions.firstOrNull;
-              _emphasized = off ? const {} : c.regions.toSet();
-            }),
+            onTap: () => _selectCondition(
+              _selected == c.label ? null : c.label,
+              conditions,
+            ),
           ),
           const SizedBox(height: AppSpacing.xs),
         ],
@@ -416,6 +423,44 @@ class ProbabilityBar extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Chip legenda warna gumpalan: titik warna + nama kondisi.
+class _LegendChip extends StatelessWidget {
+  const _LegendChip({
+    required this.label,
+    required this.color,
+    required this.selected,
+  });
+
+  final String label;
+  final Color color;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: selected ? AppColors.dangerTint : AppColors.mist,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: selected ? AppColors.danger : AppColors.outline),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 5),
+          Text(label, style: text.labelMedium),
+        ],
       ),
     );
   }

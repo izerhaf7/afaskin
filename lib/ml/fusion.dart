@@ -105,6 +105,16 @@ SkinProfile predictProfile({
 }) {
   final sc = (skinCfg['classes'] as List).cast<String>();
   final cc = (condCfg['classes'] as List).cast<String>();
+  // Kalibrasi kedua: hasil fusion masih terlalu merendah karena CNN sudah
+  // dikalibrasi T lebih dulu, lalu digabung geometrik dengan kuesioner.
+  // Diukur pada data uji: akurasi tipe kulit 82,7% tetapi keyakinan yang
+  // ditampilkan hanya 67,2%; kondisi 82,4% vs 41,4%. `T_fusion` memetakan
+  // kembali supaya angka yang dilihat pengguna mendekati akurasi sebenarnya
+  // di seluruh rentang kualitas jawaban (sigma 0,5..2,5).
+  final ts = (skinCfg['T_fusion'] as num?)?.toDouble() ?? 1.0;
+  final tc = (condModelCfg['T_fusion'] as num?)?.toDouble()
+      ?? (condCfg['T_fusion'] as num?)?.toDouble()
+      ?? 1.0;
   final ps = fuse(
     calibrate(pSkinCnn, (skinCfg['T'] as num).toDouble()),
     questionnaireSkin(answers, skinCfg),
@@ -117,9 +127,11 @@ SkinProfile predictProfile({
     (condModelCfg['alpha'] as num).toDouble(),
     condModelCfg['rule'] as String,
   );
+  final psc = calibrate(ps, ts);
+  final pcc = calibrate(pc, tc);
   return SkinProfile(
-    pSkin: {for (var i = 0; i < sc.length; i++) sc[i]: _round(ps[i], 4)},
-    pCond: {for (var i = 0; i < cc.length; i++) cc[i]: _round(pc[i], 4)},
+    pSkin: {for (var i = 0; i < sc.length; i++) sc[i]: _round(psc[i], 4)},
+    pCond: {for (var i = 0; i < cc.length; i++) cc[i]: _round(pcc[i], 4)},
     sensitive: (answers['Q2'] ?? 0) >= 4,
   );
 }
@@ -190,6 +202,26 @@ Map<String, ({int count, double frac})> visualEvidence(
     for (var j = 0; j < classes.length; j++)
       classes[j]: (count: counts[j], frac: p.isEmpty ? 0 : counts[j] / p.length),
   };
+}
+
+/// Rata-rata [k] probabilitas terkuat untuk kelas [classIndex].
+///
+/// Dipakai sebagai ukuran bukti visual: lesi di foto selfie hanya terlihat di
+/// sedikit patch dan keyakinannya rendah, sehingga "jumlah patch di atas
+/// ambang" tidak pernah tercapai. Rata-rata top-k tetap menangkap sinyal itu.
+double topKMean(List<List<double>> p, int classIndex, int k) {
+  if (k <= 0 || p.isEmpty) return 0;
+  final nilai = <double>[
+    for (final row in p)
+      if (classIndex >= 0 && classIndex < row.length) row[classIndex],
+  ]..sort((a, b) => b.compareTo(a));
+  if (nilai.isEmpty) return 0;
+  final n = k < nilai.length ? k : nilai.length;
+  var jumlah = 0.0;
+  for (var i = 0; i < n; i++) {
+    jumlah += nilai[i];
+  }
+  return jumlah / n;
 }
 
 String _argmaxKey(Map<String, double> m) {

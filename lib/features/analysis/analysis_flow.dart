@@ -52,6 +52,26 @@ final latestAnalysisPhotoProvider =
       ({String analysisId, Uint8List jpeg})?
     >(LatestAnalysisPhoto.new);
 
+/// Foto samping dari analisis terakhir, juga hanya di MEMORY. Dipakai sorotan
+/// area supaya area yang terlihat dari samping ikut dipotong, bukan hanya foto
+/// depan.
+class LatestAnalysisSidePhotos
+    extends Notifier<({String analysisId, List<Uint8List> jpegs})?> {
+  @override
+  ({String analysisId, List<Uint8List> jpegs})? build() => null;
+
+  // ignore: use_setters_to_change_properties
+  void set(String analysisId, List<Uint8List> jpegs) =>
+      state = (analysisId: analysisId, jpegs: jpegs);
+  void clear() => state = null;
+}
+
+final latestAnalysisSidePhotosProvider =
+    NotifierProvider<LatestAnalysisSidePhotos,
+        ({String analysisId, List<Uint8List> jpegs})?>(
+      LatestAnalysisSidePhotos.new,
+    );
+
 /// Result of the most recent analysis, shown on the result screen.
 @Riverpod(keepAlive: true)
 class LatestAnalysis extends _$LatestAnalysis {
