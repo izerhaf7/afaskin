@@ -19,9 +19,27 @@ void main() {
     ];
 
     // Parameter pemindaian versi Python lama (patch 15% lebar wajah, kulit >= 40%).
-    // `hair_l_rel: 0` karena vision.py tidak punya filter rambut; uji ini mengukur
-    // kesamaan ROI/patch dengan implementasi Python, bukan perilaku filter baru.
-    final scan = {...(cfg['scan'] as Map).cast<String, dynamic>(), 'tile_rel': 0.15, 'skin_min': 0.4, 'feature_mask': false, 'glare_max': 1.0, 'hair_l_rel': 0};
+    // `area_rel` dikunci ke nilai lama karena `vision_golden.json` dibuat dengan
+    // cakupan area itu; `area_rel` di ml_config.json sudah diperbesar supaya
+    // seluruh wajah (rahang, pelipis) ikut dipindai. `hair_l_rel: 0` karena
+    // vision.py tidak punya filter rambut; uji ini mengukur kesamaan ROI/patch
+    // dengan implementasi Python, bukan perilaku filter baru.
+    final scan = {
+      ...(cfg['scan'] as Map).cast<String, dynamic>(),
+      'tile_rel': 0.15,
+      'skin_min': 0.4,
+      'feature_mask': false,
+      'glare_max': 1.0,
+      'hair_l_rel': 0,
+      'stride': 0.5,
+      'area_rel': {
+        'forehead': 0.45,
+        'left_cheek': 0.36,
+        'right_cheek': 0.36,
+        'nose': 0.22,
+        'chin': 0.3,
+      },
+    };
     final v = processView(
       im,
       points: pts,

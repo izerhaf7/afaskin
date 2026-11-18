@@ -162,6 +162,9 @@ class _ResultViewState extends State<ResultView> {
                       color:
                           AppColors.conditionColor(c.label.name),
                       selected: _selected == c.label,
+                      // Jumlah area memakai warna ini, supaya pengguna tahu
+                      // warna mana dominan tanpa menghitung kotak satu per satu.
+                      count: c.spots.length,
                     ),
                 ],
               ),
@@ -434,11 +437,15 @@ class _LegendChip extends StatelessWidget {
     required this.label,
     required this.color,
     required this.selected,
+    this.count = 0,
   });
 
   final String label;
   final Color color;
   final bool selected;
+
+  /// Jumlah area lesi dengan warna ini; 0 = tidak ditampilkan.
+  final int count;
 
   @override
   Widget build(BuildContext context) {
@@ -459,7 +466,14 @@ class _LegendChip extends StatelessWidget {
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 5),
-          Text(label, style: text.labelMedium),
+          Flexible(child: Text(label, style: text.labelMedium, overflow: TextOverflow.ellipsis)),
+          if (count > 0) ...[
+            const SizedBox(width: 4),
+            Text(
+              '$count',
+              style: text.labelSmall?.copyWith(color: AppColors.inkMuted),
+            ),
+          ],
         ],
       ),
     );

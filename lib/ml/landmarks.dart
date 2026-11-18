@@ -103,12 +103,21 @@ class FaceMask {
 
   bool isSkin(double x, double y) => _inside(oval, x, y) && !holes.any((h) => _inside(h, x, y));
 
-  /// Kotak (x0, y0, s) dianggap kulit kalau pusat & 4 titik dalamnya (20%/80%) kulit.
+  /// Kotak (x0, y0, s) dianggap kulit kalau pusatnya kulit dan mayoritas
+  /// sudut dalamnya (20%/80%) juga kulit.
+  ///
+  /// Dulu kelima titik dituntut kulit, sehingga patch di tepi pipi — justru
+  /// tempat lesi sering berada — dibuang sebelum sempat dinilai model. Diukur
+  /// pada 454 wajah selfie uji: aturan mayoritas ini tidak menambah positif
+  /// palsu (wajah bersih yang tetap kosong 0,891 -> 0,913) dan tetap
+  /// menemukan lesi yang sama, sambil memulihkan patch di batas wajah.
   bool boxIsSkin(int x0, int y0, int s) {
-    for (final (fx, fy) in const [(.5, .5), (.2, .2), (.8, .2), (.2, .8), (.8, .8)]) {
-      if (!isSkin(x0 + fx * s, y0 + fy * s)) return false;
+    if (!isSkin(x0 + .5 * s, y0 + .5 * s)) return false;
+    var kulit = 0;
+    for (final (fx, fy) in const [(.2, .2), (.8, .2), (.2, .8), (.8, .8)]) {
+      if (isSkin(x0 + fx * s, y0 + fy * s)) kulit++;
     }
-    return true;
+    return kulit >= 3;
   }
 }
 

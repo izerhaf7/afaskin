@@ -199,10 +199,16 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
         });
       }
     }
-    // Patch bertumpuk (stride separuh patch) menghasilkan kotak yang saling
-    // menimpa; gabungkan yang pusatnya lebih dekat dari 0,6 sisi patch.
+    // Patch bertumpuk (stride 0,6 patch) menghasilkan beberapa kotak untuk satu
+    // lesi; gabungkan dulu, lalu sisakan yang paling kuat buktinya supaya peta
+    // tidak penuh kotak. Tanpa batas ini satu wajah bisa tampil 40+ kotak dan
+    // lesinya justru tidak terbaca.
+    final maxSpots = (scan['max_spots_per_condition'] as int?) ?? 8;
     for (final entry in spotsByCond.entries) {
-      spotsByCond[entry.key] = gabungBertumpuk(entry.value);
+      final merged = gabungBertumpuk(entry.value);
+      spotsByCond[entry.key] = merged.length > maxSpots
+          ? merged.sublist(0, maxSpots)
+          : merged;
     }
     final createdAt = DateTime.now();
     final id = _uuid();
@@ -312,13 +318,17 @@ String _uuid() {
   return '${h.substring(0, 8)}-${h.substring(8, 12)}-${h.substring(12, 16)}-${h.substring(16, 20)}-${h.substring(20)}';
 }
 
-/// Gabungkan kotak lesi yang pusatnya berdekatan menjadi satu kotak yang
-/// menutupi keduanya.
+/// Gabungkan kotak lesi yang benar-benar bertumpuk menjadi satu area.
 ///
-/// Patch dipotong dengan stride separuh sisi patch, jadi satu lesi biasanya
-/// menghasilkan beberapa patch yang lolos ambang. Tanpa penggabungan, peta
-/// wajah menampilkan tumpukan kotak yang saling menimpa: garisnya menebal dan
-/// warna kondisi sulit dibedakan.
+/// Patch dipotong dengan stride separuh sisi patch, jadi satu lesi memunculkan
+/// 2-4 kotak yang saling menimpa. Yang digabung hanya kotak yang pusatnya lebih
+/// dekat dari 0,55 sisi patch — kalau ambangnya terlalu longgar (dulu 0,95)
+/// lesi yang berjauhan ikut menyatu dan akhirnya seluruh wajah jadi satu kotak
+/// raksasa, sehingga lesi lain tidak terpetakan sama sekali.
+///
+/// Kotak hasil gabungan memakai **kotak pembatas** seluruh anggotanya (bukan
+/// tetap seukuran satu patch), supaya lesi luas tampil seluas areanya. Sisi
+/// dibatasi 0,45 lebar foto agar satu area tidak menelan seluruh peta.
 List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
   if (spots.length < 2) return spots;
   final sisa = List<Map<String, Object>>.from(spots);
@@ -326,45 +336,60 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
 
   while (sisa.isNotEmpty) {
     final awal = sisa.removeAt(0);
-    var x1 = awal['x']! as double;
-    var y1 = awal['y']! as double;
-    var x2 = x1;
-    var y2 = y1;
-    var size = awal['size']! as double;
+    final anggota = <Map<String, Object>>[awal];
 
-    // Ulangi sampai tidak ada kotak lain yang menyentuh kotak yang sedang
+    // Ulangi sampai tidak ada kotak lain yang menyentuh kelompok yang sedang
     // membesar, supaya rangkaian kotak berderet ikut menyatu.
     var berubah = true;
     while (berubah) {
       berubah = false;
+      final size = anggota
+          .map((a) => a['size']! as double)
+          .reduce(math.max);
+      // Harus LEBIH BESAR dari `scan.stride` (0,6) supaya patch bertetangga —
+      // satu lesi yang muncul di beberapa patch — benar-benar menyatu. Kalau
+      // lebih kecil, peta penuh kotak yang saling menimpa untuk satu lesi.
+      final batas = size * 0.75;
       for (var j = sisa.length - 1; j >= 0; j--) {
-        final px = sisa[j]['x']! as double;
-        final py = sisa[j]['y']! as double;
-        // Kotak digambar selebar `size`, jadi dua kotak baru tampak
-        // terpisah kalau jarak pusatnya minimal satu sisi kotak.
-        final batas = size * 0.95;
-        final dx = px < x1 ? x1 - px : (px > x2 ? px - x2 : 0.0);
-        final dy = py < y1 ? y1 - py : (py > y2 ? py - y2 : 0.0);
-        if (dx >= batas || dy >= batas) continue;
-        x1 = math.min(x1, px);
-        y1 = math.min(y1, py);
-        x2 = math.max(x2, px);
-        y2 = math.max(y2, py);
-        size = math.max(size, sisa[j]['size']! as double);
-        sisa.removeAt(j);
+        final p = sisa[j];
+        final px = p['x']! as double, py = p['y']! as double;
+        final dekat = anggota.any((a) {
+          final dx = (a['x']! as double) - px;
+          final dy = (a['y']! as double) - py;
+          return dx * dx + dy * dy < batas * batas;
+        });
+        if (!dekat) continue;
+        anggota.add(sisa.removeAt(j));
         berubah = true;
       }
     }
 
+    var x1 = double.infinity, y1 = double.infinity;
+    var x2 = -double.infinity, y2 = -double.infinity;
+    var size = 0.0;
+    for (final a in anggota) {
+      final ax = a['x']! as double, ay = a['y']! as double;
+      final asz = a['size']! as double;
+      x1 = math.min(x1, ax - asz / 2);
+      y1 = math.min(y1, ay - asz / 2);
+      x2 = math.max(x2, ax + asz / 2);
+      y2 = math.max(y2, ay + asz / 2);
+      size = math.max(size, asz);
+    }
     hasil.add({
       'x': (x1 + x2) / 2,
       'y': (y1 + y2) / 2,
-      'size': size,
+      'size': math.min(math.max(x2 - x1, y2 - y1), 0.45),
+      // Jumlah patch pendukung: dipakai untuk mengurutkan kotak, supaya yang
+      // tampil lebih dulu adalah lesi dengan bukti terkuat.
+      'support': anggota.length,
       'label': awal['label']!,
       'region': awal['region']!,
       'view': awal['view']!,
     });
   }
+  // Bukti terkuat lebih dulu; batas jumlah kotak memotong dari belakang.
+  hasil.sort((a, b) => (b['support']! as int).compareTo(a['support']! as int));
   return hasil;
 }
 

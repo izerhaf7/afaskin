@@ -122,6 +122,9 @@ void _tap(
 }
 
 /// Kotak lesi: isi tipis + garis tegas, lebih kuat saat kondisinya disorot.
+///
+/// Garis diberi halo putih tipis di luarnya. Tanpa halo, kotak berwarna gelap
+/// (mis. `Blackhead` cokelat gelap) menghilang di atas kulit gelap atau bayangan.
 void _paintSpotBox(Canvas canvas, Rect box, Color color, bool strong) {
   final rr = RRect.fromRectAndRadius(box, const Radius.circular(3));
   canvas
@@ -133,8 +136,15 @@ void _paintSpotBox(Canvas canvas, Rect box, Color color, bool strong) {
       rr,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = strong ? 2.0 : 1.2
-        ..color = color.withValues(alpha: strong ? 1.0 : 0.75),
+        ..strokeWidth = strong ? 3.6 : 3.0
+        ..color = AppColors.white.withValues(alpha: 0.70),
+    )
+    ..drawRRect(
+      rr,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strong ? 2.2 : 1.7
+        ..color = color.withValues(alpha: strong ? 1.0 : 0.95),
     );
 }
 

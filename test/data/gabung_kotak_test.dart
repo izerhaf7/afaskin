@@ -46,11 +46,43 @@ void main() {
     expect(hasil.length, 2);
   });
 
-  test('dua kotak yang tepinya masih bersinggungan ikut digabung', () {
-    // Jarak 0,9 x sisi kotak: secara visual kedua kotak masih bertumpuk,
+  test('dua kotak yang pusatnya berdekatan digabung jadi satu', () {
+    // Jarak 0,4 x sisi kotak: kedua kotak masih saling menimpa berat,
     // jadi harus menyatu supaya peta wajah tidak menampilkan garis ganda.
-    final hasil = gabungBertumpuk([_k(0.50, 0.30), _k(0.635, 0.30)]);
+    final hasil = gabungBertumpuk([_k(0.50, 0.30), _k(0.56, 0.30)]);
     expect(hasil.length, 1);
+  });
+
+  test('dua kotak yang hanya bersinggungan tepi tidak digabung', () {
+    // Jarak 0,9 x sisi kotak: dulu ikut digabung, akibatnya rangkaian kotak
+    // menyatu jadi satu area raksasa dan lesi lain tidak terpetakan.
+    final hasil = gabungBertumpuk([_k(0.50, 0.30), _k(0.635, 0.30)]);
+    expect(hasil.length, 2);
+  });
+
+  test('kotak gabungan membesar mengikuti luas lesi', () {
+    // Tiga patch berderet: kotak hasil harus lebih lebar dari satu patch,
+    // supaya lesi luas tampil seluas areanya, bukan sebagai satu titik.
+    final hasil = gabungBertumpuk([
+      _k(0.30, 0.30),
+      _k(0.35, 0.30),
+      _k(0.40, 0.30),
+    ]);
+    expect(hasil.length, 1);
+    expect(hasil.first['size']! as double, greaterThan(0.15));
+  });
+
+  test('satu area tidak menelan seluruh peta', () {
+    // Patch yang tersebar di seluruh wajah tetap menghasilkan beberapa kotak,
+    // bukan satu kotak raksasa.
+    final hasil = gabungBertumpuk([
+      for (var i = 0; i < 6; i++)
+        for (var j = 0; j < 6; j++) _k(0.15 + i * 0.12, 0.15 + j * 0.12),
+    ]);
+    expect(hasil.length, greaterThan(3));
+    for (final h in hasil) {
+      expect(h['size']! as double, lessThanOrEqualTo(0.45));
+    }
   });
 
   test('satu kotak dikembalikan apa adanya', () {

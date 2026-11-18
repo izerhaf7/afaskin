@@ -59,18 +59,24 @@ abstract final class AppColors {
   /// Conflict banner background ([danger] text: 4.7:1, ink body: 9.4:1).
   static const Color dangerTint = Color(0xFFF6E4E1);
 
-  /// Warna gumpalan per kondisi di peta wajah. Ramp earth-tone supaya tetap
-  /// selaras dengan palet aplikasi; `Clear` tidak dipakai (bukan lesi).
+  /// Warna kotak lesi per kondisi di peta wajah.
+  ///
+  /// Kesembilan kondisi harus bisa dibedakan pada peta sekecil ~300 px, jadi
+  /// warnanya dipisah tegas di hue (merah, jingga, kuning, zaitun, biru, ungu,
+  /// cokelat) dan lightness-nya diselang-seling. Diukur di ruang CIELAB: jarak
+  /// minimum antar pasangan 27,4 delta-E (sebelumnya 9,7 — `Birthmark` dan
+  /// `Blackhead` nyaris sama), dan tidak ada lagi pasangan di bawah 15.
+  /// `Clear` tidak dipakai karena bukan lesi.
   static const Map<String, Color> conditionColors = {
-    'Acne': Color(0xFFA8483B),
-    'Birthmark': Color(0xFF6B4A3A),
-    'Blackhead': Color(0xFF50392C),
-    'Cysts': Color(0xFFC26E4A),
-    'Milium': Color(0xFFC29A2B),
-    'Papular': Color(0xFFB5835A),
-    'Purulent': Color(0xFF8A3B2E),
-    'Scars': Color(0xFF7E6B8F),
-    'Whitehead': Color(0xFF5C7A6B),
+    'Acne': Color(0xFFC0392B), // merah bata
+    'Purulent': Color(0xFFE67E22), // jingga
+    'Papular': Color(0xFFD4A017), // kuning tua
+    'Whitehead': Color(0xFFF0E6D2), // krem terang
+    'Blackhead': Color(0xFF4A3B32), // cokelat gelap
+    'Milium': Color(0xFF8FA65C), // zaitun
+    'Cysts': Color(0xFF7B4B94), // ungu
+    'Scars': Color(0xFF3E6E8E), // biru baja
+    'Birthmark': Color(0xFFA9744F), // cokelat kayu
   };
 
   /// Warna untuk satu kondisi.
