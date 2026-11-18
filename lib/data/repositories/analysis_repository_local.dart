@@ -150,7 +150,19 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
 
     final skin = prof.pSkin.entries.reduce((a, b) => b.value > a.value ? b : a).key;
     final minP = (scan['min_condition_p'] as num).toDouble();
-    // Tampil hanya kalau (1) probabilitas akhir cukup dan (2) model citra
+
+    // Keyakinan yang ditampilkan = P(kondisi ini ADA di wajah), bukan porsi di
+    // dalam distribusi 10 kelas. Dulu jerawat bisa tampil 13% pada wajah yang
+    // jelas berjerawat, karena jerawat dan bekas jerawat berebut satu jatah
+    // 100%. Sekarang tiap kondisi dinilai sendiri-sendiri, jadi dua kondisi
+    // yang benar-benar ada bisa sama-sama tinggi.
+    final presence = presenceProbs(
+      tiles,
+      condClasses,
+      (e.condModelCfg['presence'] as Map?)?.cast<String, dynamic>() ?? const {},
+    );
+
+    // Tampil hanya kalau (1) keyakinan akhir cukup dan (2) model citra
     // sendiri melihat kondisi itu di cukup banyak patch. Pengecualian: kelas yang
     // Model v2 sudah bisa melihat bekas jerawat dari foto (AUC 0,926 pada 158
     // gambar berlabel), jadi jalur `questionnaire_only` untuk Scars dihapus:
@@ -170,9 +182,13 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
       return ci >= 0 && topKMean(tiles, ci, topK) >= topA;
     }
 
+    // Yang tampil tetap dipilih dengan aturan lama (porsi pCond + bukti visual)
+    // supaya perilaku "kondisi mana yang muncul" tidak berubah; yang diganti
+    // hanya angka keyakinan yang dibaca pengguna.
     final conds = [
       for (final c in prof.pCond.entries)
-        if (c.key != 'Clear' && c.value >= minP && visualOk(c.key)) c,
+        if (c.key != 'Clear' && c.value >= minP && visualOk(c.key))
+          MapEntry(c.key, presence[c.key] ?? c.value),
     ];
     mergeSortDesc(conds, (c) => c.value);
 

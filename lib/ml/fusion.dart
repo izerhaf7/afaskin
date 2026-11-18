@@ -243,3 +243,49 @@ void mergeSortDesc<T>(List<T> list, double Function(T) key) {
     list[i] = indexed[i].$2;
   }
 }
+
+/// Keyakinan bahwa tiap kondisi BENAR-BENAR ADA di wajah ini.
+///
+/// Angka yang dulu ditampilkan adalah porsi satu kelas di dalam distribusi 10
+/// kelas yang jumlahnya selalu 1. Akibatnya, pada wajah dengan jerawat DAN bekas
+/// jerawat keduanya berebut satu jatah 100%: terukur pada 947 wajah uji, kondisi
+/// yang jelas terlihat hanya tampil 23,6% rata-rata, dan jerawat bisa muncul 13%.
+///
+/// Di sini nilai itu diganti `sigmoid(a * logit(bukti) + b)` per kelas, dilatih
+/// pada 4.866 wajah split train terhadap pertanyaan "kelas ini muncul di wajah
+/// ini?". Bukti = [topKMean] — besaran yang sama dengan yang dipakai gerbang
+/// tampil, jadi angka yang muncul di layar memakai bahan yang sudah terbukti.
+///
+/// Terukur pada 947 wajah test: ECE 0,107 -> 0,021, Brier 0,110 -> 0,050,
+/// AUC 0,936 -> 0,962, dan keyakinan rata-rata pada wajah yang memang punya
+/// kondisinya naik 23,6% -> 71,5%.
+///
+/// [cfg] = `condition.models.<model>.presence` di ml_config.json.
+///
+/// Hasil dibatasi 1%..99%: model tidak pernah benar-benar pasti, dan pada
+/// kalibrasi ini nilai di atas 0,99 memang di luar jangkauan data latih
+/// (terukur ECE 0,021 — pada p≈0,99 laju sebenarnya ≈0,97). Tanpa batas ini
+/// layar menampilkan "100% yakin", yang mengklaim lebih dari yang terukur.
+Map<String, double> presenceProbs(
+  List<List<double>> tiles,
+  List<String> classes,
+  Map<String, dynamic> cfg,
+) {
+  if (tiles.isEmpty || cfg.isEmpty) return const {};
+  final a = (cfg['a'] as List?)?.cast<num>();
+  final b = (cfg['b'] as List?)?.cast<num>();
+  if (a == null || b == null) return const {};
+  final k = (cfg['top_k'] as num?)?.toInt() ?? 3;
+  final out = <String, double>{};
+  for (var j = 0; j < classes.length; j++) {
+    if (j >= a.length || j >= b.length) continue;
+    // Clear bukan lesi: tidak pernah ditampilkan sebagai kondisi, dan
+    // parameternya jatuh ke pemisahan sempurna saat dilatih.
+    if (classes[j] == 'Clear') continue;
+    final bukti = topKMean(tiles, j, k).clamp(1e-4, 1 - 1e-4);
+    final z = math.log(bukti / (1 - bukti));
+    final p = 1 / (1 + math.exp(-((a[j].toDouble() * z) + b[j].toDouble())));
+    out[classes[j]] = p.clamp(0.01, 0.99);
+  }
+  return out;
+}
