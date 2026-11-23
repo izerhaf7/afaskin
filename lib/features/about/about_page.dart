@@ -1,5 +1,6 @@
 import 'package:afaskin/core/config/app_info.dart';
 import 'package:afaskin/core/l10n/app_strings.dart';
+import 'package:afaskin/core/theme/app_colors.dart';
 import 'package:afaskin/core/theme/app_spacing.dart';
 import 'package:afaskin/core/widgets/afa_button.dart';
 import 'package:afaskin/core/widgets/afa_card.dart';
@@ -64,10 +65,58 @@ class AboutPage extends ConsumerWidget {
                 Text(AppInfo.team, style: text.bodyMedium),
                 const SizedBox(height: AppSpacing.sm),
                 Text(AppStrings.membersHeading, style: text.titleSmall),
-                for (final m in AppInfo.members)
-                  Text('•  $m', style: text.bodyMedium),
+                for (final (name, nim) in AppInfo.members)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text('•  $name', style: text.bodyMedium),
+                        ),
+                        if (nim.isNotEmpty) ...[
+                          const SizedBox(width: AppSpacing.xs),
+                          Text(
+                            nim,
+                            style: text.bodyMedium?.copyWith(
+                              color: AppColors.inkMuted,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
               ],
             ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          Text(AppStrings.modelHeading, style: text.titleLarge),
+          const SizedBox(height: AppSpacing.xs),
+          AfaCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppInfo.modelSummary,
+                  style: text.bodySmall?.copyWith(color: AppColors.inkMuted),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _ModelTable(rows: AppInfo.modelTable),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  AppInfo.modelFooter,
+                  style: text.bodySmall?.copyWith(color: AppColors.inkMuted),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          Text(AppInfo.faceDetectionTitle, style: text.titleLarge),
+          const SizedBox(height: AppSpacing.xs),
+          AfaCard(
+            child: Text(AppInfo.faceDetectionBody, style: text.bodyMedium),
           ),
           const SizedBox(height: AppSpacing.lg),
 
@@ -97,6 +146,84 @@ class AboutPage extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Tabel status model: tugas di kiri, model di tengah, hasil uji di kanan.
+///
+/// Memakai [Table] dengan lebar kolom proporsional, bukan [DataTable], karena
+/// DataTable memaksa lebar minimum yang membuat tabel meluber di layar 360 dp.
+class _ModelTable extends StatelessWidget {
+  const _ModelTable({required this.rows});
+
+  final List<(String, String, String)> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final head = text.labelMedium?.copyWith(color: AppColors.inkMuted);
+    final cell = text.bodySmall;
+
+    TableRow buildRow((String, String, String) r, {bool header = false}) {
+      return TableRow(
+        decoration: header
+            ? null
+            : const BoxDecoration(
+                border: Border(top: BorderSide(color: AppColors.outline)),
+              ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(
+              top: AppSpacing.xs,
+              right: AppSpacing.xs,
+            ),
+            child: Text(r.$1, style: header ? head : cell),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(
+              top: AppSpacing.xs,
+              right: AppSpacing.xs,
+            ),
+            child: Text(
+              r.$2,
+              style: header
+                  ? head
+                  : cell?.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.xs),
+            child: Text(
+              r.$3,
+              style: header
+                  ? head
+                  : cell?.copyWith(color: AppColors.positive),
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Table(
+      columnWidths: const {
+        0: FlexColumnWidth(1.25),
+        1: FlexColumnWidth(1.1),
+        2: FlexColumnWidth(0.85),
+      },
+      defaultVerticalAlignment: TableCellVerticalAlignment.top,
+      children: [
+        buildRow(
+          (
+            AppInfo.tableTaskHeader,
+            AppInfo.tableModelHeader,
+            AppInfo.tableMetricHeader,
+          ),
+          header: true,
+        ),
+        for (final r in rows) buildRow(r),
+      ],
     );
   }
 }

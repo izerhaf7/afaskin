@@ -177,9 +177,19 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
     // bersih yang tetap kosong hanya turun 95,0% -> 88,4%.
     final topK = (scan['gate_top_k'] as int?) ?? 4;
     final topA = ((scan['gate_top_conf'] as num?) ?? 0.38).toDouble();
+    // Ambang bukti visual boleh berbeda per kelas. Model yang dilatih ulang pada
+    // label yang diperbaiki (spot bukan Scars, kotak hampa dibuang) memberi bukti
+    // Scars jauh lebih tipis daripada Acne di petak wajah utuh: top-4 Scars hanya
+    // 0,150 median pada wajah berbekas, sementara Acne 0,374 pada wajah berjerawat.
+    // Satu ambang 0,38 untuk semua kelas karena itu menyembunyikan Scars sepenuhnya
+    // (0 dari 12 wajah berbekas). Ambang per kelas memulihkannya tanpa menaikkan
+    // false positive di wajah bersih, yang top-4 Scars-nya 0,039 median.
+    final byClass =
+        (scan['gate_top_conf_by_class'] as Map?)?.cast<String, dynamic>() ?? const {};
     bool visualOk(String cls) {
       final ci = condClasses.indexOf(cls);
-      return ci >= 0 && topKMean(tiles, ci, topK) >= topA;
+      final thr = (byClass[cls] as num?)?.toDouble() ?? topA;
+      return ci >= 0 && topKMean(tiles, ci, topK) >= thr;
     }
 
     // Yang tampil tetap dipilih dengan aturan lama (porsi pCond + bukti visual)
@@ -236,6 +246,7 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
     debugPrint(
       'AFASkin CNN: skin=${front.pSkin} | kondisi (agregat)=${agg.probs.map((v) => v.toStringAsFixed(3)).toList()} '
       '| bukti visual=${{for (final e in evidence.entries) if (e.value.count > 0) e.key: e.value.count}} '
+      '| top4=${{for (var i = 0; i < condClasses.length; i++) condClasses[i]: topKMean(tiles, i, topK).toStringAsFixed(3)}} '
       '| fusion=${prof.toJson()} | tampil=${conds.map((c) => c.key).toList()}',
     );
     if (Env.mlDebug) {

@@ -470,6 +470,7 @@ abstract final class AppStrings {
   static const String version = 'Versi';
   static const String teamHeading = 'Tim';
   static const String membersHeading = 'Anggota kelompok';
+  static const String modelHeading = 'Status model';
   static const String attributionHeading = 'Atribusi & lisensi';
   static const List<(String, String)> attributions = [
     (
