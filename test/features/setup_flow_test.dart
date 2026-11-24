@@ -73,16 +73,18 @@ Future<void> _runSetup(WidgetTester tester, double scale) async {
   await tester.pumpAndSettle();
   await tapVisible(tester, find.text('Lanjut ke kuesioner'));
 
-  // Questionnaire from mock: 7 questions, auto-advance after each pick.
+  // Questionnaire from mock: 7 questions, each advanced by pressing Lanjut.
   await waitFor(tester, find.text('1/7'));
   expect(find.textContaining('Makasih, Rani!'), findsOneWidget);
   for (var i = 1; i <= 7; i++) {
     expect(find.text('$i/7'), findsOneWidget);
     await tapVisible(tester, find.text('3'));
-    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
+    // Memilih jawaban tidak memindahkan halaman.
+    expect(find.text('$i/7'), findsOneWidget);
+    await tapVisible(tester, find.text(i == 7 ? 'Ambil foto wajah' : 'Lanjut'));
     await tester.pumpAndSettle();
   }
-  await tapVisible(tester, find.text('Ambil foto wajah'));
 
   // Setup ends at the camera (permission explained first).
   expect(find.text('Izinkan akses kamera'), findsOneWidget);

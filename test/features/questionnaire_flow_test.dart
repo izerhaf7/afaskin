@@ -63,7 +63,6 @@ Future<MemoryUserStore> _pump(
               questionnaire: _q,
               mode: mode,
               initial: initial,
-              autoAdvance: const Duration(milliseconds: 100),
             ),
           ),
         ],
@@ -86,7 +85,7 @@ Future<MemoryUserStore> _pump(
 }
 
 void main() {
-  testWidgets('Alfa asks one question at a time; picking auto-advances', (
+  testWidgets('Alfa asks one question at a time; Lanjut advances', (
     tester,
   ) async {
     final user = await _pump(tester);
@@ -104,8 +103,19 @@ void main() {
     }
     expect(_cta(tester).enabled, isFalse);
 
-    // Picking an answer moves on by itself.
+    // Memilih jawaban tidak berpindah halaman: pengguna yang menekan Lanjut.
     await tester.tap(find.text('Hampir selalu'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pertanyaan nomor 1?'), findsOneWidget);
+    expect(find.text('1/3'), findsOneWidget);
+    expect(_cta(tester).enabled, isTrue);
+
+    // Jawaban masih bisa diganti sebelum Lanjut ditekan.
+    await tester.tap(find.text('Kadang-kadang'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pertanyaan nomor 1?'), findsOneWidget);
+
+    await tester.tap(find.text('Lanjut'));
     await tester.pumpAndSettle();
     expect(find.text('Pertanyaan nomor 2?'), findsOneWidget);
     expect(find.text('2/3'), findsOneWidget);
@@ -122,13 +132,15 @@ void main() {
 
     await tester.tap(find.text('Kadang-kadang'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Lanjut'));
+    await tester.pumpAndSettle();
 
     // Last question: lead line and "Ambil foto wajah".
     expect(find.text('Pertanyaan terakhir!'), findsOneWidget);
     expect(find.text('Ambil foto wajah'), findsOneWidget);
     await tester.tap(find.text('Tidak pernah'));
     await tester.pumpAndSettle();
-    // No auto-advance past the last question.
+    // Pertanyaan terakhir tidak punya halaman berikutnya.
     expect(find.text('Pertanyaan nomor 3?'), findsOneWidget);
 
     await tester.tap(find.text('Ambil foto wajah'));
@@ -136,7 +148,7 @@ void main() {
 
     expect(find.text('CAMERA'), findsOneWidget);
     expect(user.answers!.version, 'test');
-    expect(user.answers!.answers, {'q1': 5, 'q2': 3, 'q3': 1});
+    expect(user.answers!.answers, {'q1': 3, 'q2': 3, 'q3': 1});
     expect(user.answers!.answeredAt, isNotNull);
   });
 

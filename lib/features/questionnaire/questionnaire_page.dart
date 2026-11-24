@@ -77,7 +77,6 @@ class QuestionnaireFlow extends ConsumerStatefulWidget {
     super.key,
     this.mode = QuizMode.setup,
     this.initial,
-    this.autoAdvance = const Duration(milliseconds: 450),
   });
 
   final Questionnaire questionnaire;
@@ -86,8 +85,6 @@ class QuestionnaireFlow extends ConsumerStatefulWidget {
   /// Previously saved answers (pre-selected when retaking).
   final QuestionnaireAnswers? initial;
 
-  /// Delay before moving on after an answer is picked.
-  final Duration autoAdvance;
 
   @override
   ConsumerState<QuestionnaireFlow> createState() => _QuestionnaireFlowState();
@@ -103,7 +100,6 @@ class _QuestionnaireFlowState extends ConsumerState<QuestionnaireFlow> {
         e.key: e.value,
   };
   bool _saving = false;
-  Timer? _advance;
 
   List<Question> get _questions => widget.questionnaire.questions;
   Question get _current => _questions[_index];
@@ -111,23 +107,17 @@ class _QuestionnaireFlowState extends ConsumerState<QuestionnaireFlow> {
 
   @override
   void dispose() {
-    _advance?.cancel();
     super.dispose();
   }
 
   void _pick(int value) {
+    // Memilih jawaban tidak memindahkan halaman. Pengguna menekan Lanjut
+    // sendiri, supaya jawaban yang salah pilih masih bisa diubah dan tidak
+    // terlewat karena halaman berganti terlalu cepat.
     setState(() => _answers[_current.id] = value);
-    _advance?.cancel();
-    if (!_isLast) {
-      final at = _index;
-      _advance = Timer(widget.autoAdvance, () {
-        if (mounted && _index == at) setState(() => _index++);
-      });
-    }
   }
 
   Future<void> _next() async {
-    _advance?.cancel();
     if (!_isLast) {
       setState(() => _index++);
       return;
@@ -156,7 +146,6 @@ class _QuestionnaireFlowState extends ConsumerState<QuestionnaireFlow> {
   }
 
   void _back() {
-    _advance?.cancel();
     if (_index > 0) {
       setState(() => _index--);
     } else if (widget.mode == QuizMode.setup) {

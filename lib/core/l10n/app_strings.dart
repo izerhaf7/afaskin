@@ -194,7 +194,7 @@ abstract final class AppStrings {
   static const String guideTooClose = 'Jauhkan sedikit wajahmu';
   static const String guideOffCenter = 'Posisikan wajah di dalam oval';
   static const String guideNotFrontal = 'Hadapkan wajah lurus';
-  static const String guideReady = 'Pas! Tahan sebentar, lalu ambil foto';
+  static const String guideReady = 'Pas! Tahan sebentar, foto diambil otomatis';
   static const String guideTurnHead = 'Tolehkan kepala ke samping (±30°)';
   static const String guideTurnOtherSide = 'Sekarang toleh ke sisi sebaliknya';
   static const String guideTurnLess = 'Kurangi tolehan, cukup ±30°';

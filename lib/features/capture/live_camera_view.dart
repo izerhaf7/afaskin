@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:afaskin/core/l10n/app_strings.dart';
 import 'package:afaskin/core/theme/app_colors.dart';
 import 'package:afaskin/core/theme/app_spacing.dart';
+import 'package:afaskin/features/capture/capture_hold.dart';
 import 'package:afaskin/features/capture/capture_services.dart';
 import 'package:afaskin/features/capture/face_guidance.dart';
 import 'package:camera/camera.dart';
@@ -75,6 +76,13 @@ class _LiveCameraViewState extends State<LiveCameraView>
   /// Yaw of the single face in the last evaluated frame.
   double? _lastYaw;
 
+  /// Aturan tahan-sebelum-potret; satu detik kondisi siap.
+  final CaptureHold _hold = CaptureHold();
+
+  /// Bila pengguna menekan tombol rana sendiri, tangkap otomatis berhenti
+  /// untuk sesi ini supaya tidak memotret dua kali.
+  bool _autoOff = false;
+
   @override
   void initState() {
     super.initState();
@@ -92,6 +100,10 @@ class _LiveCameraViewState extends State<LiveCameraView>
       // Next photo of the three-view capture: re-evaluate from scratch (the
       // stream was stopped to take the previous picture).
       _status = GuidanceStatus.noFace; // build() follows didUpdateWidget
+      // Foto berikutnya butuh hitungan tahan sendiri; penanda lama akan
+      // membuatnya terpicu seketika sebelum wajah sempat stabil.
+      _hold.reset();
+      _autoOff = false;
       if (widget.active) unawaited(_startStream());
     }
   }
@@ -190,13 +202,30 @@ class _LiveCameraViewState extends State<LiveCameraView>
     _detecting = true;
     try {
       final status = await _evaluate(image);
-      if (status != null && mounted && status != _status) {
-        setState(() => _status = status);
+      if (status != null && mounted) {
+        if (status != _status) setState(() => _status = status);
+        _maybeAutoCapture(status);
       }
     } on Object catch (e) {
       debugPrint('Face detection error: $e');
     } finally {
       _detecting = false;
+    }
+  }
+
+  /// Ambil foto sendiri setelah kondisi "siap" bertahan [_holdNeeded].
+  ///
+  /// Dipanggil dari alur deteksi, jadi tidak menambah beban: keputusannya
+  /// memakai hasil deteksi yang sudah ada. Kondisi yang tidak siap
+  /// mengosongkan penanda tahan, sehingga wajah yang lewat sekilas atau
+  /// goyang tidak memicu foto.
+  void _maybeAutoCapture(GuidanceStatus status) {
+    if (_autoOff || _capturing) {
+      _hold.reset();
+      return;
+    }
+    if (_hold.shouldCapture(status, DateTime.now())) {
+      unawaited(_capture(auto: true));
     }
   }
 
@@ -279,9 +308,12 @@ class _LiveCameraViewState extends State<LiveCameraView>
     return InputImageRotationValue.fromRawValue(sensor % 360);
   }
 
-  Future<void> _capture() async {
+  Future<void> _capture({bool auto = false}) async {
     final c = _controller;
     if (c == null || _capturing || !_status.isReady) return;
+    // Rana ditekan sendiri: matikan tangkap otomatis untuk sesi ini supaya
+    // satu foto tidak terambil dua kali.
+    if (!auto) _autoOff = true;
     setState(() => _capturing = true);
     try {
       // Some Android devices fail to take a picture while streaming.
@@ -349,7 +381,7 @@ class _LiveCameraViewState extends State<LiveCameraView>
         ShutterButton(
           enabled: ready && !_capturing,
           busy: _capturing,
-          onPressed: _capture,
+          onPressed: () => unawaited(_capture()),
         ),
       ],
     );
