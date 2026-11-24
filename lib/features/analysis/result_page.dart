@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:afaskin/core/l10n/app_strings.dart';
@@ -13,6 +14,7 @@ import 'package:afaskin/data/models/models.dart';
 import 'package:afaskin/features/analysis/analysis_flow.dart';
 import 'package:afaskin/features/analysis/face_map.dart';
 import 'package:afaskin/features/analysis/ingredient_section.dart';
+import 'package:afaskin/features/analysis/lesion_areas.dart';
 import 'package:afaskin/features/analysis/problem_closeups.dart';
 import 'package:afaskin/features/analysis/recommendation_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -70,11 +72,49 @@ class ResultView extends StatefulWidget {
 class _ResultViewState extends State<ResultView> {
   SkinConditionLabel? _selected;
 
+  /// Area lesi yang sedang disorot. Kotak di peta dan kartu sorotan memakai
+  /// id yang sama, sehingga ketukan pada kotak bisa menunjuk kartu yang tepat,
+  /// bukan hanya kondisi yang sama.
+  String? _selectedAreaId;
+
+  /// Penanda bagian sorotan, dipakai untuk menggulir halaman ke sana saat
+  /// sebuah kotak lesi ditekan.
+  final GlobalKey _closeupKey = GlobalKey();
+
   /// Menyorot satu kondisi (dari kartu kondisi, kartu sorotan, atau peta).
   void _selectCondition(SkinConditionLabel? label, List<SkinCondition> conditions) {
     setState(() {
       // Ketukan pada kondisi yang sama melepas sorotan.
       _selected = label != null && _selected != label ? label : null;
+      // Sorotan kondisi tidak menunjuk area tertentu.
+      _selectedAreaId = null;
+    });
+  }
+
+  /// Menyorot satu **area** lesi, lalu menggulir halaman ke sorotan area itu.
+  ///
+  /// Dipakai saat kotak lesi di peta ditekan: pengguna langsung dibawa ke
+  /// potongan foto area yang sama, bukan hanya ke kondisi yang sama.
+  void _selectArea(LesionArea area, List<SkinCondition> conditions) {
+    final sama = _selectedAreaId == area.id;
+    setState(() {
+      _selectedAreaId = sama ? null : area.id;
+      _selected = sama ? null : area.label;
+    });
+    if (sama) return;
+    // Gulir setelah kerangka diperbarui, supaya posisi kartu sudah final.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _closeupKey.currentContext;
+      if (ctx != null) {
+        unawaited(
+          Scrollable.ensureVisible(
+            ctx,
+            duration: const Duration(milliseconds: 320),
+            curve: Curves.easeOut,
+            alignment: 0.1,
+          ),
+        );
+      }
     });
   }
 
@@ -87,9 +127,15 @@ class _ResultViewState extends State<ResultView> {
       (c) => c.label.suggestsDermatologist && c.probability >= 0.3,
     );
 
-    // Ada lesi yang bisa disorot? Sorotan butuh lokasi lesi; kondisi yang lolos
-    // gerbang tanpa satu pun kotak lesi tidak punya apa pun untuk dipotong.
-    final adaLesi = conditions.any((c) => c.spots.isNotEmpty);
+    // Area lesi: satu kotak per area (beberapa deteksi berdekatan digabung).
+    // Dihitung sekali di sini supaya peta dan sorotan memakai identitas yang
+    // sama, sehingga ketukan pada kotak menunjuk kartu yang benar.
+    final areas = buildLesionAreas(conditions);
+    final areasDepan = [
+      for (final a in areas)
+        if (a.viewIndex == 0) a,
+    ];
+    final adaLesi = areas.isNotEmpty;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
@@ -119,11 +165,9 @@ class _ResultViewState extends State<ResultView> {
                   ),
                   child: FaceMap(
                     photo: widget.photo,
-                    spots: [
-                      for (final c in conditions) ...c.spots,
-                    ],
-                    emphasizedLabel: _selected,
-                    onTapCondition: (label) => _selectCondition(label, conditions),
+                    areas: areasDepan,
+                    selectedAreaId: _selectedAreaId,
+                    onTapArea: (a) => _selectArea(a, conditions),
                   ),
                 ),
               ),
@@ -160,16 +204,23 @@ class _ResultViewState extends State<ResultView> {
         ),
         if (adaLesi) ...[
           const SizedBox(height: AppSpacing.lg),
-          Text(AppStrings.closeupHeading, style: text.titleLarge),
-          const SizedBox(height: AppSpacing.xxs),
-          Text(AppStrings.closeupHint, style: text.bodySmall),
-          const SizedBox(height: AppSpacing.xs),
-          ProblemCloseups(
-            photo: widget.photo,
-            sidePhotos: widget.sidePhotos,
-            conditions: conditions,
-            selected: _selected,
-            onTapCondition: (label) => _selectCondition(label, conditions),
+          // Penanda gulir: menekan kotak lesi membawa pengguna ke sini.
+          Column(
+            key: _closeupKey,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(AppStrings.closeupHeading, style: text.titleLarge),
+              const SizedBox(height: AppSpacing.xxs),
+              Text(AppStrings.closeupHint, style: text.bodySmall),
+              const SizedBox(height: AppSpacing.xs),
+              ProblemCloseups(
+                photo: widget.photo,
+                sidePhotos: widget.sidePhotos,
+                areas: areas,
+                selectedAreaId: _selectedAreaId,
+                onTapArea: (a) => _selectArea(a, conditions),
+              ),
+            ],
           ),
         ],
         const SizedBox(height: AppSpacing.lg),

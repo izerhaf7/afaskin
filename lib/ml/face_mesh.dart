@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show debugPrint;
@@ -50,6 +51,23 @@ class FaceMeshService {
   /// menyentuh tepi frame. Wajah yang menyentuh tepi ditolak Face Mesh.
   static const double _boxMargin = 0.55;
 
+  /// Panjang sisi terpanjang saat mencoba ulang pada foto utuh yang diperkecil.
+  static const int _fullResize = 640;
+
+  /// Urutan percobaan ulang setelah Face Mesh menolak foto asli.
+  ///
+  /// Satu percobaan tidak cukup: foto yang terpotong di pipi punya kotak wajah
+  /// yang menyentuh tepi gambar, sehingga potongan 3:4 dengan margin lebar tetap
+  /// memotong wajah dan Face Mesh menolaknya lagi. Urutan ini menurunkan margin
+  /// bertahap, lalu mencoba foto utuh yang diperkecil sebagai upaya terakhir —
+  /// jalur itu menyelamatkan wajah yang sudah besar di dalam frame.
+  static const List<({double margin, bool portrait})> _attempts = [
+    (margin: 0.55, portrait: true),
+    (margin: 0.35, portrait: true),
+    (margin: 0.20, portrait: true),
+    (margin: 0.80, portrait: false),
+  ];
+
   /// Titik dalam koordinat piksel [jpeg]. `points` null kalau tidak ada wajah.
   Future<({int faces, List<(double, double)>? points})> detect(
     Uint8List jpeg,
@@ -67,28 +85,53 @@ class FaceMeshService {
       trace['box'] =
           box == null ? null : [box.left, box.top, box.width, box.height];
       if (box != null) {
-        final cropped = await _cropAndScale(jpeg, box);
-        trace['cropped'] = cropped == null
-            ? null
-            : [cropped.offsetX, cropped.offsetY, cropped.scaleX, cropped.scaleY, cropped.bytes.length];
-        if (cropped != null) {
+        // Beberapa geometri potong dicoba berurutan; yang pertama menghasilkan
+        // mesh dipakai. Wajah yang menyentuh tepi foto butuh margin lebih kecil,
+        // wajah kecil di foto besar butuh potongan lebih lebar.
+        final tried = <String>[];
+        for (final a in _attempts) {
+          final cropped = await _cropAndScale(jpeg, box, a.margin, a.portrait);
+          if (cropped == null) continue;
           final pts = await _mesh(cropped.bytes);
-          trace['retry'] = pts != null;
-          if (pts != null) {
-            _trace(trace);
-            return (
-              faces: 1,
-              points: [
-                for (final (x, y) in pts)
-                  (
-                    cropped.offsetX + x / cropped.scaleX,
-                    cropped.offsetY + y / cropped.scaleY,
-                  ),
-              ],
-            );
-          }
+          tried.add('${a.margin.toStringAsFixed(2)}:${pts != null}');
+          if (pts == null) continue;
+          trace['retry'] = a.margin;
+          trace['tried'] = tried;
+          _trace(trace);
+          return (
+            faces: 1,
+            points: [
+              for (final (x, y) in pts)
+                (
+                  cropped.offsetX + x / cropped.scaleX,
+                  cropped.offsetY + y / cropped.scaleY,
+                ),
+            ],
+          );
+        }
+        trace['tried'] = tried;
+      }
+
+      // Upaya terakhir: perkecil foto utuh. Face Mesh kadang menolak foto
+      // beresolusi tinggi yang wajahnya sudah bagus, dan penskalaan ulang
+      // mengubahnya menjadi gambar yang diterima.
+      final resized = await _resizeFull(jpeg);
+      if (resized != null) {
+        final pts = await _mesh(resized.bytes);
+        trace['full_resize'] = pts != null;
+        if (pts != null) {
+          _trace(trace);
+          return (
+            faces: 1,
+            points: [
+              for (final (x, y) in pts)
+                (resized.offsetX + x / resized.scaleX,
+                 resized.offsetY + y / resized.scaleY),
+            ],
+          );
         }
       }
+
       trace['result'] = 'no face';
       _trace(trace);
       return (faces: 0, points: null);
@@ -141,7 +184,16 @@ class FaceMeshService {
   }
 
   /// Potong dan perbesar di isolate supaya UI tidak tersendat.
-  Future<Cropped?> _cropAndScale(Uint8List jpeg, Box box) {
+  ///
+  /// [margin] relatif terhadap sisi kotak wajah. [portrait] memaksa kanvas 3:4
+  /// tegak; kalau false, kanvas mengikuti bentuk kotak wajah apa adanya (lebih
+  /// aman untuk wajah yang sudah lebar atau terpotong di sisi).
+  Future<Cropped?> _cropAndScale(
+    Uint8List jpeg,
+    Box box,
+    double margin,
+    bool portrait,
+  ) {
     return Isolate.run(() {
       final decoded = img.decodeImage(jpeg);
       if (decoded == null) return null;
@@ -150,13 +202,14 @@ class FaceMeshService {
       final h = image.height.toDouble();
       if (w < 2 || h < 2) return null;
 
-      final mx = box.width * _boxMargin;
-      final my = box.height * _boxMargin;
-      // Kanvas potret 3:4 yang memuat wajah plus margin, tanpa memotong wajah.
+      final mx = box.width * margin;
+      final my = box.height * margin;
       var cw = box.width + 2 * mx;
       var ch = box.height + 2 * my;
-      if (ch < cw * 4 / 3) ch = cw * 4 / 3;
-      if (cw < ch * 3 / 4) cw = ch * 3 / 4;
+      if (portrait) {
+        if (ch < cw * 4 / 3) ch = cw * 4 / 3;
+        if (cw < ch * 3 / 4) cw = ch * 3 / 4;
+      }
       cw = cw.clamp(16.0, w);
       ch = ch.clamp(16.0, h);
 
@@ -172,16 +225,43 @@ class FaceMeshService {
         width: cw.round(),
         height: ch.round(),
       );
-      final scaleX = _retryWidth / cw;
-      final scaleY = _retryHeight / ch;
+      final tw = portrait ? _retryWidth : _retryHeight;
+      final th = portrait ? _retryHeight : _retryWidth;
+      final scaleX = tw / cw;
+      final scaleY = th / ch;
       final resized = img.copyResize(
         crop,
-        width: _retryWidth,
-        height: _retryHeight,
+        width: tw,
+        height: th,
         interpolation: img.Interpolation.cubic,
       );
       resized.exif = img.ExifData();
       return Cropped(img.encodeJpg(resized, quality: 95), x0, y0, scaleX, scaleY);
+    });
+  }
+
+  /// Perkecil foto utuh ke sisi terpanjang [_fullResize], tanpa memotong.
+  Future<Cropped?> _resizeFull(Uint8List jpeg) {
+    return Isolate.run(() {
+      final decoded = img.decodeImage(jpeg);
+      if (decoded == null) return null;
+      final image = img.bakeOrientation(decoded);
+      final w = image.width, h = image.height;
+      if (w < 2 || h < 2) return null;
+      final longest = math.max(w, h);
+      // Sudah cukup kecil: memperkecil lagi tidak menambah apa pun.
+      if (longest <= _fullResize) return null;
+      final k = _fullResize / longest;
+      final tw = (w * k).round().clamp(16, _fullResize);
+      final th = (h * k).round().clamp(16, _fullResize);
+      final resized = img.copyResize(
+        image,
+        width: tw,
+        height: th,
+        interpolation: img.Interpolation.cubic,
+      );
+      resized.exif = img.ExifData();
+      return Cropped(img.encodeJpg(resized, quality: 92), 0, 0, tw / w, th / h);
     });
   }
 

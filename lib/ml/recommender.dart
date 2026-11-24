@@ -22,7 +22,10 @@ class CatalogProduct {
       ingredients = (j['ingredients'] as List).cast<String>(),
       imageUrl = (j['image_url'] as String?)?.trim().isEmpty ?? true
           ? null
-          : (j['image_url'] as String).trim();
+          : (j['image_url'] as String).trim(),
+      url = (j['url'] as String?)?.trim().isEmpty ?? true
+          ? null
+          : (j['url'] as String).trim();
 
   final String id, name, brand, category;
   final int price, reviews;
@@ -42,6 +45,9 @@ class CatalogProduct {
   /// Bahan aktif -> nama bahan asli di produk yang cocok.
   final Map<String, List<String>> matched;
   final List<String> ingredients;
+
+  /// Halaman produk di toko asalnya. Null kalau katalog tidak membawanya.
+  final String? url;
 }
 
 const _skin = ['dry', 'normal', 'oily'];
@@ -221,9 +227,10 @@ class Recommender {
       'reasons': reasons,
       'warnings': _ownWarnings(x, p),
       if (detail) 'ingredients': x.ingredients,
-      if (detail)
-        'source_url':
-            'https://www.sephora.com/search?keyword=${Uri.encodeQueryComponent('${x.brand} ${x.name}')}',
+      // Tautan produk aslinya di Sociolla. Sebelumnya dibuat tautan pencarian
+      // Sephora dari nama produk, sehingga tombol "Lihat di toko" membuka
+      // pencarian di toko yang tidak menjual produknya.
+      if (detail && x.url != null) 'source_url': x.url,
     };
   }
 

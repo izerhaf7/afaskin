@@ -49,15 +49,27 @@ class ProductDetailPage extends ConsumerWidget {
   }
 }
 
+/// Tautan toko yang benar-benar bisa dibuka, atau null.
+///
+/// Divalidasi supaya tombol tidak pernah muncul untuk tautan kosong atau
+/// potongan teks yang bukan URL.
+Uri? _linkToko(Product product) {
+  final url = product.sourceUrl?.trim();
+  if (url == null || url.isEmpty) return null;
+  final uri = Uri.tryParse(url);
+  if (uri == null || !uri.hasScheme || uri.host.isEmpty) return null;
+  if (uri.scheme != 'https' && uri.scheme != 'http') return null;
+  return uri;
+}
+
 class ProductDetailView extends ConsumerWidget {
   const ProductDetailView({required this.product, super.key});
 
   final Product product;
 
   Future<void> _openStore(BuildContext context, WidgetRef ref) async {
-    final url = product.sourceUrl;
-    final uri = url == null ? null : Uri.tryParse(url);
-    if (uri == null || !uri.hasScheme) {
+    final uri = _linkToko(product);
+    if (uri == null) {
       showAfaToast(context, AppStrings.storeUnavailable);
       return;
     }
@@ -238,32 +250,36 @@ class ProductDetailView extends ConsumerWidget {
               ),
             ),
           ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: DecoratedBox(
-              decoration: const BoxDecoration(
-                color: AppColors.white,
-                border: Border(top: BorderSide(color: AppColors.outline)),
-              ),
-              child: SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg,
-                    AppSpacing.sm,
-                    AppSpacing.lg,
-                    AppSpacing.sm,
-                  ),
-                  child: AfaButton(
-                    label: AppStrings.openStore,
-                    onPressed: () => unawaited(_openStore(context, ref)),
+          // Tombol toko hanya muncul kalau produknya punya tautan yang bisa
+          // dibuka. Tanpa tautan, menekannya hanya memunculkan pesan "toko
+          // tidak tersedia", jadi tombolnya dihilangkan sama sekali.
+          if (_linkToko(product) != null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  color: AppColors.white,
+                  border: Border(top: BorderSide(color: AppColors.outline)),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.sm,
+                      AppSpacing.lg,
+                      AppSpacing.sm,
+                    ),
+                    child: AfaButton(
+                      label: AppStrings.openStore,
+                      onPressed: () => unawaited(_openStore(context, ref)),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

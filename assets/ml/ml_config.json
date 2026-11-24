@@ -18,8 +18,8 @@
       "oily": 4.5
     },
     "skin_sigma": 0.9,
-    "T_fusion": 0.6,
-    "_catatan_T_fusion": "Kalibrasi kedua pada output fusion (bukan CNN). Akurasi test 82,7% tetapi keyakinan yang ditampilkan 67,2% -> under-confident 15,5 poin. T_fusion 0,6 dipilih agar selisih |keyakinan-akurasi| terkecil di seluruh rentang kualitas jawaban (sigma 0,5..2,5)."
+    "T_fusion": 0.45,
+    "_catatan_T_fusion": "Akurasi fusi tipe kulit 83,6 persen, tetapi keyakinan yang tampil hanya 63-68 persen pada jawaban kuesioner yang konsisten, jadi aplikasi merendah sekitar 18 poin. Sweep pada probs_test_ResNet50 (n=133) dengan simulasi jawaban: T_fusion 0,60 memberi keyakinan 78,7 persen (selisih 4,4 poin), 0,42 memberi 84,1 persen. Dipakai 0,45 supaya keyakinan yang tampil berada di atas 70 persen dan mendekati akurasi 83,6 persen, bukan jauh di bawahnya. T_fusion terlalu kecil membuat keyakinan melampaui akurasi: 0,30 memberi 88,2 persen dengan ECE 0,162."
   },
   "condition": {
     "default_model": "ResNet50Repaired",
@@ -101,29 +101,30 @@
           "top_k": 3,
           "_catatan": "P(kondisi hadir di wajah) = sigmoid(a * logit(bukti) + b). Bukti = rata-rata top_k patch terkuat untuk kelas itu, persis nilai topKMean di aplikasi. Dilatih pada 4.866 wajah split train, diukur pada 947 wajah test: ECE 0,021, Brier 0,050 (cara lama: ECE 0,107, Brier 0,110). Pada wajah yang memang punya kondisinya, keyakinan yang tampil naik dari 23,6% ke 71,5%.",
           "a": [
-            0.77,
+            0.1508,
             1.792672,
             1.460574,
             1.064324,
             1.313247,
             1.78996,
             1.519973,
-            1.3946,
+            0.2779,
             1.476342,
             1.40472
           ],
           "b": [
-            0.256,
+            1.4125,
             0.443246,
             0.374956,
             0.397158,
             -0.002614,
             0.650392,
             0.270106,
-            0.7093,
+            0.8876,
             -0.825343,
             2.652558
-          ]
+          ],
+          "_catatan_refit": "Kurva lama dipasang pada skala bukti model lama, yang jauh lebih tinggi: median bukti Acne 0,667 pada model lama versus 0,334 pada model hasil latih ulang, sementara wajah bersih turun dari 0,333 ke 0,000. Memakai kurva lama pada bukti baru menekan wajah berjerawat ke 33-44 persen. Acne dan Scars karena itu difit ulang pada bukti head baru memakai label tingkat wajah (acne_kuat/scar_kuat lawan bersih), fit di valid lalu diuji di test. Delapan kelas lain belum punya label tingkat wajah sehingga kurvanya belum bisa difit; kelas itu tetap memakai kurva lama."
         },
         "_catatan_repaired": "Dilatih ulang pada label yang diperbaiki (spot bukan Scars, kotak hampa dibuang). T=0,92 hasil fit NLL pada split valid; presence Acne dan Scars difit ulang pada kebenaran acuan audit kontras. Kelas lain memakai parameter lama karena labelnya tidak berubah. Macro-F1 petak 0,6903 vs 0,6344 pada model sebelumnya."
       }

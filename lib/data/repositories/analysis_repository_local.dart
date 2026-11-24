@@ -221,7 +221,11 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
           // sebagai `unknown` sehingga warnanya jatuh ke warna cadangan.
           'label': c.key.toLowerCase(),
           'region': regions[i],
-          'view': tileView[i],
+          // Model membaca kunci ini sebagai `view_index`. Sebelumnya ditulis
+          // 'view', sehingga seluruh lesi dari foto samping terbaca sebagai
+          // foto depan dan kotaknya menempel di posisi yang salah pada foto
+          // wajah depan.
+          'view_index': tileView[i],
         });
       }
     }
@@ -275,7 +279,19 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
             'probability': c.value,
             'regions': agg.where[c.key],
             'spots': spotsByCond[c.key] ?? const <Map<String, Object>>[],
-            'description': MlTexts.condition[c.key.toLowerCase()]?.$2,
+            'labels': [
+              for (final r in (agg.where[c.key] ?? const <String>[]))
+                MlTexts.regionLabelOf(r),
+            ],
+            'description': c.key == 'Acne'
+                // Jerawat di dagu, hidung dan pipi punya pemicu berbeda, jadi
+                // kalimatnya mengikuti area lesi terbanyak alih-alih satu teks
+                // umum yang terbaca sebagai tempelan.
+                ? MlTexts.acneDescription([
+                    for (final r in (agg.where[c.key] ?? const <String>[]))
+                      MlTexts.regionLabelOf(r),
+                  ])
+                : MlTexts.condition[c.key.toLowerCase()]?.$2,
           },
       ],
       'rois': front.rois,

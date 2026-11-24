@@ -6,15 +6,19 @@ import 'dart:ui' as ui;
 import 'package:afaskin/core/l10n/app_strings.dart';
 import 'package:afaskin/core/theme/app_colors.dart';
 import 'package:afaskin/core/theme/app_spacing.dart';
-import 'package:afaskin/core/widgets/afa_card.dart';
 import 'package:afaskin/data/models/models.dart';
+import 'package:afaskin/features/analysis/lesion_areas.dart';
 import 'package:material_ui/material_ui.dart';
+
+export 'package:afaskin/features/analysis/lesion_areas.dart'
+    show kelompokkanLesi, kotakArea, LesionArea, lesiRel;
 
 /// Sorotan lesi: potongan foto yang diperbesar tepat di lokasi lesi.
 ///
 /// Peta wajah menjawab "di mana", bagian ini menjawab "seperti apa bentuknya".
-/// Satu kartu = satu **kelompok lesi yang berdekatan**, dipotong ketat di
-/// sekelilingnya.
+/// Satu kartu = satu **area lesi** dari `buildLesionAreas`, sehingga kartu dan
+/// kotak di peta punya identitas yang sama: menekan sebuah kotak bisa
+/// menggulir ke kartu area itu, dan sebaliknya.
 ///
 /// Label kartu adalah nama kondisi, bukan nama area wajah. Alasannya terukur
 /// pada foto uji kepala menoleh: posisi ujung hidung bergeser sampai 0,54
@@ -26,12 +30,12 @@ import 'package:material_ui/material_ui.dart';
 /// Foto hanya ada di memori, jadi baris ini kosong untuk analisis dari Riwayat.
 class ProblemCloseups extends StatefulWidget {
   const ProblemCloseups({
-    required this.conditions,
+    required this.areas,
     super.key,
     this.photo,
     this.sidePhotos = const [],
-    this.selected,
-    this.onTapCondition,
+    this.selectedAreaId,
+    this.onTapArea,
   });
 
   /// Foto depan analisis ini, atau null kalau sudah tidak di memori.
@@ -41,51 +45,17 @@ class ProblemCloseups extends StatefulWidget {
   /// disorot dari foto samping, bukan hanya dari foto depan.
   final List<Uint8List> sidePhotos;
 
-  /// Kondisi beserta lokasi lesinya (0 = foto depan, 1+ = foto samping).
-  final List<SkinCondition> conditions;
+  /// Area lesi dari `buildLesionAreas`, termasuk yang berasal dari foto samping.
+  final List<LesionArea> areas;
 
-  /// Kondisi yang sedang disorot (dari peta wajah atau kartu lesi).
-  final SkinConditionLabel? selected;
+  /// Area yang sedang disorot (dari peta wajah atau kartu lesi).
+  final String? selectedAreaId;
 
   /// Dipanggil saat kartu sorotan diketuk. Null = kartu tidak bisa diketuk.
-  final ValueChanged<SkinConditionLabel>? onTapCondition;
+  final ValueChanged<LesionArea>? onTapArea;
 
   @override
   State<ProblemCloseups> createState() => _ProblemCloseupsState();
-}
-
-/// Kelompokkan lesi yang berdekatan (transitif): satu kelompok = satu lesi
-/// atau sekumpulan lesi yang berdempetan.
-///
-/// Dipisah dari widget supaya bisa diuji tanpa mendekode foto.
-List<List<ConditionSpot>> kelompokkanLesi(
-  List<ConditionSpot> spots, {
-  double jarak = 0.07,
-}) {
-  if (spots.isEmpty) return const [];
-  final sisa = List<int>.generate(spots.length, (i) => i);
-  final hasil = <List<ConditionSpot>>[];
-  while (sisa.isNotEmpty) {
-    final anggota = <int>[sisa.removeAt(0)];
-    var berubah = true;
-    while (berubah) {
-      berubah = false;
-      for (var j = sisa.length - 1; j >= 0; j--) {
-        final p = spots[sisa[j]];
-        final dekat = anggota.any((k) {
-          final q = spots[k];
-          final dx = q.x - p.x, dy = q.y - p.y;
-          return dx * dx + dy * dy < jarak * jarak;
-        });
-        if (dekat) {
-          anggota.add(sisa.removeAt(j));
-          berubah = true;
-        }
-      }
-    }
-    hasil.add([for (final i in anggota) spots[i]]);
-  }
-  return hasil;
 }
 
 /// Kotak potong untuk satu kelompok lesi, dalam piksel gambar.
@@ -117,13 +87,30 @@ Rect kotakSorotan(List<ConditionSpot> spots, double lebar, double tinggi) {
   return Rect.fromLTWH(l, t, s, s);
 }
 
+/// Kotak potong untuk satu area, memakai batas areanya.
+///
+/// Berbeda dari [kotakSorotan] yang memakai sisi petak: di sini batasnya sudah
+/// mengelilingi lesi, jadi potongan mengikuti bentuk area dan tidak melebar
+/// hanya karena petaknya besar.
+Rect kotakSorotanArea(LesionArea area, double lebar, double tinggi) {
+  final b = area.bounds;
+  var x1 = b.left * lebar, y1 = b.top * tinggi;
+  var x2 = b.right * lebar, y2 = b.bottom * tinggi;
+  final mx = (x2 - x1) * 0.45, my = (y2 - y1) * 0.45;
+  final cxc = (x1 + x2) / 2, cyc = (y1 + y2) / 2;
+  final side = math.min(
+    math.max(x2 - x1 + 2 * mx, y2 - y1 + 2 * my),
+    lebar * 0.32,
+  );
+  final s = math.max(side, lebar * 0.18);
+  final l = (cxc - s / 2).clamp(0.0, math.max(0.0, lebar - s)).toDouble();
+  final t = (cyc - s / 2).clamp(0.0, math.max(0.0, tinggi - s)).toDouble();
+  return Rect.fromLTWH(l, t, s, s);
+}
+
 class _ProblemCloseupsState extends State<ProblemCloseups> {
   static const double _cardWidth = 132;
   static const double _gap = AppSpacing.xs;
-
-  /// Lesi yang pusatnya lebih dekat dari ini (proporsi lebar foto) dianggap
-  /// satu kelompok dan digabung dalam satu kartu.
-  static const double _jarakKelompok = 0.07;
 
   /// Batas jumlah kartu; lebih dari ini barisnya terlalu panjang untuk digeser.
   static const int _maksKartu = 10;
@@ -132,11 +119,8 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
   ui.Image? _image;
   final List<ui.Image> _sideImages = [];
 
-  /// Urutan kondisi yang kartunya muncul, untuk menyelaraskan scroll.
-  List<SkinConditionLabel> _urutanKondisi() => [
-    for (final c in widget.conditions)
-      if (c.spots.isNotEmpty) c.label,
-  ];
+  /// Area yang benar-benar punya kartu, dengan urutan yang sama seperti baris.
+  List<LesionArea> _kartu = const [];
 
   @override
   void initState() {
@@ -151,23 +135,32 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
     if (old.sidePhotos.length != widget.sidePhotos.length) {
       _decodeSides();
     }
-    // Dipilih dari peta wajah: geser baris supaya kartu kondisi itu terlihat.
-    if (old.selected != widget.selected && widget.selected != null) {
-      final i = _urutanKondisi().indexOf(widget.selected!);
-      if (i >= 0 && _scroll.hasClients) {
-        final target = math.min(
-          i * (_cardWidth + _gap),
-          _scroll.position.maxScrollExtent,
-        );
-        unawaited(
-          _scroll.animateTo(
-            target,
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOut,
-          ),
-        );
-      }
+    // Dipilih dari peta wajah: geser baris supaya kartu area itu terlihat.
+    if (old.selectedAreaId != widget.selectedAreaId &&
+        widget.selectedAreaId != null) {
+      _geserKeArea(widget.selectedAreaId!);
     }
+  }
+
+  /// Geser baris kartu ke area terpilih.
+  ///
+  /// Memakai indeks area yang benar-benar punya kartu, bukan indeks kondisi:
+  /// satu kondisi bisa punya beberapa area, dan sebelumnya semua area kondisi
+  /// itu bergulir ke kartu pertama sehingga kartu yang dituju tidak terlihat.
+  void _geserKeArea(String id) {
+    final i = _kartu.indexWhere((a) => a.id == id);
+    if (i < 0 || !_scroll.hasClients) return;
+    final target = math.min(
+      i * (_cardWidth + _gap),
+      _scroll.position.maxScrollExtent,
+    );
+    unawaited(
+      _scroll.animateTo(
+        target,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      ),
+    );
   }
 
   Future<void> _decode() async {
@@ -221,82 +214,67 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
     super.dispose();
   }
 
-  /// Potong ketat di sekeliling satu kelompok lesi, dengan sedikit konteks.
-  Rect _cropAround(List<ConditionSpot> spots, ui.Image im) =>
-      kotakSorotan(spots, im.width.toDouble(), im.height.toDouble());
+  /// Gambar yang dipakai satu area: foto depan atau foto samping ke-(n).
+  ui.Image? _gambarUntuk(LesionArea a) {
+    if (a.viewIndex == 0) return _image;
+    final i = a.viewIndex - 1;
+    return i < _sideImages.length ? _sideImages[i] : null;
+  }
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final im = _image;
     if (im == null) {
-      return AfaCard(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Text(AppStrings.closeupNoPhoto, style: text.bodySmall),
-      );
+      return Text(AppStrings.closeupNoPhoto, style: text.bodySmall);
     }
 
-    // Satu kartu per kelompok lesi; foto depan lebih dulu, lalu foto samping.
-    final cards = <_CardSpec>[];
-    for (final c in widget.conditions) {
-      final depan = [
-        for (final s in c.spots)
-          if (s.viewIndex == 0) s,
+    // Satu kartu per area, urutannya sudah foto depan lebih dulu lalu samping.
+    final kartu = <_CardSpec>[];
+    for (final a in widget.areas) {
+      final gambar = _gambarUntuk(a);
+      if (gambar == null) continue;
+      final diView = [
+        for (final x in widget.areas)
+          if (x.viewIndex == a.viewIndex) x,
       ];
-      final kelompok = kelompokkanLesi(depan, jarak: _jarakKelompok);
-      for (var i = 0; i < kelompok.length; i++) {
-        cards.add(_CardSpec(
-          image: im,
-          crop: _cropAround(kelompok[i], im),
-          label: c.label,
-          jumlah: kelompok[i].length,
-          urutan: kelompok.length > 1 ? i + 1 : null,
-        ));
-      }
-      for (var v = 0; v < _sideImages.length; v++) {
-        final samping = [
-          for (final s in c.spots)
-            if (s.viewIndex == v + 1) s,
-        ];
-        if (samping.isEmpty) continue;
-        cards.add(_CardSpec(
-          image: _sideImages[v],
-          crop: _cropAround(samping, _sideImages[v]),
-          label: c.label,
-          jumlah: samping.length,
-          viewLabel: 'Samping ${v + 1}',
-        ));
-      }
-      if (cards.length >= _maksKartu) break;
+      kartu.add(_CardSpec(
+        area: a,
+        image: gambar,
+        crop: kotakSorotanArea(a, gambar.width.toDouble(), gambar.height.toDouble()),
+        urutan: diView.length > 1 && diView.indexOf(a) > 0
+            ? diView.indexOf(a) + 1
+            : null,
+      ));
+      if (kartu.length >= _maksKartu) break;
     }
-    if (cards.isEmpty) {
-      return AfaCard(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Text(AppStrings.closeupNoPhoto, style: text.bodySmall),
-      );
+    if (kartu.isEmpty) {
+      return Text(AppStrings.closeupNoPhoto, style: text.bodySmall);
     }
-    final tampil = cards.take(_maksKartu).toList();
+    _kartu = [for (final c in kartu) c.area];
 
     return SizedBox(
       height: 176,
       child: ListView.separated(
         controller: _scroll,
         scrollDirection: Axis.horizontal,
-        itemCount: tampil.length,
+        itemCount: kartu.length,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.xs),
         itemBuilder: (context, i) {
-          final c = tampil[i];
+          final c = kartu[i];
           return _CloseupCard(
             image: c.image,
             crop: c.crop,
-            label: AppStrings.condition(c.label),
-            viewLabel: c.viewLabel,
-            jumlah: c.jumlah,
-            urutan: c.urutan,
-            selected: widget.selected == c.label,
-            onTap: widget.onTapCondition == null
+            label: AppStrings.condition(c.area.label),
+            viewLabel: c.area.viewIndex == 0
                 ? null
-                : () => widget.onTapCondition!(c.label),
+                : 'Samping ${c.area.viewIndex}',
+            jumlah: c.area.jumlah,
+            urutan: c.urutan,
+            selected: widget.selectedAreaId == c.area.id,
+            onTap: widget.onTapArea == null
+                ? null
+                : () => widget.onTapArea!(c.area),
           );
         },
       ),
@@ -307,24 +285,18 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
 /// Satu kartu sorotan: foto mana yang dipotong dan di mana.
 class _CardSpec {
   const _CardSpec({
+    required this.area,
     required this.image,
     required this.crop,
-    required this.label,
-    required this.jumlah,
     this.urutan,
-    this.viewLabel,
   });
 
+  final LesionArea area;
   final ui.Image image;
   final Rect crop;
-  final SkinConditionLabel label;
 
-  /// Jumlah lesi dalam kelompok ini.
-  final int jumlah;
-
-  /// Nomor kelompok bila kondisinya punya lebih dari satu kelompok lesi.
+  /// Nomor kelompok bila dalam view itu ada lebih dari satu area.
   final int? urutan;
-  final String? viewLabel;
 }
 
 class _CloseupCard extends StatelessWidget {
