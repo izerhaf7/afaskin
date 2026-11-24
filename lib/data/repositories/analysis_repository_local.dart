@@ -120,7 +120,19 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
         timing[name] = v.millis;
       } on QualityRejection catch (q) {
         views[name] = 'ignored: ${q.reasons.join(',')}';
+      } on Object catch (e) {
+        // Foto samping bersifat opsional. Sebelumnya hanya QualityRejection
+        // yang ditangkap, sehingga satu kegagalan model pada foto samping
+        // membatalkan analisis yang foto depannya sudah berhasil.
+        debugPrint('Foto samping $name gagal, diabaikan: $e');
+        views[name] = 'ignored: error ${e.runtimeType}';
       }
+    }
+
+    // Foto depan harus punya minimal satu petak; tanpa petak tidak ada yang
+    // bisa dinilai dan seluruh perhitungan di bawah membagi nol.
+    if (front.tileProbs.isEmpty) {
+      throw StateError('no_tiles: tidak ada area kulit yang bisa dinilai');
     }
 
     onStage?.call(AnalysisStage.condition);
@@ -139,8 +151,17 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
     final answers = <String, int?>{for (var i = 1; i <= 7; i++) 'Q$i': q['q$i']};
     answers['Q1'] ??= 3;
     answers['Q3'] ??= 1;
+    // Foto samping sengaja tidak menghasilkan tipe kulit, dan model bisa gagal
+    // memberi keluaran walau petaknya ada. Dulu `front.pSkin!` di sini melempar
+    // TypeError dan seluruh analisis berhenti dengan pesan "kesalahan saat
+    // menjalankan model". Sekarang jatuh ke sebaran datar: hasilnya dianggap
+    // tidak informatif, bukan menggagalkan analisis.
+    final pSkinFront = front.pSkin;
+    final pSkinUse = (pSkinFront != null && pSkinFront.length == 3)
+        ? pSkinFront
+        : const <double>[1 / 3, 1 / 3, 1 / 3];
     final prof = predictProfile(
-      pSkinCnn: front.pSkin!,
+      pSkinCnn: pSkinUse,
       pCondCnn: agg.probs,
       answers: answers,
       skinCfg: e.skinCfg,
@@ -148,7 +169,9 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
       condModelCfg: e.condModelCfg,
     );
 
-    final skin = prof.pSkin.entries.reduce((a, b) => b.value > a.value ? b : a).key;
+    final skin = prof.pSkin.entries.isEmpty
+        ? 'normal'
+        : prof.pSkin.entries.reduce((a, b) => b.value > a.value ? b : a).key;
     final minP = (scan['min_condition_p'] as num).toDouble();
 
     // Keyakinan yang ditampilkan = P(kondisi ini ADA di wajah), bukan porsi di
@@ -386,9 +409,9 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
     var berubah = true;
     while (berubah) {
       berubah = false;
-      final size = anggota
-          .map((a) => a['size']! as double)
-          .reduce(math.max);
+      final size = anggota.isEmpty
+          ? 0.0
+          : anggota.map((a) => a['size']! as double).reduce(math.max);
       // Harus LEBIH BESAR dari `scan.stride` (0,6) supaya patch bertetangga —
       // satu lesi yang muncul di beberapa patch — benar-benar menyatu. Kalau
       // lebih kecil, peta penuh kotak yang saling menimpa untuk satu lesi.
@@ -439,11 +462,35 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
 /// Sebab kegagalan analisis lokal dalam bahasa yang bisa dibaca pengguna.
 ///
 /// Dipisah dari kelas supaya bisa diuji tanpa menjalankan model: pengguna perlu
-/// tahu kenapa analisisnya gagal, bukan hanya "coba lagi".
-String localFailureCause(Object error) => switch (error) {
-  StateError(:final message) when message.contains('no_face') =>
-    'wajah tidak terdeteksi di foto.',
-  StateError(:final message) => 'model menolak foto ($message).',
-  PhotoDecodeException() => 'foto tidak bisa dibaca.',
-  _ => 'terjadi kesalahan saat menjalankan model (${error.runtimeType}).',
-};
+/// tahu kenapa analisisnya gagal, bukan hanya "coba lagi". Setiap sebab yang
+/// mungkin disebut harus punya kalimat sendiri, karena "kesalahan saat
+/// menjalankan model (StateError)" tidak memberi tahu apa pun yang bisa
+/// ditindaklanjuti.
+String localFailureCause(Object error) {
+  if (error is StateError) {
+    final m = error.message;
+    if (m.contains('no_face')) return 'wajah tidak terdeteksi di foto.';
+    if (m.contains('no_tiles')) {
+      return 'tidak ada area kulit yang bisa dinilai. Coba foto ulang dengan '
+          'wajah lebih dekat dan pencahayaan lebih terang.';
+    }
+    if (m.contains('model tidak memberi keluaran') ||
+        m.contains('tidak bulat per petak')) {
+      return 'model tidak selesai menghitung. Coba analisis ulang; kalau tetap '
+          'gagal, tutup lalu buka lagi aplikasinya.';
+    }
+    return 'model menolak foto ($m).';
+  }
+  if (error is PhotoDecodeException) return 'foto tidak bisa dibaca.';
+  if (error is RangeError) {
+    return 'data hasil model tidak lengkap. Coba analisis ulang.';
+  }
+  if (error is TypeError) {
+    return 'model memberi hasil yang tidak dikenali. Coba analisis ulang.';
+  }
+  if (error is OutOfMemoryError) {
+    return 'memori perangkat tidak cukup. Tutup aplikasi lain lalu coba lagi.';
+  }
+  return 'terjadi kesalahan saat menjalankan model (${error.runtimeType}). '
+      'Coba analisis ulang.';
+}

@@ -110,6 +110,24 @@ class MlEngine {
     engine._sub = stream.listen((msg) {
       final m = msg! as Map<Object?, Object?>;
       engine._pending.remove(m['id'])?.complete(m);
+    }, onError: (Object e, StackTrace st) {
+      // Isolate melaporkan kegagalan: selesaikan semua yang menunggu supaya
+      // tidak ada analisis yang menggantung, lalu kosongkan daftar.
+      debugPrint('ML isolate stream error: $e\n$st');
+      final waiting = List.of(engine._pending.entries);
+      engine._pending.clear();
+      for (final e2 in waiting) {
+        e2.value.completeError(StateError('model berhenti: $e'));
+      }
+    }, onDone: () {
+      // Isolate tutup lebih awal: sama, jangan biarkan ada yang menunggu.
+      final waiting = List.of(engine._pending.entries);
+      engine._pending.clear();
+      for (final e2 in waiting) {
+        e2.value.completeError(
+          StateError('model berhenti sebelum menyelesaikan analisis'),
+        );
+      }
     });
     return engine;
   }
@@ -132,12 +150,33 @@ class MlEngine {
       'faces': faces,
       'side': side,
     });
-    final r = await c.future;
+    // Isolate bisa mati tanpa sempat mengirim balasan (kehabisan memori,
+    // XNNPACK crash). Tanpa batas waktu, layar analisis menggantung selamanya
+    // tanpa pesan. Batas ini cukup longgar: satu foto normal selesai di bawah
+    // sepuluh detik, dan 90 detik hanya tercapai kalau memang tidak ada balasan.
+    final Map<Object?, Object?> r;
+    try {
+      r = await c.future.timeout(const Duration(seconds: 90));
+    } on TimeoutException {
+      _pending.remove(id);
+      throw StateError(
+        'model tidak merespons dalam 90 detik; kemungkinan kehabisan memori',
+      );
+    }
     if (r['error'] != null) throw StateError(r['error']! as String);
     if (r['reasons'] != null) throw QualityRejection((r['reasons']! as List).cast<String>());
     final n = r['n']! as int;
     final probs = (r['probs']! as TransferableTypedData).materialize().asFloat32List();
     final pts = r['points'] as Float64List?;
+    // Petak ada tetapi model tidak memberi keluaran apa pun: lanjut berarti
+    // membagi daftar kosong dan menjatuhkan indeks. Sebut sebabnya di sini.
+    if (n > 0 && probs.isEmpty) {
+      throw StateError('model tidak memberi keluaran untuk $n petak');
+    }
+    if (n > 0 && probs.length % n != 0) {
+      throw StateError('keluaran model tidak bulat per petak '
+          '(${probs.length} nilai untuk $n petak)');
+    }
     final k = n == 0 ? 0 : probs.length ~/ n;
     return ViewOutput(
       pSkin: (r['skin'] as List?)?.cast<double>(),
@@ -261,6 +300,10 @@ List<(double, double)> _refine(
   if (!it.isAllocated) it.allocateTensors();
   final outs = it.getOutputTensors();
   final lmIdx = outs.indexWhere((t) => t.shape.last == 1434);
+  // Model landmark yang tidak sesuai (versi berbeda) tidak punya keluaran 1434.
+  // Tanpa penjagaan ini getOutputTensor(-1) melempar RangeError dan seluruh
+  // analisis gagal padahal titik ML Kit sudah cukup untuk memotong petak.
+  if (lmIdx < 0) return start;
   final scoreIdx = outs.indexWhere((t) => t.shape.length == 4 && t.shape.last == 1);
   var pts = start;
   for (var k = 0; k < iters; k++) {
