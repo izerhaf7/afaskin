@@ -185,9 +185,12 @@ class _ResultViewState extends State<ResultView> {
                       color:
                           AppColors.conditionColor(c.label.name),
                       selected: _selected == c.label,
-                      // Jumlah area memakai warna ini, supaya pengguna tahu
-                      // warna mana dominan tanpa menghitung kotak satu per satu.
-                      count: c.spots.length,
+                      // Jumlah kotak yang benar-benar tergambar untuk warna
+                      // ini, bukan jumlah spot mentah. Sebelumnya chip memakai
+                      // `c.spots.length` sementara peta memakai `areas` yang
+                      // sudah digabung, sehingga chip menulis "4" padahal peta
+                      // menggambar 2 kotak.
+                      count: areasDepan.where((a) => a.label == c.label).length,
                     ),
                 ],
               ),

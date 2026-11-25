@@ -51,7 +51,26 @@ class LesionArea {
 const double lesiRel = 0.5;
 
 /// Jarak (proporsi lebar foto) di mana dua deteksi dianggap satu area.
-const double jarakArea = 0.09;
+///
+/// Diturunkan dari 0,09 ke 0,05 karena penggabungan terjadi dua kali:
+/// `gabungBertumpuk` di repositori sudah menyatukan petak satu lesi dan membatasi
+/// luasnya, lalu fungsi ini menggabung lagi. Dengan 0,09, spot yang sudah
+/// dipisah repositori menyatu kembali dan peta menggambar lebih sedikit kotak
+/// daripada angka di chip kondisi — terlihat sebagai "chip menulis 4, peta
+/// menggambar 2".
+///
+/// Diukur pada tiga foto uji dengan menghitung ulang kedua tahap
+/// (`scripts/eksperimen/simulasi_gabung_ui.py`):
+///
+/// | foto                | spot repo | ui 0,09 | ui 0,05 |
+/// |---------------------|-----------|---------|---------|
+/// | jerawat_dan_bekas   |     5     |    2    |    5    |
+/// | hanya_jerawat       |    10     |    5    |    9    |
+/// | dahi_satu (1 lesi)  |     2     |    2    |    2    |
+///
+/// Pada 0,05 peta menggambar kotak sebanyak chip, dan satu lesi tunggal tetap
+/// utuh (tidak pecah).
+const double jarakArea = 0.05;
 
 /// Batas sebaran satu area, sebagai proporsi lebar/tinggi foto.
 ///
@@ -184,32 +203,44 @@ Rect kotakArea(List<ConditionSpot> spots) {
 
 /// Area pada titik [p] (0-1 terhadap foto view yang sedang ditampilkan).
 ///
-/// Kotak terkecil yang memuat titik menang, supaya area besar tidak menelan
-/// area kecil yang bertumpuk. Kalau tidak ada kotak yang memuat, dipilih area
-/// terdekat dalam jarak [toleransi] agar ketukan jari tetap terasa responsif.
+/// Kotak yang memuat titik menang, dan di antara beberapa kotak yang sama-sama
+/// memuat, yang **pusatnya paling dekat** dengan titik ketukan yang dipilih.
+///
+/// Sebelumnya pemenangnya kotak dengan luas terkecil. Begitu jumlah kotak
+/// bertambah (setelah penggabungan di repositori tidak lagi menyatukan seluruh
+/// bidang jerawat), banyak kotak saling bertumpuk dengan ukuran hampir sama.
+/// Luasnya jadi seri, dan ketukan pada kotak kedua justru memilih kotak pertama
+/// yang menumpukinya. Diukur di `region_selection_test`: mengetuk area
+/// `acne#0#1` memilih `acne#0#0`.
+///
+/// Kalau tidak ada kotak yang memuat, dipilih area terdekat dalam jarak
+/// [toleransi] agar ketukan jari tetap terasa responsif.
 LesionArea? hitTestArea(
   List<LesionArea> areas,
   Offset p, {
   double toleransi = 0.035,
 }) {
   LesionArea? best;
+  var bestJarak = double.infinity;
   var bestArea = double.infinity;
   for (final a in areas) {
-    if (a.bounds.contains(p)) {
-      final luas = a.bounds.width * a.bounds.height;
-      if (luas < bestArea) {
-        bestArea = luas;
-        best = a;
-      }
+    if (!a.bounds.contains(p)) continue;
+    final d = (a.center - p).distance;
+    final luas = a.bounds.width * a.bounds.height;
+    // Pusat terdekat menang; luas hanya dipakai memutus seri.
+    if (d < bestJarak - 1e-9 || (d <= bestJarak + 1e-9 && luas < bestArea)) {
+      bestJarak = d;
+      bestArea = luas;
+      best = a;
     }
   }
   if (best != null) return best;
 
-  var bestJarak = toleransi;
+  var jauh = toleransi;
   for (final a in areas) {
     final d = (a.center - p).distance;
-    if (d < bestJarak) {
-      bestJarak = d;
+    if (d < jauh) {
+      jauh = d;
       best = a;
     }
   }
