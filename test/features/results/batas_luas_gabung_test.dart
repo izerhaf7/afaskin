@@ -20,12 +20,14 @@ Map<String, Object> _spot(double x, double y, {double size = 0.074}) => {
 void main() {
   group('batas luas penggabungan', () {
     test('bidang jerawat yang lebar tidak menjadi satu kotak', () {
-      // 3x3 petak berjarak 0,04 (seperti stride aplikasi), membentuk bidang
-      // selebar ~0,15 lebar foto. Dulu ini jadi SATU kotak.
+      // 4x4 petak berjarak 0,06, membentuk bidang selebar 0,18 + sisi petak
+      // 0,074 = 0,254 lebar foto. Itu bidang jerawat, bukan satu lesi, jadi
+      // harus terpecah. (Tiga petak rapat selebar 0,156 justru digabung menjadi
+      // satu kotak, sesuai permintaan "yang berdekatan jadi satu kotak besar".)
       final spots = <Map<String, Object>>[
-        for (var iy = 0; iy < 3; iy++)
-          for (var ix = 0; ix < 3; ix++)
-            _spot(0.40 + ix * 0.04, 0.60 + iy * 0.04),
+        for (var iy = 0; iy < 4; iy++)
+          for (var ix = 0; ix < 4; ix++)
+            _spot(0.40 + ix * 0.06, 0.55 + iy * 0.06),
       ];
       final hasil = gabungBertumpuk(spots);
       expect(hasil.length, greaterThan(1),

@@ -60,3 +60,6 @@ __pycache__/
 .fvm/
 .fvmrc
 .vscode/
+# Model lama yang disimpan untuk pembanding di perangkat; duplikat dari
+# riwayat git, jadi tidak perlu ikut di-commit.
+*.tflite.bak

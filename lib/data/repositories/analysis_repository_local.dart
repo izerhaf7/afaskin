@@ -396,109 +396,118 @@ String _uuid() {
 /// Gabungkan kotak lesi yang benar-benar bertumpuk menjadi satu area.
 ///
 /// Patch dipotong dengan stride separuh sisi patch, jadi satu lesi memunculkan
-/// 2-4 kotak yang saling menimpa. Yang digabung hanya kotak yang pusatnya lebih
-/// dekat dari 0,55 sisi patch — kalau ambangnya terlalu longgar (dulu 0,95)
-/// lesi yang berjauhan ikut menyatu dan akhirnya seluruh wajah jadi satu kotak
-/// raksasa, sehingga lesi lain tidak terpetakan sama sekali.
+/// 2-4 kotak yang saling menimpa. Dua petak dianggap satu lesi bila kotaknya
+/// bersentuhan/bertumpuk, atau pusatnya lebih dekat dari 0,75 sisi petak.
+///
+/// Penyatuan hanya terjadi antar kelas yang sama dan pada foto yang sama.
+/// Sebelumnya tidak ada syarat itu, sehingga jerawat dan bekas jerawat yang
+/// berdekatan digabung menjadi satu kotak dan salah satunya hilang dari peta.
+///
+/// Setelah kelompok terbentuk, ada **tahap akhir** yang menggabungkan kotak
+/// mana pun yang masih bertumpuk lebih dari separuh luasnya. Dua kelompok yang
+/// tumbuh dari titik berbeda bisa berakhir saling menimpa, dan itulah yang di
+/// layar terlihat sebagai tumpukan kotak berantakan. Tahap ini mengulang sampai
+/// tidak ada lagi kotak yang bertumpuk.
 ///
 /// Kotak hasil gabungan memakai **kotak pembatas** seluruh anggotanya (bukan
 /// tetap seukuran satu patch), supaya lesi luas tampil seluas areanya. Sisi
 /// dibatasi 0,45 lebar foto agar satu area tidak menelan seluruh peta.
 List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
   if (spots.length < 2) return spots;
-  final sisa = List<Map<String, Object>>.from(spots);
-  final hasil = <Map<String, Object>>[];
 
   // Dibaca dengan nilai cadangan: fungsi ini dulu melempar Null check dan
   // menggagalkan seluruh analisis hanya karena satu kunci tidak ada.
   double angka(Map<String, Object> m, String kunci, [double cadangan = 0]) =>
       (m[kunci] as num?)?.toDouble() ?? cadangan;
 
-  while (sisa.isNotEmpty) {
-    final awal = sisa.removeAt(0);
-    final anggota = <Map<String, Object>>[awal];
+  (double, double, double, double) kotak(Map<String, Object> m) {
+    final x = angka(m, 'x'), y = angka(m, 'y'), s = angka(m, 'size');
+    return (x - s / 2, y - s / 2, x + s / 2, y + s / 2);
+  }
 
-    // Ulangi sampai tidak ada kotak lain yang menyentuh kelompok yang sedang
-    // membesar, supaya rangkaian kotak berderet ikut menyatu.
-    var berubah = true;
-    while (berubah) {
-      berubah = false;
-      final size = anggota.isEmpty
-          ? 0.0
-          : anggota.map((a) => angka(a, 'size')).reduce(math.max);
-      // Harus LEBIH BESAR dari `scan.stride` (0,6) supaya patch bertetangga —
-      // satu lesi yang muncul di beberapa patch — benar-benar menyatu. Kalau
-      // lebih kecil, peta penuh kotak yang saling menimpa untuk satu lesi.
-      final batas = size * 0.75;
-      // Batas luas: berhenti menyambung begitu sebaran kelompok (pusat + satu
-      // sisi petak) melewati 0,14 lebar foto.
-      //
-      // Nilainya tidak boleh lebih kecil dari 0,115, karena petak bertetangga
-      // berjarak 0,55 x sisi (0,041) dan ditambah sisi petak 0,074 menjadi
-      // 0,115. Dengan batas 0,10 tidak ada satu pun petak bertetangga yang bisa
-      // menyatu, sehingga satu lesi pecah menjadi beberapa kotak.
-      //
-      // Diukur pada foto berisi 12 kotak jerawat: aturan jarak saja (tanpa
-      // batas) menghasilkan 2 kotak karena seluruh bidang menyatu; dengan batas
-      // 0,14 hasilnya 5, dan satu lesi tunggal di dahi tetap 2 kotak
-      // (sebelumnya juga 2), jadi tidak ada yang pecah.
-      const batasLuas = 0.14;
-      for (var j = sisa.length - 1; j >= 0; j--) {
-        final p = sisa[j];
-        final px = angka(p, 'x'), py = angka(p, 'y');
-        // Hanya lesi dari foto yang sama yang boleh menyatu. Tanpa syarat ini,
-        // lesi foto depan dan foto samping yang kebetulan berkoordinat dekat
-        // digabung menjadi satu, lalu salah satunya digambar di foto yang salah.
-        final pv = (p['view_index'] as int?) ?? 0;
-        final dekat = anggota.any((a) {
-          if (((a['view_index'] as int?) ?? 0) != pv) return false;
-          final dx = angka(a, 'x') - px;
-          final dy = angka(a, 'y') - py;
-          if (dx * dx + dy * dy >= batas * batas) return false;
-          // Tolak bila menyambung ini membuat kelompok melebar melewati batas.
-          // Sebaran dihitung ulang dari anggota saat ini. Sebelumnya daftar
-          // koordinat dihitung sekali di luar loop, sehingga batasnya tidak
-          // pernah berlaku dan seluruh bidang tetap menyatu.
-          var xMin = px, xMax = px, yMin = py, yMax = py;
-          var sisi = angka(p, 'size');
-          for (final a in anggota) {
-            final ax = angka(a, 'x'), ay = angka(a, 'y');
-            xMin = math.min(xMin, ax);
-            xMax = math.max(xMax, ax);
-            yMin = math.min(yMin, ay);
-            yMax = math.max(yMax, ay);
-            sisi = math.max(sisi, angka(a, 'size'));
-          }
-          // Sebaran pusat + satu sisi petak = luas kotak yang benar-benar
-          // tergambar. Perbandingan yang sama dipakai saat menyetel batasnya,
-          // jadi angka di dokumentasi dan di aplikasi satu bahasa.
-          return math.max(xMax - xMin, yMax - yMin) + sisi <= batasLuas;
-        });
-        if (!dekat) continue;
-        anggota.add(sisa.removeAt(j));
-        berubah = true;
-      }
-    }
+  /// Bagian luas kotak terkecil yang bertumpuk dengan kotak lain (0-1).
+  double tumpang(Map<String, Object> a, Map<String, Object> b) {
+    final (al, at, ar, ab) = kotak(a);
+    final (bl, bt, br, bb) = kotak(b);
+    final l = math.max(al, bl), t = math.max(at, bt);
+    final r = math.min(ar, br), b0 = math.min(ab, bb);
+    if (r <= l || b0 <= t) return 0;
+    final irisan = (r - l) * (b0 - t);
+    final kecil = math.min((ar - al) * (ab - at), (br - bl) * (bb - bt));
+    return kecil <= 0 ? 0 : irisan / kecil;
+  }
 
+  // Batas sebaran satu kelompok, sebagai proporsi lebar/tinggi foto.
+  //
+  // Menyambung petak yang bertumpuk saja tidak cukup: dengan berantai, seluruh
+  // bidang jerawat di satu pipi ikut menyatu menjadi satu kotak raksasa dan lesi
+  // lain tidak terpetakan — persis keluhan "banyak lesi tapi cuma 2 kotak".
+  //
+  // Angkanya ditentukan oleh geometri petak (sisi 0,074; jarak antar petak
+  // 0,55 x sisi = 0,041):
+  //
+  //   dua petak berderet   0,041 x 1 + 0,074 = 0,115
+  //   tiga petak berderet  0,041 x 2 + 0,074 = 0,156
+  //   empat petak berderet 0,041 x 3 + 0,074 = 0,197
+  //
+  // 0,16 berarti sampai tiga petak yang menutupi satu lesi tetap menjadi SATU
+  // kotak — itu yang diminta: lesi berdekatan digabung jadi satu kotak besar.
+  // Empat petak atau lebih sudah bukan satu lesi, melainkan bidang jerawat, dan
+  // dipisah supaya tidak kembali menjadi satu kotak raksasa.
+  const batasSebaran = 0.16;
+
+  /// Sebaran kotak kelompok bila [calon] ikut masuk.
+  double sebaran(List<Map<String, Object>> grup, Map<String, Object> calon) {
     var x1 = double.infinity, y1 = double.infinity;
     var x2 = -double.infinity, y2 = -double.infinity;
-    var size = 0.0;
-    for (final a in anggota) {
-      final ax = angka(a, 'x'), ay = angka(a, 'y');
-      final asz = angka(a, 'size');
-      x1 = math.min(x1, ax - asz / 2);
-      y1 = math.min(y1, ay - asz / 2);
-      x2 = math.max(x2, ax + asz / 2);
-      y2 = math.max(y2, ay + asz / 2);
-      size = math.max(size, asz);
+    for (final m in [...grup, calon]) {
+      final (l, t, r, b) = kotak(m);
+      x1 = math.min(x1, l);
+      y1 = math.min(y1, t);
+      x2 = math.max(x2, r);
+      y2 = math.max(y2, b);
     }
-    hasil.add({
+    return math.max(x2 - x1, y2 - y1);
+  }
+
+  /// Dua petak dianggap satu lesi bila kotaknya bersentuhan/bertumpuk, atau
+  /// pusatnya lebih dekat dari 0,75 sisi petak (satu lesi memang muncul di
+  /// beberapa petak bertetangga karena stride 0,55).
+  ///
+  /// Hanya antar kelas yang sama dan pada foto yang sama. Sebelumnya syarat itu
+  /// tidak ada, sehingga jerawat dan bekas jerawat yang berdekatan digabung
+  /// menjadi satu kotak dan salah satunya hilang dari peta.
+  bool sejenis(Map<String, Object> a, Map<String, Object> b) {
+    if (((a['view_index'] as int?) ?? 0) != ((b['view_index'] as int?) ?? 0)) {
+      return false;
+    }
+    if ((a['label'] as String?) != (b['label'] as String?)) return false;
+    if (tumpang(a, b) > 0.05) return true;
+    final dx = angka(a, 'x') - angka(b, 'x');
+    final dy = angka(a, 'y') - angka(b, 'y');
+    final batas = math.min(angka(a, 'size'), angka(b, 'size')) * 0.75;
+    return dx * dx + dy * dy < batas * batas;
+  }
+
+  /// Kotak pembatas seluruh anggota, sisi dibatasi 0,45 lebar foto.
+  Map<String, Object> rangkum(List<Map<String, Object>> anggota) {
+    var x1 = double.infinity, y1 = double.infinity;
+    var x2 = -double.infinity, y2 = -double.infinity;
+    for (final a in anggota) {
+      final (l, t, r, b) = kotak(a);
+      x1 = math.min(x1, l);
+      y1 = math.min(y1, t);
+      x2 = math.max(x2, r);
+      y2 = math.max(y2, b);
+    }
+    final awal = anggota.first;
+    return {
       'x': (x1 + x2) / 2,
       'y': (y1 + y2) / 2,
       'size': math.min(math.max(x2 - x1, y2 - y1), 0.45),
       // Jumlah patch pendukung: dipakai untuk mengurutkan kotak, supaya yang
       // tampil lebih dulu adalah lesi dengan bukti terkuat.
-      'support': anggota.length,
+      'support': anggota.fold<int>(0, (n, a) => n + ((a['support'] as int?) ?? 1)),
       'label': (awal['label'] as String?) ?? 'clear',
       'region': (awal['region'] as String?) ?? 'unknown',
       // Kuncinya 'view_index', sama dengan yang ditulis saat menyusun spot dan
@@ -509,13 +518,73 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
       // pesan "kesalahan saat menjalankan model", dan hanya wajah tanpa lesi
       // yang tampak "berhasil".
       'view_index': (awal['view_index'] as int?) ?? 0,
-    });
+    };
   }
+
+  final sisa = List<Map<String, Object>>.from(spots);
+  final hasil = <Map<String, Object>>[];
+
+  while (sisa.isNotEmpty) {
+    final anggota = <Map<String, Object>>[sisa.removeAt(0)];
+
+    // Ulangi sampai tidak ada petak lain yang menyentuh kelompok yang sedang
+    // membesar, supaya rangkaian petak berderet ikut menyatu — tetapi berhenti
+    // begitu kelompoknya melebar melewati batasSebaran.
+    var berubah = true;
+    while (berubah) {
+      berubah = false;
+      for (var j = sisa.length - 1; j >= 0; j--) {
+        final calon = sisa[j];
+        final nyambung =
+            anggota.any((a) => sejenis(a, calon)) &&
+            sebaran(anggota, calon) <= batasSebaran;
+        if (!nyambung) continue;
+        anggota.add(sisa.removeAt(j));
+        berubah = true;
+      }
+    }
+    hasil.add(rangkum(anggota));
+  }
+
+  // Tahap akhir: dua kelompok yang tumbuh dari titik berbeda masih bisa saling
+  // menimpa, dan itulah yang di layar terlihat sebagai tumpukan kotak
+  // berantakan. Gabungkan sampai tidak ada lagi kotak yang bertumpuk lebih dari
+  // separuh luasnya, dengan syarat hasil gabungannya masih di bawah batas
+  // sebaran supaya tidak kembali menjadi kotak raksasa.
+  var adaTumpuk = true;
+  while (adaTumpuk) {
+    adaTumpuk = false;
+    for (var i = 0; i < hasil.length && !adaTumpuk; i++) {
+      for (var j = i + 1; j < hasil.length; j++) {
+        final a = hasil[i], b = hasil[j];
+        if (!sejenis(a, b)) continue;
+        if (tumpang(a, b) <= 0.5) continue;
+        if (sebaran([a], b) > batasSebaran) continue;
+        hasil[i] = rangkum([a, b]);
+        hasil.removeAt(j);
+        adaTumpuk = true;
+        break;
+      }
+    }
+  }
+
   // Bukti terkuat lebih dulu; batas jumlah kotak memotong dari belakang.
   hasil.sort((a, b) =>
       ((b['support'] as int?) ?? 0).compareTo((a['support'] as int?) ?? 0));
-  return hasil;
+
+  // Kotak yang bertumpuk lebih dari separuh tetapi tidak boleh disatukan
+  // (karena gabungannya akan melewati batasSebaran) tetap terlihat berantakan
+  // kalau dibiarkan. Buang yang buktinya lebih lemah: satu lesi cukup satu
+  // kotak, dan kotak yang kalah hanya menambah kekacauan tanpa menambah
+  // informasi.
+  final bersih = <Map<String, Object>>[];
+  for (final k in hasil) {
+    final tabrak = bersih.any((b) => sejenis(k, b) && tumpang(k, b) > 0.5);
+    if (!tabrak) bersih.add(k);
+  }
+  return bersih;
 }
+
 
 /// Sebab kegagalan analisis lokal dalam bahasa yang bisa dibaca pengguna.
 ///
