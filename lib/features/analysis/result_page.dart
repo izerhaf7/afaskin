@@ -222,6 +222,9 @@ class _ResultViewState extends State<ResultView> {
                 areas: areas,
                 selectedAreaId: _selectedAreaId,
                 onTapArea: (a) => _selectArea(a, conditions),
+                probabilitas: {
+                  for (final c in conditions) c.label: c.probability,
+                },
               ),
             ],
           ),

@@ -36,6 +36,7 @@ class ProblemCloseups extends StatefulWidget {
     this.sidePhotos = const [],
     this.selectedAreaId,
     this.onTapArea,
+    this.probabilitas = const {},
   });
 
   /// Foto depan analisis ini, atau null kalau sudah tidak di memori.
@@ -53,6 +54,10 @@ class ProblemCloseups extends StatefulWidget {
 
   /// Dipanggil saat kartu sorotan diketuk. Null = kartu tidak bisa diketuk.
   final ValueChanged<LesionArea>? onTapArea;
+
+  /// Keyakinan tiap kondisi, dipakai kartu untuk menunjukkan seberapa kuat
+  /// buktinya. Kosong = tidak ditampilkan.
+  final Map<SkinConditionLabel, double> probabilitas;
 
   @override
   State<ProblemCloseups> createState() => _ProblemCloseupsState();
@@ -116,10 +121,14 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
   static const int _maksKartu = 10;
 
   final ScrollController _scroll = ScrollController();
+
+  /// Gambar foto depan yang sudah didekode, null selama belum siap.
   ui.Image? _image;
+
+  /// Gambar foto samping, berurutan sesuai `widget.sidePhotos`.
   final List<ui.Image> _sideImages = [];
 
-  /// Area yang benar-benar punya kartu, dengan urutan yang sama seperti baris.
+  /// Area yang benar-benar punya kartu, untuk mencocokkan id saat menyorot.
   List<LesionArea> _kartu = const [];
 
   @override
@@ -132,14 +141,66 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
   void didUpdateWidget(ProblemCloseups old) {
     super.didUpdateWidget(old);
     if (!identical(old.photo, widget.photo)) unawaited(_decode());
-    if (old.sidePhotos.length != widget.sidePhotos.length) {
-      _decodeSides();
-    }
+    if (old.sidePhotos.length != widget.sidePhotos.length) _decodeSides();
     // Dipilih dari peta wajah: geser baris supaya kartu area itu terlihat.
     if (old.selectedAreaId != widget.selectedAreaId &&
         widget.selectedAreaId != null) {
-      _geserKeArea(widget.selectedAreaId!);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _geserKeArea(widget.selectedAreaId!);
+      });
     }
+  }
+
+  /// Dekode foto depan. Gagal membaca foto bukan alasan menggagalkan seluruh
+  /// halaman: sorotan cukup menampilkan keterangan bahwa fotonya tidak ada.
+  Future<void> _decode() async {
+    final jpeg = widget.photo;
+    if (jpeg == null) return;
+    final ui.FrameInfo frame;
+    try {
+      final codec = await ui.instantiateImageCodec(jpeg);
+      frame = await codec.getNextFrame();
+    } on Object {
+      return;
+    }
+    if (!mounted) {
+      frame.image.dispose();
+      return;
+    }
+    setState(() {
+      _image?.dispose();
+      _image = frame.image;
+    });
+  }
+
+  /// Dekode semua foto samping yang ada.
+  Future<void> _decodeSides() async {
+    for (final b in widget.sidePhotos) {
+      final ui.FrameInfo frame;
+      try {
+        final codec = await ui.instantiateImageCodec(b);
+        frame = await codec.getNextFrame();
+      } on Object {
+        // Foto samping yang tidak bisa dibaca dilewati.
+        continue;
+      }
+      if (!mounted) {
+        frame.image.dispose();
+        return;
+      }
+      _sideImages.add(frame.image);
+    }
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    _image?.dispose();
+    for (final im in _sideImages) {
+      im.dispose();
+    }
+    super.dispose();
   }
 
   /// Geser baris kartu ke area terpilih.
@@ -161,57 +222,6 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
         curve: Curves.easeOut,
       ),
     );
-  }
-
-  Future<void> _decode() async {
-    final photo = widget.photo;
-    if (photo == null) return;
-    final ui.FrameInfo frame;
-    try {
-      final codec = await ui.instantiateImageCodec(photo);
-      frame = await codec.getNextFrame();
-    } on Object {
-      return;
-    }
-    if (!mounted) {
-      frame.image.dispose();
-      return;
-    }
-    setState(() {
-      _image?.dispose();
-      _image = frame.image;
-    });
-  }
-
-  Future<void> _decodeSides() async {
-    for (final im in _sideImages) {
-      im.dispose();
-    }
-    _sideImages.clear();
-    for (final jpeg in widget.sidePhotos) {
-      try {
-        final codec = await ui.instantiateImageCodec(jpeg);
-        final frame = await codec.getNextFrame();
-        if (!mounted) {
-          frame.image.dispose();
-          return;
-        }
-        _sideImages.add(frame.image);
-      } on Object {
-        // Foto samping yang tidak bisa dibaca dilewati.
-      }
-    }
-    if (mounted) setState(() {});
-  }
-
-  @override
-  void dispose() {
-    _scroll.dispose();
-    _image?.dispose();
-    for (final im in _sideImages) {
-      im.dispose();
-    }
-    super.dispose();
   }
 
   /// Gambar yang dipakai satu area: foto depan atau foto samping ke-(n).
@@ -242,9 +252,8 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
         area: a,
         image: gambar,
         crop: kotakSorotanArea(a, gambar.width.toDouble(), gambar.height.toDouble()),
-        urutan: diView.length > 1 && diView.indexOf(a) > 0
-            ? diView.indexOf(a) + 1
-            : null,
+        urutan: diView.length > 1 ? diView.indexOf(a) + 1 : null,
+        urutanTotal: diView.length > 1 ? diView.length : null,
       ));
       if (kartu.length >= _maksKartu) break;
     }
@@ -265,12 +274,10 @@ class _ProblemCloseupsState extends State<ProblemCloseups> {
           return _CloseupCard(
             image: c.image,
             crop: c.crop,
-            label: AppStrings.condition(c.area.label),
-            viewLabel: c.area.viewIndex == 0
-                ? null
-                : 'Samping ${c.area.viewIndex}',
-            jumlah: c.area.jumlah,
+            area: c.area,
+            keyakinan: widget.probabilitas[c.area.label],
             urutan: c.urutan,
+            urutanTotal: c.urutanTotal,
             selected: widget.selectedAreaId == c.area.id,
             onTap: widget.onTapArea == null
                 ? null
@@ -289,6 +296,7 @@ class _CardSpec {
     required this.image,
     required this.crop,
     this.urutan,
+    this.urutanTotal,
   });
 
   final LesionArea area;
@@ -297,51 +305,78 @@ class _CardSpec {
 
   /// Nomor kelompok bila dalam view itu ada lebih dari satu area.
   final int? urutan;
+
+  /// Jumlah kelompok pada view itu, untuk ditampilkan "2 dari 5".
+  final int? urutanTotal;
 }
 
 class _CloseupCard extends StatelessWidget {
   const _CloseupCard({
     required this.image,
     required this.crop,
-    required this.label,
-    required this.jumlah,
+    required this.area,
     required this.selected,
     required this.onTap,
+    this.keyakinan,
     this.urutan,
-    this.viewLabel,
+    this.urutanTotal,
   });
 
   final ui.Image image;
   final Rect crop;
-  final String label;
-  final int jumlah;
-  final int? urutan;
+  final LesionArea area;
 
-  /// "Samping 1" dst. Null untuk foto depan.
-  final String? viewLabel;
+  /// Keyakinan kondisi ini (0-1). Null = tidak ditampilkan.
+  final double? keyakinan;
+
+  final int? urutan;
+  final int? urutanTotal;
   final bool selected;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final judul = urutan == null ? label : '$label · ${urutan!}';
-    final sub = [
-      if (viewLabel != null) viewLabel!,
-      jumlah > 1 ? '$jumlah lesi' : '1 lesi',
-    ].join(' · ');
+    final warna = AppColors.conditionColor(area.label.name);
+    final judul = AppStrings.condition(area.label);
+
+    // Dulu kartu hanya berisi label dan "N lesi", yang tidak memberi tahu
+    // apa pun tentang letak dan kekuatannya. Sekarang tiga baris informasi:
+    //   baris 1  nama kondisi + nomor urut (kalau lebih dari satu area)
+    //   baris 2  letak di wajah (Dahi / Pipi kiri / …)
+    //   baris 3  jumlah lesi + keyakinan
+    // Sengaja TIDAK memakai nama area wajah (Dahi/Pipi/Hidung/Dagu).
+    // Diukur pada foto uji kepala menoleh: ujung hidung bergeser sampai 0,54
+    // panjang batang hidung dari garis tengah, dan titik dagu 0,99, sehingga
+    // kartu bertulis "Pipi kiri" bisa berisi hidung. Nama kondisi selalu benar
+    // karena berasal dari lesi yang memang terdeteksi di situ. Sebagai gantinya
+    // dipakai jumlah lesi dan luas area, yang dihitung dari data lesi itu
+    // sendiri sehingga tidak bisa meleset.
+    final jumlahTeks = area.jumlah > 1 ? '${area.jumlah} lesi' : '1 lesi';
+    final luasTeks = _luasTeks(area);
+    final keyakinanTeks = keyakinan == null
+        ? null
+        : '${(keyakinan! * 100).round()}%';
+
     return Semantics(
       button: onTap != null,
-      label: '$judul, $sub',
+      selected: selected,
+      label: [
+        judul,
+        if (urutan != null) 'area $urutan dari $urutanTotal',
+        jumlahTeks,
+        if (luasTeks != null) luasTeks,
+        if (keyakinanTeks != null) 'keyakinan $keyakinanTeks',
+      ].join(', '),
       child: SizedBox(
         width: _ProblemCloseupsState._cardWidth,
         child: Material(
-          color: AppColors.white,
+          color: selected ? warna.withValues(alpha: 0.06) : AppColors.white,
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: AppRadius.cardAll,
             side: BorderSide(
-              color: selected ? AppColors.danger : AppColors.outline,
+              color: selected ? warna : AppColors.outline,
               width: selected ? 2 : 1,
             ),
           ),
@@ -351,32 +386,113 @@ class _CloseupCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(
-                  height: 112,
-                  child: ExcludeSemantics(
-                    child: CustomPaint(painter: _CropPainter(image, crop)),
+                  height: 96,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ExcludeSemantics(
+                        child: CustomPaint(painter: _CropPainter(image, crop)),
+                      ),
+                      // Penanda jumlah: angka besar di pojok, supaya mata bisa
+                      // memindai "mana yang paling banyak" tanpa membaca teks.
+                      if (area.jumlah > 1)
+                        Positioned(
+                          top: 6,
+                          right: 6,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: warna,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              '${area.jumlah}',
+                              style: text.labelSmall?.copyWith(
+                                color: AppColors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                        ),
+                      // Nomor urut area, dipakai untuk mencocokkan dengan kotak
+                      // di peta saat pengguna sedang menyorot.
+                      if (urutan != null)
+                        Positioned(
+                          top: 6,
+                          left: 6,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.ink.withValues(alpha: 0.55),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              urutanTotal == null
+                                  ? '$urutan'
+                                  : '$urutan/$urutanTotal',
+                              style: text.labelSmall?.copyWith(
+                                color: AppColors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                  padding: const EdgeInsets.fromLTRB(10, 7, 10, 9),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        judul,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: text.titleSmall?.copyWith(fontSize: 13),
+                      Row(
+                        children: [
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration:
+                                BoxDecoration(color: warna, shape: BoxShape.circle),
+                          ),
+                          const SizedBox(width: 5),
+                          Expanded(
+                            child: Text(
+                              judul,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: text.titleSmall?.copyWith(fontSize: 12.5),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 1),
                       Text(
-                        sub,
+                        [
+                          jumlahTeks,
+                          if (luasTeks != null) luasTeks,
+                        ].join(' · '),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: text.bodySmall?.copyWith(
-                          fontSize: 11,
+                          fontSize: 10.5,
                           color: AppColors.inkMuted,
                         ),
                       ),
+                      if (keyakinanTeks != null) ...[
+                        const SizedBox(height: 4),
+                        _BarKeyakinan(
+                          nilai: keyakinan!,
+                          warna: warna,
+                          teks: keyakinanTeks,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -385,6 +501,66 @@ class _CloseupCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Batang kecil penanda keyakinan, warnanya sama dengan kondisi.
+///
+/// Angka persen saja sulit dibandingkan antar kartu; batang membuat perbedaan
+/// 40% dan 80% langsung terbaca.
+/// Seberapa luas area lesi ini, dalam kata.
+///
+/// Dipakai sebagai pengganti nama area wajah yang tidak andal. Ambangnya dari
+/// sebaran kotak lesi di peta: di bawah 4% lebar foto itu satu titik kecil,
+/// di atas 10% sudah satu bidang.
+String? _luasTeks(LesionArea area) {
+  final b = area.bounds;
+  if (b.isEmpty) return null;
+  final s = math.max(b.width, b.height);
+  if (s < 0.04) return 'titik kecil';
+  if (s < 0.10) return 'area kecil';
+  if (s < 0.20) return 'area sedang';
+  return 'area luas';
+}
+
+class _BarKeyakinan extends StatelessWidget {
+  const _BarKeyakinan({
+    required this.nilai,
+    required this.warna,
+    required this.teks,
+  });
+
+  final double nilai;
+  final Color warna;
+  final String teks;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Row(
+      children: [
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: nilai.clamp(0.0, 1.0),
+              minHeight: 3.5,
+              backgroundColor: AppColors.outline.withValues(alpha: 0.5),
+              valueColor: AlwaysStoppedAnimation<Color>(warna),
+            ),
+          ),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          teks,
+          style: text.labelSmall?.copyWith(
+            fontSize: 10,
+            color: AppColors.inkMuted,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }

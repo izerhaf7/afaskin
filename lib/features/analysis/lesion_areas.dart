@@ -68,9 +68,21 @@ const double lesiRel = 0.5;
 /// | hanya_jerawat       |    10     |    5    |    9    |
 /// | dahi_satu (1 lesi)  |     2     |    2    |    2    |
 ///
-/// Pada 0,05 peta menggambar kotak sebanyak chip, dan satu lesi tunggal tetap
-/// utuh (tidak pecah).
-const double jarakArea = 0.05;
+/// Nilai 0,05 ternyata masih menghasilkan kotak bertumpuk. Penyebabnya bukan
+/// jarak antar deteksi, melainkan **sisi kotaknya sendiri**:
+///
+///   spot.size (sisi petak)        0,15 lebar foto
+///   kotak UI = size x lesiRel     0,15 x 0,5          = 0,075
+///   ditambah pad 12% (dua sisi)   0,075 x 1,24        = 0,093
+///
+/// Dua deteksi yang berjarak 0,05 tetap dianggap terpisah walau kotaknya bersisi
+/// 0,093, sehingga kotak itu menumpuk 46% dari sisinya. Di layar terlihat
+/// sebagai tumpukan kotak yang berantakan.
+///
+/// Sekarang jaraknya disamakan dengan sisi kotak: deteksi yang lebih rapat dari
+/// 0,095 digabung menjadi satu kotak, jadi kotak sejenis tidak mungkin bertumpuk.
+/// Ini juga sesuai permintaan "yang berdekatan jadi satu kotak besar".
+const double jarakArea = 0.095;
 
 /// Batas sebaran satu area, sebagai proporsi lebar/tinggi foto.
 ///
@@ -109,21 +121,11 @@ List<LesionArea> buildLesionAreas(
       kelompok.sort((a, b) => b.length.compareTo(a.length));
       for (var i = 0; i < kelompok.length; i++) {
         final b = kotakArea(kelompok[i]);
-        final terlaluLuas =
-            math.max(b.width, b.height) > batasArea && kelompok[i].length > 1;
-        if (terlaluLuas) {
-          // Rantai penggabungan menjangkau terlalu jauh: pisahkan per deteksi.
-          for (var j = 0; j < kelompok[i].length; j++) {
-            hasil.add(LesionArea(
-              id: '${c.label.name}#$v#$i.$j',
-              label: c.label,
-              viewIndex: v,
-              spots: [kelompok[i][j]],
-              bounds: kotakArea([kelompok[i][j]]),
-            ));
-          }
-          continue;
-        }
+        // Dulu kelompok yang melebar melebihi [batasArea] dipecah menjadi satu
+        // kotak per deteksi. Cara itu justru menghasilkan kotak yang saling
+        // menimpa, karena deteksi yang berdekatan memang bertetangga. Sekarang
+        // kelompok tetap satu kotak: itu memang satu bidang lesi, dan pengguna
+        // memintanya sebagai "satu kotak besar untuk lesi yang berdekatan".
         hasil.add(LesionArea(
           id: '${c.label.name}#$v#$i',
           label: c.label,
@@ -201,46 +203,51 @@ Rect kotakArea(List<ConditionSpot> spots) {
   );
 }
 
+/// Jarak sebuah titik ke **tepi** kotak. 0 berarti titik ada di dalam kotak.
+///
+/// Dulu jaraknya diukur dari pusat kotak. Akibatnya kotak yang lebar pun sulit
+/// ditekan: mengetuk tepat di dalam area kotak besar masih bisa kalah oleh
+/// kotak kecil lain yang pusatnya kebetulan lebih dekat, dan ketukan di tepi
+/// kotak besar tidak terasa sama sekali. Keluhan pengguna: "beberapa petak tidak
+/// mengarah ke sorotan saat ditekan".
+double _jarakKeTepi(Rect r, Offset p) {
+  final dx = math.max(math.max(r.left - p.dx, p.dx - r.right), 0.0);
+  final dy = math.max(math.max(r.top - p.dy, p.dy - r.bottom), 0.0);
+  return math.sqrt(dx * dx + dy * dy);
+}
+
 /// Area pada titik [p] (0-1 terhadap foto view yang sedang ditampilkan).
 ///
-/// Kotak yang memuat titik menang, dan di antara beberapa kotak yang sama-sama
-/// memuat, yang **pusatnya paling dekat** dengan titik ketukan yang dipilih.
+/// Yang dipilih: kotak dengan **jarak terkeci ke tepi** titik ketukan. Kotak
+/// yang memuat titik selalu menang (jaraknya 0); di antara kotak yang sama-sama
+/// memuat, yang lebih kecil menang supaya area sempit tidak tertelan area luas.
 ///
-/// Sebelumnya pemenangnya kotak dengan luas terkecil. Begitu jumlah kotak
-/// bertambah (setelah penggabungan di repositori tidak lagi menyatukan seluruh
-/// bidang jerawat), banyak kotak saling bertumpuk dengan ukuran hampir sama.
-/// Luasnya jadi seri, dan ketukan pada kotak kedua justru memilih kotak pertama
-/// yang menumpukinya. Diukur di `region_selection_test`: mengetuk area
-/// `acne#0#1` memilih `acne#0#0`.
+/// Sebelumnya jaraknya diukur dari pusat kotak, sehingga ketukan tepat di atas
+/// lesi kecil bisa meleset ke luar kotak dan tidak menyorot apa pun. Kotak di
+/// peta bisa bersisi 0,04 lebar foto, jauh lebih kecil dari jari.
 ///
-/// Kalau tidak ada kotak yang memuat, dipilih area terdekat dalam jarak
-/// [toleransi] agar ketukan jari tetap terasa responsif.
+/// Kalau tidak ada kotak yang memuat maupun berdekatan, hasilnya null dan
+/// halaman tidak menggulir ke mana-mana.
 LesionArea? hitTestArea(
   List<LesionArea> areas,
   Offset p, {
-  double toleransi = 0.035,
+  double toleransi = 0.045,
 }) {
+  if (areas.isEmpty) return null;
   LesionArea? best;
   var bestJarak = double.infinity;
-  var bestArea = double.infinity;
+  var bestLuas = double.infinity;
   for (final a in areas) {
-    if (!a.bounds.contains(p)) continue;
-    final d = (a.center - p).distance;
+    final d = _jarakKeTepi(a.bounds, p);
+    if (d > toleransi) continue;
     final luas = a.bounds.width * a.bounds.height;
-    // Pusat terdekat menang; luas hanya dipakai memutus seri.
-    if (d < bestJarak - 1e-9 || (d <= bestJarak + 1e-9 && luas < bestArea)) {
+    // Dalam kotak (d == 0): yang paling kecil menang.
+    // Di luar kotak: yang paling dekat menang.
+    final lebihBaik = d < bestJarak - 1e-9 ||
+        ((d - bestJarak).abs() <= 1e-9 && luas < bestLuas);
+    if (lebihBaik) {
       bestJarak = d;
-      bestArea = luas;
-      best = a;
-    }
-  }
-  if (best != null) return best;
-
-  var jauh = toleransi;
-  for (final a in areas) {
-    final d = (a.center - p).distance;
-    if (d < jauh) {
-      jauh = d;
+      bestLuas = luas;
       best = a;
     }
   }
