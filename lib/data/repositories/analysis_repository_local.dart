@@ -430,6 +430,19 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
       // satu lesi yang muncul di beberapa patch — benar-benar menyatu. Kalau
       // lebih kecil, peta penuh kotak yang saling menimpa untuk satu lesi.
       final batas = size * 0.75;
+      // Batas luas: berhenti menyambung begitu sebaran kelompok (pusat + satu
+      // sisi petak) melewati 0,14 lebar foto.
+      //
+      // Nilainya tidak boleh lebih kecil dari 0,115, karena petak bertetangga
+      // berjarak 0,55 x sisi (0,041) dan ditambah sisi petak 0,074 menjadi
+      // 0,115. Dengan batas 0,10 tidak ada satu pun petak bertetangga yang bisa
+      // menyatu, sehingga satu lesi pecah menjadi beberapa kotak.
+      //
+      // Diukur pada foto berisi 12 kotak jerawat: aturan jarak saja (tanpa
+      // batas) menghasilkan 2 kotak karena seluruh bidang menyatu; dengan batas
+      // 0,14 hasilnya 5, dan satu lesi tunggal di dahi tetap 2 kotak
+      // (sebelumnya juga 2), jadi tidak ada yang pecah.
+      const batasLuas = 0.14;
       for (var j = sisa.length - 1; j >= 0; j--) {
         final p = sisa[j];
         final px = angka(p, 'x'), py = angka(p, 'y');
@@ -441,7 +454,25 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
           if (((a['view_index'] as int?) ?? 0) != pv) return false;
           final dx = angka(a, 'x') - px;
           final dy = angka(a, 'y') - py;
-          return dx * dx + dy * dy < batas * batas;
+          if (dx * dx + dy * dy >= batas * batas) return false;
+          // Tolak bila menyambung ini membuat kelompok melebar melewati batas.
+          // Sebaran dihitung ulang dari anggota saat ini. Sebelumnya daftar
+          // koordinat dihitung sekali di luar loop, sehingga batasnya tidak
+          // pernah berlaku dan seluruh bidang tetap menyatu.
+          var xMin = px, xMax = px, yMin = py, yMax = py;
+          var sisi = angka(p, 'size');
+          for (final a in anggota) {
+            final ax = angka(a, 'x'), ay = angka(a, 'y');
+            xMin = math.min(xMin, ax);
+            xMax = math.max(xMax, ax);
+            yMin = math.min(yMin, ay);
+            yMax = math.max(yMax, ay);
+            sisi = math.max(sisi, angka(a, 'size'));
+          }
+          // Sebaran pusat + satu sisi petak = luas kotak yang benar-benar
+          // tergambar. Perbandingan yang sama dipakai saat menyetel batasnya,
+          // jadi angka di dokumentasi dan di aplikasi satu bahasa.
+          return math.max(xMax - xMin, yMax - yMin) + sisi <= batasLuas;
         });
         if (!dekat) continue;
         anggota.add(sisa.removeAt(j));

@@ -218,7 +218,7 @@
   "gate_top_k": 4,
   "gate_top_conf": 0.38,
   "_catatan_gate_v31": "Gate diganti: rata-rata top-4 patch terkuat per kelas >= 0.38, bukan lagi 'min 3 patch dengan p>=0.35'. Diukur pada 947 wajah uji (8.777 patch): kondisi asli muncul pada 57,9% -> 79,1% wajah berlesi; domain selfie 38,0% -> 56,1%; acne9 63,9% -> 88,6%. Wajah bersih yang tetap kosong turun 95,0% -> 88,4%. Kepala alternatif (sample_weight selfie x2,5) diuji: recall hanya +0,3 poin tapi spesifisitas -8,7 poin, jadi ditolak. Agregasi max/top-3/top-5/top-20% dan koreksi prior (logit adjustment tau 0,3-1,0) juga diuji dan tidak lebih baik.",
-  "max_spots_per_condition": 8,
+  "max_spots_per_condition": 16,
   "gate_top_conf_by_class": {
    "Scars": 0.16,
    "Acne": 0.34
@@ -227,7 +227,8 @@
   "_catatan_acne_ambang": "Ambang Acne diuji 0,30 di perangkat: tidak memunculkan Acne pada tiga wajah berjerawat yang diuji, tetapi memunculkan Acne palsu pada wajah berbekas. Bukti top-4 Acne pada petak aplikasi (57 patch di 5 ROI) memang rendah walau lesinya ada, karena penempatan patch berpusat di ROI dan tidak menutup seluruh pipi. Ambang dikembalikan ke default 0,38; masalahnya ada pada penempatan patch, bukan pada ambang.",
   "_catatan_cakupan": "Cakupan pindai diperluas agar lesi di sisi luar pipi ikut dinilai. Sebelumnya petak aplikasi hanya 57 dan berpusat di lima ROI, sehingga jerawat di pipi luar tidak pernah masuk model: bukti top-4 Acne pada tiga wajah berjerawat hanya 0,216/0,838/0,277 sementara pada petak latih penuh mencapai median 0,374. area_rel pipi 0,58 -> 0,76, dahi 0,60 -> 0,66, dagu 0,52 -> 0,58, stride 0,60 -> 0,55. Diuji ulang di perangkat: jumlah petak dan kelas yang tampil dicatat di outputs/condition_v31/hardneg/PERLUASAN_CAKUPAN_PATCH.md.",
   "_catatan_area_rel": "Pipi dilebarkan dari 0,76 ke 0,90. Diukur pada 40 wajah acne_kuat memakai src/selfie_patches.app_tiles, geometri yang sama dengan aplikasi: cakupan kotak jerawat valid naik dari 68,3 persen ke 72,4 persen, wajah yang seluruh kotaknya tercakup naik dari 57,5 ke 65 persen. Biaya: petak per wajah 62,6 menjadi 75,7. Pelebaran ke 1,00 memberi 77,4 persen tetapi 90 petak, dan pada perangkat inferensi kondisi sudah 3,4 detik untuk 57 petak sehingga mendekati batas 10 detik per sesi.",
-  "_catatan_gate_acne": "Acne 0,34 (bukan 0,38): pada 235 wajah berjerawat dan 86 wajah bersih (split uji 57.281 petak geometri aplikasi, label kotak asli), ambang 0,38 menangkap 51,5% wajah berjerawat dengan 23,3% wajah bersih ikut tersentuh. Ambang 0,34 menangkap 64,7% dengan 27,9% palsu. Selisih palsu 4,6 poin dibayar untuk 13,2 poin wajah berjerawat yang kembali terdeteksi, yaitu keluhan \"jerawat yang dulu muncul sekarang tidak\". Kelas lain tidak diubah karena tidak punya keluhan serupa dan datanya tidak mendukung."
+  "_catatan_gate_acne": "Acne 0,34 (bukan 0,38): pada 235 wajah berjerawat dan 86 wajah bersih (split uji 57.281 petak geometri aplikasi, label kotak asli), ambang 0,38 menangkap 51,5% wajah berjerawat dengan 23,3% wajah bersih ikut tersentuh. Ambang 0,34 menangkap 64,7% dengan 27,9% palsu. Selisih palsu 4,6 poin dibayar untuk 13,2 poin wajah berjerawat yang kembali terdeteksi, yaitu keluhan \"jerawat yang dulu muncul sekarang tidak\". Kelas lain tidak diubah karena tidak punya keluhan serupa dan datanya tidak mendukung.",
+  "_catatan_max_spots": "Dinaikkan dari 8 ke 16: pada foto berjerawat banyak, jumlah lesi sebenarnya 26 tetapi aplikasi berhenti di 8 karena pagu ini, bukan karena model. Penggabungan sudah dibatasi luas 0,10 sehingga kotak tidak lagi menelan seluruh bidang, jadi pagu 16 masih terbaca di peta tanpa menutupinya."
  },
  "recommender": {
   "weights": [

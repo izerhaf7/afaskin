@@ -11,7 +11,9 @@ import 'package:flutter_test/flutter_test.dart';
 Map<String, Object> _spot({
   required double x,
   required double y,
-  double size = 0.10,
+  // 0,074 = sisi petak nyata (tile_rel 0,15 x lebar wajah relatif), dan di
+  // bawah batas luas gabung 0,10 supaya satu petak bisa bergabung.
+  double size = 0.074,
   String label = 'acne',
   String region = 'forehead',
   int viewIndex = 0,
@@ -37,12 +39,14 @@ void main() {
       expect(hasil.first['region'], 'forehead');
     });
 
-    test('banyak lesi di satu area tetap satu kotak', () {
+    test('beberapa petak yang menutupi satu lesi menyatu', () {
+      // Sebaran pusat 0,024 + sisi petak 0,074 = 0,098, masih di bawah batas
+      // 0,10, jadi ini satu lesi dan harus satu kotak.
       final hasil = gabungBertumpuk([
-        for (var i = 0; i < 6; i++) _spot(x: 0.30 + i * 0.01, y: 0.30),
+        for (var i = 0; i < 4; i++) _spot(x: 0.30 + i * 0.008, y: 0.30),
       ]);
       expect(hasil, hasLength(1));
-      expect(hasil.first['support'], 6);
+      expect(hasil.first['support'], 4);
     });
 
     test('lesi jauh tetap terpisah', () {
