@@ -209,18 +209,27 @@ class AnalysisRepositoryLocal implements AnalysisRepository {
     // false positive di wajah bersih, yang top-4 Scars-nya 0,039 median.
     final byClass =
         (scan['gate_top_conf_by_class'] as Map?)?.cast<String, dynamic>() ?? const {};
-    bool visualOk(String cls) {
-      final ci = condClasses.indexOf(cls);
-      final thr = (byClass[cls] as num?)?.toDouble() ?? topA;
-      return ci >= 0 && topKMean(tiles, ci, topK) >= thr;
-    }
 
     // Yang tampil tetap dipilih dengan aturan lama (porsi pCond + bukti visual)
     // supaya perilaku "kondisi mana yang muncul" tidak berubah; yang diganti
     // hanya angka keyakinan yang dibaca pengguna.
+    // Yang tampil dipilih dengan bukti visual saja. Syarat rata-rata seluruh
+    // petak dicabut: ia menahan lesi terlokalisasi (dahi) tanpa pernah menahan
+    // wajah bersih. Alasannya dan angkanya ada di `layakTampil` (fusion.dart).
     final conds = [
       for (final c in prof.pCond.entries)
-        if (c.key != 'Clear' && c.value >= minP && visualOk(c.key))
+        if (c.key != 'Clear' &&
+            condClasses.contains(c.key) &&
+            layakTampil(
+              buktiVisual: topKMean(
+                tiles,
+                condClasses.indexOf(c.key),
+                topK,
+              ),
+              ambangVisual:
+                  (byClass[c.key] as num?)?.toDouble() ?? topA,
+              minRata: minP,
+            ))
           MapEntry(c.key, presence[c.key] ?? c.value),
     ];
     mergeSortDesc(conds, (c) => c.value);
@@ -400,6 +409,11 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
   final sisa = List<Map<String, Object>>.from(spots);
   final hasil = <Map<String, Object>>[];
 
+  // Dibaca dengan nilai cadangan: fungsi ini dulu melempar Null check dan
+  // menggagalkan seluruh analisis hanya karena satu kunci tidak ada.
+  double angka(Map<String, Object> m, String kunci, [double cadangan = 0]) =>
+      (m[kunci] as num?)?.toDouble() ?? cadangan;
+
   while (sisa.isNotEmpty) {
     final awal = sisa.removeAt(0);
     final anggota = <Map<String, Object>>[awal];
@@ -411,17 +425,22 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
       berubah = false;
       final size = anggota.isEmpty
           ? 0.0
-          : anggota.map((a) => a['size']! as double).reduce(math.max);
+          : anggota.map((a) => angka(a, 'size')).reduce(math.max);
       // Harus LEBIH BESAR dari `scan.stride` (0,6) supaya patch bertetangga —
       // satu lesi yang muncul di beberapa patch — benar-benar menyatu. Kalau
       // lebih kecil, peta penuh kotak yang saling menimpa untuk satu lesi.
       final batas = size * 0.75;
       for (var j = sisa.length - 1; j >= 0; j--) {
         final p = sisa[j];
-        final px = p['x']! as double, py = p['y']! as double;
+        final px = angka(p, 'x'), py = angka(p, 'y');
+        // Hanya lesi dari foto yang sama yang boleh menyatu. Tanpa syarat ini,
+        // lesi foto depan dan foto samping yang kebetulan berkoordinat dekat
+        // digabung menjadi satu, lalu salah satunya digambar di foto yang salah.
+        final pv = (p['view_index'] as int?) ?? 0;
         final dekat = anggota.any((a) {
-          final dx = (a['x']! as double) - px;
-          final dy = (a['y']! as double) - py;
+          if (((a['view_index'] as int?) ?? 0) != pv) return false;
+          final dx = angka(a, 'x') - px;
+          final dy = angka(a, 'y') - py;
           return dx * dx + dy * dy < batas * batas;
         });
         if (!dekat) continue;
@@ -434,8 +453,8 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
     var x2 = -double.infinity, y2 = -double.infinity;
     var size = 0.0;
     for (final a in anggota) {
-      final ax = a['x']! as double, ay = a['y']! as double;
-      final asz = a['size']! as double;
+      final ax = angka(a, 'x'), ay = angka(a, 'y');
+      final asz = angka(a, 'size');
       x1 = math.min(x1, ax - asz / 2);
       y1 = math.min(y1, ay - asz / 2);
       x2 = math.max(x2, ax + asz / 2);
@@ -449,13 +468,21 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
       // Jumlah patch pendukung: dipakai untuk mengurutkan kotak, supaya yang
       // tampil lebih dulu adalah lesi dengan bukti terkuat.
       'support': anggota.length,
-      'label': awal['label']!,
-      'region': awal['region']!,
-      'view': awal['view']!,
+      'label': (awal['label'] as String?) ?? 'clear',
+      'region': (awal['region'] as String?) ?? 'unknown',
+      // Kuncinya 'view_index', sama dengan yang ditulis saat menyusun spot dan
+      // yang dibaca ConditionSpot.fromJson. Sebelumnya di sini masih 'view',
+      // sehingga `awal['view']!` melempar "Null check operator used on a null
+      // value" setiap kali ada dua lesi atau lebih untuk digabung. Akibatnya
+      // setiap analisis yang menemukan lebih dari satu lesi gagal total dengan
+      // pesan "kesalahan saat menjalankan model", dan hanya wajah tanpa lesi
+      // yang tampak "berhasil".
+      'view_index': (awal['view_index'] as int?) ?? 0,
     });
   }
   // Bukti terkuat lebih dulu; batas jumlah kotak memotong dari belakang.
-  hasil.sort((a, b) => (b['support']! as int).compareTo(a['support']! as int));
+  hasil.sort((a, b) =>
+      ((b['support'] as int?) ?? 0).compareTo((a['support'] as int?) ?? 0));
   return hasil;
 }
 

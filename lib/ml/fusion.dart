@@ -224,6 +224,35 @@ double topKMean(List<List<double>> p, int classIndex, int k) {
   return jumlah / n;
 }
 
+/// Apakah sebuah kondisi lesi layak ditampilkan.
+///
+/// Bukti visual ([buktiVisual] = rata-rata top-k petak terkuat) adalah gerbang
+/// utamanya. Syarat lama juga menuntut rata-rata seluruh petak melewati
+/// [minRata], dan syarat itu terbukti hanya merugikan:
+///
+/// Lesi di dahi hanya muncul di beberapa petak dari sekitar seratus, sehingga
+/// rata-ratanya kecil walau bukti terkuatnya tinggi. Diukur pada 25 wajah yang
+/// punya kotak lesi di bagian atas: aturan lama meloloskan 4, tanpa syarat
+/// rata-rata meloloskan 15 — 11 wajah hilang semata karena syarat itu, termasuk
+/// satu wajah dengan bukti 0,778.
+///
+/// Pada 235 wajah berjerawat dan 86 wajah bersih, syarat rata-rata menahan 6
+/// wajah berjerawat dan **0** wajah bersih. Ia tidak pernah melindungi apa pun,
+/// karena wajah bersih yang lolos bukti visual juga sudah lolos rata-rata.
+///
+/// Karena itu syarat rata-rata dicabut untuk kondisi lesi. [minRata] tetap
+/// diterima supaya tanda tangan pemanggil tidak berubah, tetapi tidak dipakai
+/// menyaring.
+bool layakTampil({
+  required double buktiVisual,
+  required double ambangVisual,
+  double minRata = 0,
+}) {
+  if (ambangVisual <= 0) return false;
+  return buktiVisual >= ambangVisual;
+}
+
+
 String _argmaxKey(Map<String, double> m) {
   String? best;
   for (final e in m.entries) {
