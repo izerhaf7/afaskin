@@ -53,11 +53,26 @@ void main() {
     expect(hasil.length, 1);
   });
 
-  test('dua kotak yang hanya bersinggungan tepi tidak digabung', () {
-    // Jarak 0,9 x sisi kotak: dulu ikut digabung, akibatnya rangkaian kotak
-    // menyatu jadi satu area raksasa dan lesi lain tidak terpetakan.
-    final hasil = gabungBertumpuk([_k(0.50, 0.30), _k(0.635, 0.30)]);
-    expect(hasil.length, 2);
+  test('kotak yang bertumpuk tepi tetap menyatu, tetapi rantai panjang dipisah', () {
+    // Dua kotak berjarak 0,9 x sisi memang bertumpuk, jadi menyatu: itu satu
+    // lesi yang muncul di dua petak, dan pengguna memintanya sebagai satu kotak.
+    //
+    // Kekhawatiran lama — rangkaian kotak menyatu jadi satu area raksasa —
+    // sekarang ditangani batas sebaran, bukan ambang jarak. Karena itu yang
+    // diuji di sini adalah rantainya, bukan pasangan tunggalnya.
+    final dua = gabungBertumpuk([_k(0.50, 0.30), _k(0.635, 0.30)]);
+    expect(dua.length, 1);
+
+    // Enam kotak berderet rapat: kalau menyatu semua, hasilnya satu kotak
+    // selebar 0,9 lebar foto dan lesi lain tidak terpetakan.
+    final rantai = gabungBertumpuk([
+      for (var i = 0; i < 6; i++) _k(0.20 + i * 0.09, 0.30),
+    ]);
+    expect(rantai.length, greaterThan(1),
+        reason: 'rantai panjang harus terpecah, bukan jadi satu kotak raksasa');
+    for (final h in rantai) {
+      expect(h['size']! as double, lessThanOrEqualTo(0.45));
+    }
   });
 
   test('kotak gabungan membesar mengikuti luas lesi', () {

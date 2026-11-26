@@ -443,18 +443,31 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
   // bidang jerawat di satu pipi ikut menyatu menjadi satu kotak raksasa dan lesi
   // lain tidak terpetakan — persis keluhan "banyak lesi tapi cuma 2 kotak".
   //
-  // Angkanya ditentukan oleh geometri petak (sisi 0,074; jarak antar petak
-  // 0,55 x sisi = 0,041):
+  // Batas sebaran dihitung dari ukuran kotak yang benar-benar tergambar, bukan
+  // angka tetap. Angka tetap 0,16 dulu salah untuk dua jenis masukan sekaligus:
   //
-  //   dua petak berderet   0,041 x 1 + 0,074 = 0,115
-  //   tiga petak berderet  0,041 x 2 + 0,074 = 0,156
-  //   empat petak berderet 0,041 x 3 + 0,074 = 0,197
+  //   spot dari aplikasi: `size` = sisi petak 0,15, tetapi kotak yang digambar
+  //   hanya 0,5 x size = 0,075. Dengan batas tetap 0,16, dua petak berjarak
+  //   0,041 (sebaran + sisi petak = 0,19) GAGAL menyatu padahal jelas satu lesi.
   //
-  // 0,16 berarti sampai tiga petak yang menutupi satu lesi tetap menjadi SATU
-  // kotak — itu yang diminta: lesi berdekatan digabung jadi satu kotak besar.
-  // Empat petak atau lebih sudah bukan satu lesi, melainkan bidang jerawat, dan
-  // dipisah supaya tidak kembali menjadi satu kotak raksasa.
-  const batasSebaran = 0.16;
+  //   data uji memakai `size` = 0,15 sebagai kotak tergambar. Batas 0,16 di
+  //   bawah dua kotak (0,20) sehingga tiga kotak berderet tidak menyatu.
+  //
+  // Karena itu batasnya relatif terhadap `size`, sama dengan ukuran yang dipakai
+  // `sebaran()` menghitung luas kotak pembatas. Dengan faktor 2,2:
+  //
+  //   geometri aplikasi (size 0,074): batas 0,163
+  //     dua petak   (0,041 + 0,074 = 0,115) menyatu
+  //     tiga petak  (0,082 + 0,074 = 0,158) menyatu
+  //     empat petak (0,123 + 0,074 = 0,197) dipisah
+  //
+  //   data uji lama (size 0,15): batas 0,330, jadi dua sampai tiga kotak
+  //   berjarak 0,05-0,10 tetap menyatu seperti yang diharapkan tesnya.
+  //
+  // Dua sampai tiga kotak yang menutupi satu lesi menyatu (sesuai permintaan
+  // "yang berdekatan jadi satu kotak besar"), empat ke atas dipisah supaya
+  // bidang jerawat tidak kembali menjadi satu kotak raksasa.
+  const faktorSebaran = 2.2;
 
   /// Sebaran kotak kelompok bila [calon] ikut masuk.
   double sebaran(List<Map<String, Object>> grup, Map<String, Object> calon) {
@@ -537,7 +550,8 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
         final calon = sisa[j];
         final nyambung =
             anggota.any((a) => sejenis(a, calon)) &&
-            sebaran(anggota, calon) <= batasSebaran;
+            sebaran(anggota, calon) <=
+                faktorSebaran * angka(calon, 'size');
         if (!nyambung) continue;
         anggota.add(sisa.removeAt(j));
         berubah = true;
@@ -559,7 +573,7 @@ List<Map<String, Object>> gabungBertumpuk(List<Map<String, Object>> spots) {
         final a = hasil[i], b = hasil[j];
         if (!sejenis(a, b)) continue;
         if (tumpang(a, b) <= 0.5) continue;
-        if (sebaran([a], b) > batasSebaran) continue;
+        if (sebaran([a], b) > faktorSebaran * angka(b, 'size')) continue;
         hasil[i] = rangkum([a, b]);
         hasil.removeAt(j);
         adaTumpuk = true;

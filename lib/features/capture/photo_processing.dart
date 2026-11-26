@@ -87,7 +87,15 @@ Uint8List cropPhoto(
 
   // Keluaran persegi: model kondisi memotong patch dari area wajah, jadi
   // resolusi wajah yang cukup lebih penting daripada mempertahankan rasio.
-  if (image.width < target) {
+  //
+  // Dulu hanya diperbesar bila lebih kecil dari target, tidak pernah
+  // diperkecil. Akibatnya foto galeri 4000 px menghasilkan crop 2000 px,
+  // padahal pemanggil sudah meminta target 1200 — komentar "dibatasi 1200 px"
+  // di layar "Atur posisi" tidak pernah terjadi. Foto besar seperti itu membuat
+  // praproses dan inferensi di HP jauh lebih lambat tanpa menambah informasi:
+  // petak yang dinilai model hanya 224 px, dan pada wajah 1200 px satu petak
+  // (0,15 lebar wajah) masih 180 px.
+  if (image.width != target || image.height != target) {
     image = img.copyResize(
       image,
       width: target,

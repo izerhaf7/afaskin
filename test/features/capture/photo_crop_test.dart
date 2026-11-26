@@ -31,15 +31,20 @@ void main() {
     expect(decoded.height, 320);
   });
 
-  test('cropPhoto tidak memperbesar kalau crop sudah besar', () {
+  test('cropPhoto memperkecil crop yang lebih besar dari target', () {
+    // Tes ini dulu menegaskan kebalikannya: crop 200 px dengan target 120
+    // diharapkan tetap 200 px. Itu mengunci bug, karena target tidak pernah
+    // dihormati saat crop lebih besar. Akibatnya foto galeri 4000 px keluar
+    // 2000 px dan inferensi di HP jauh lebih lambat tanpa menambah informasi:
+    // petak yang dinilai model hanya 224 px.
     final out = cropPhoto(
       _makeJpeg(),
       const Rect.fromLTWH(0, 0, 200, 200),
-      target: 120, // lebih kecil dari crop 200
+      target: 120,
     );
     final decoded = img.decodeJpg(out)!;
-    expect(decoded.width, 200);
-    expect(decoded.height, 200);
+    expect(decoded.width, 120);
+    expect(decoded.height, 120);
   });
 
   test('cropPhoto membatasi area yang keluar dari gambar', () {

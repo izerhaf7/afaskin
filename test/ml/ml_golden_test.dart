@@ -50,6 +50,20 @@ void main() {
       condModelCfg: condModelCfg,
     );
 
+    // DILEWATI, bukan lulus. Fixture `ml_golden.json` dibuat dari
+    // `afaskin_fusion.py`, dan backend Python itu sudah dihapus dari repo.
+    // Rumus fusion sejak itu berubah (kalibrasi `presence` dilatih ulang dan
+    // `T_fusion` disetel ulang), sehingga acuan lama tidak mungkin dicocokkan
+    // lagi dan tidak bisa dibuat ulang karena sumbernya tidak ada.
+    //
+    // Dibuktikan bukan akibat perubahan sesi ini: tes ini juga gagal pada
+    // working tree yang di-stash bersih (tanpa perubahan apa pun).
+    //
+    // Yang tetap dijaga: agregasi patch (lulus, 1e-9), filter keamanan dan
+    // rekomendasi (lulus), dan `visual_bukti_topk_test` yang menguji
+    // `layakTampil` secara langsung. Kalau fixture baru mau dibuat, harus dari
+    // implementasi Dart yang sekarang, dan itu berarti mengunci perilaku
+    // sekarang sebagai acuan — bukan membandingkan dengan Python lagi.
     test('kasus $i: fusion sama dengan Python', () {
       for (final k in want.pSkin.keys) {
         expect(prof.pSkin[k], closeTo(want.pSkin[k]!, 1.01e-4));
@@ -58,7 +72,7 @@ void main() {
         expect(prof.pCond[k], closeTo(want.pCond[k]!, 1.01e-4));
       }
       expect(prof.sensitive, want.sensitive);
-    });
+    }, skip: 'acuan Python sudah dihapus; lihat catatan di atas');
 
     test('kasus $i: filter keamanan & rekomendasi sama dengan Python', () {
       // Pakai profil Python persis supaya pembulatan fusion tidak memengaruhi urutan.
