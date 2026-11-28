@@ -2,6 +2,14 @@
     <!-- No INTERNET permission: all analysis runs on the device (TFLite + ML Kit).
          Debug/profile manifests still add it for the Flutter tool. -->
     <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Reading a photo the user picked from the gallery needs this on Android
+         10-12 (API 29-32). Without it, image_picker still returns a path but
+         reading it fails with PlatformException(no_valid_image_uri), which the
+         user sees only as the camera reopening with no explanation.
+         Android 13+ reads picked media through the system Photo Picker, so the
+         permission is not requested there (hence maxSdkVersion). -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
     <uses-feature android:name="android.hardware.camera.front" android:required="false"/>
     <application
         android:label="Afa Skin"

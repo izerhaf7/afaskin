@@ -32,8 +32,11 @@ class _FakePermission implements CameraPermissionService {
 }
 
 class _FakeGallery implements GalleryPicker {
-  _FakeGallery(this.result);
+  _FakeGallery(this.result, {this.access = GalleryAccessState.granted});
   final Uint8List? result;
+  final GalleryAccessState access;
+  @override
+  Future<GalleryAccessState> ensureAccess() async => access;
   @override
   Future<Uint8List?> pick() async => result;
 }

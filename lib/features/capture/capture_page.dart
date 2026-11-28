@@ -13,6 +13,7 @@ import 'package:afaskin/features/capture/live_camera_view.dart';
 import 'package:afaskin/features/capture/photo_adjust_page.dart';
 import 'package:afaskin/features/capture/photo_processing.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -149,7 +150,37 @@ class _CapturePageState extends ConsumerState<CapturePage>
   /// first: gallery shots are often off-centre or zoomed out, which the quality
   /// gate rejects, so cropping here is what makes them usable.
   Future<void> _fromGallery() async {
-    final raw = await ref.read(galleryPickerProvider).pick();
+    final picker = ref.read(galleryPickerProvider);
+    // Ask for storage access first. On Android 10-12 the picker can return a
+    // path that cannot be read without it, and the failure surfaces as an
+    // unhandled PlatformException while the UI silently returns to the camera.
+    final access = await picker.ensureAccess();
+    if (!mounted) return;
+    if (access == GalleryAccessState.denied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(AppStrings.galleryPermissionDenied),
+          action: SnackBarAction(
+            label: AppStrings.openSettings,
+            onPressed: () => ref.read(cameraPermissionProvider).openSettings(),
+          ),
+        ),
+      );
+      return;
+    }
+    Uint8List? raw;
+    try {
+      raw = await picker.pick();
+    } on PlatformException {
+      // Picker refused the request (a file that vanished, a provider that
+      // returned no URI). Show why instead of failing silently.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(AppStrings.photoReadError)),
+        );
+      }
+      return;
+    }
     if (raw == null || !mounted) return;
     setState(() => _processing = true);
     Uint8List prepared;

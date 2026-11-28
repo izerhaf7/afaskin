@@ -321,7 +321,7 @@ class _LiveCameraViewState extends State<LiveCameraView>
       final yaw = _lastYaw;
       final file = await c.takePicture();
       final bytes = await file.readAsBytes();
-      await deleteQuietly(file.path);
+      await deleteIfOwnedCopy(file.path);
       widget.onYawCaptured?.call(yaw);
       widget.onCaptured(bytes);
     } on CameraException catch (e) {

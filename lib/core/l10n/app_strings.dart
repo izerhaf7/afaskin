@@ -220,6 +220,12 @@ abstract final class AppStrings {
   static const String photoReadError =
       'Foto tidak bisa dibaca. Coba foto lain.';
 
+  /// Shown when the storage permission the gallery needs was refused. Without
+  /// this the app would just reopen the camera with no explanation.
+  static const String galleryPermissionDenied =
+      'Aplikasi butuh izin membaca galeri untuk memilih foto. '
+      'Buka Pengaturan lalu izinkan akses penyimpanan.';
+
   /// Awalan pesan saat model gagal dijalankan; sebabnya ditambahkan di belakang.
   static const String errorLocalAnalysis =
       'Analisis gagal di perangkat, karena';
