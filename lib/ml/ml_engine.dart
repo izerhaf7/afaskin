@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'dart:isolate';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -202,7 +203,20 @@ class MlEngine {
 Future<void> _workerMain(List<Object?> args) async {
   final main = args[0]! as SendPort;
   final cfg0 = jsonDecode(args[4]! as String) as Map<String, dynamic>;
-  final threads = (cfg0['threads'] as int?) ?? 4;
+  // Jumlah thread tidak boleh melebihi jumlah inti perangkat.
+  //
+  // `ml_config.json` menyetel 6, dan nilai itu dipakai apa adanya. Pada
+  // emulator 4 inti, 6 thread saling berebut: diukur 47,3 ms/petak, sedangkan
+  // 4 thread 39,8 ms/petak untuk model dan petak yang sama. Membatasi ke
+  // jumlah inti memulihkan kecepatan itu tanpa mengubah hasil sedikit pun,
+  // karena pembagian kerja antar-thread tidak mengubah nilai konvolusi.
+  final minta = (cfg0['threads'] as int?) ?? 4;
+  final inti = Platform.numberOfProcessors;
+  final threads = minta.clamp(1, inti > 0 ? inti : minta);
+  if (minta > threads) {
+    debugPrint('ML worker: threads $minta diturunkan ke $threads '
+        '(inti perangkat $inti)');
+  }
   Interpreter make(TransferableTypedData t) => Interpreter.fromBuffer(
     t.materialize().asUint8List(),
     options: InterpreterOptions()
@@ -322,27 +336,35 @@ List<(double, double)> _refine(
   return pts;
 }
 
-/// Inferensi batch (dipecah per 16 patch supaya memori tetap kecil).
+/// Jalankan model untuk sekumpulan petak, dipecah per batch supaya memori
+/// tetap kecil.
+///
+/// Sempat dicoba membuat bentuk tensor tetap dengan mengisi sisa batch memakai
+/// petak ulangan (padding), supaya `allocateTensors` tidak dipanggil ulang untuk
+/// batch terakhir yang tidak penuh. Diukur di perangkat, hasilnya tidak lebih
+/// cepat (31,4 ms/petak dengan padding vs 29,6 ms/petak tanpa), jadi cara itu
+/// dibatalkan dan kode dibiarkan sederhana.
 Float32List _run(Interpreter it, List<Float32List> inputs, int size) {
   final per = size * size * 3;
   final outs = <double>[];
   var classes = 0;
   for (var start = 0; start < inputs.length; start += 16) {
-    final chunk = inputs.sublist(start, start + 16 > inputs.length ? inputs.length : start + 16);
-    if (!it.isAllocated || it.getInputTensor(0).shape.first != chunk.length) {
+    final akhir = start + 16 > inputs.length ? inputs.length : start + 16;
+    final n = akhir - start;
+    if (!it.isAllocated || it.getInputTensor(0).shape.first != n) {
       it
-        ..resizeInputTensor(0, [chunk.length, size, size, 3])
+        ..resizeInputTensor(0, [n, size, size, 3])
         ..allocateTensors();
     }
-    final x = Float32List(chunk.length * per);
-    for (var i = 0; i < chunk.length; i++) {
-      x.setAll(i * per, chunk[i]);
+    final x = Float32List(n * per);
+    for (var i = 0; i < n; i++) {
+      x.setAll(i * per, inputs[start + i]);
     }
     it.getInputTensor(0).setTo(x);
     it.invoke();
     final outT = it.getOutputTensor(0);
     classes = outT.shape.last;
-    final y = Float32List(chunk.length * classes);
+    final y = Float32List(n * classes);
     outT.copyTo(y);
     outs.addAll(y);
   }

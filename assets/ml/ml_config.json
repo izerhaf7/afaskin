@@ -1,869 +1,869 @@
 {
- "version": "afaskin-ondevice-2026.11",
- "skin_type": {
-  "model": "skin_type.tflite",
-  "arch": "ResNet50",
-  "classes": [
-   "dry",
-   "normal",
-   "oily"
-  ],
-  "input_size": 224,
-  "T": 1.2567972424476885,
-  "alpha": 0.25,
-  "rule": "geometric",
-  "skin_mu": {
-   "dry": 1.5,
-   "normal": 3.0,
-   "oily": 4.5
-  },
-  "skin_sigma": 0.9,
-  "T_fusion": 0.45,
-  "_catatan_T_fusion": "Akurasi fusi tipe kulit 83,6 persen, tetapi keyakinan yang tampil hanya 63-68 persen pada jawaban kuesioner yang konsisten, jadi aplikasi merendah sekitar 18 poin. Sweep pada probs_test_ResNet50 (n=133) dengan simulasi jawaban: T_fusion 0,60 memberi keyakinan 78,7 persen (selisih 4,4 poin), 0,42 memberi 84,1 persen. Dipakai 0,45 supaya keyakinan yang tampil berada di atas 70 persen dan mendekati akurasi 83,6 persen, bukan jauh di bawahnya. T_fusion terlalu kecil membuat keyakinan melampaui akurasi: 0,30 memberi 88,2 persen dengan ECE 0,162."
- },
- "condition": {
-  "default_model": "ResNet50Repaired",
-  "classes": [
-   "Acne",
-   "Birthmark",
-   "Blackhead",
-   "Cysts",
-   "Milium",
-   "Papular",
-   "Purulent",
-   "Scars",
-   "Whitehead",
-   "Clear"
-  ],
-  "input_size": 224,
-  "beta": 3.0,
-  "acne_group": [
-   "Acne",
-   "Papular",
-   "Purulent",
-   "Cysts"
-  ],
-  "comedo_group": [
-   "Blackhead",
-   "Whitehead"
-  ],
-  "models": {
-   "MobileNetV2": {
-    "model": "condition_mobilenetv2_v3.tflite",
-    "T": 0.969,
-    "alpha": 0.25,
-    "rule": "geometric"
-   },
-   "ResNet50": {
-    "model": "condition_resnet50_v31.tflite",
-    "T": 1.227167781585223,
+  "version": "afaskin-ondevice-2026.11",
+  "skin_type": {
+    "model": "skin_type.tflite",
+    "arch": "ResNet50",
+    "classes": [
+      "dry",
+      "normal",
+      "oily"
+    ],
+    "input_size": 224,
+    "T": 1.2567972424476885,
     "alpha": 0.25,
     "rule": "geometric",
-    "T_fusion": 0.35,
-    "presence": {
-     "basis": "top_k_mean",
-     "top_k": 3,
-     "_catatan": "P(kondisi hadir di wajah) = sigmoid(a * logit(bukti) + b). Bukti = rata-rata top_k patch terkuat untuk kelas itu, persis nilai topKMean di aplikasi. Dilatih pada 4.866 wajah split train, diukur pada 947 wajah test: ECE 0,021, Brier 0,050 (cara lama: ECE 0,107, Brier 0,110). Pada wajah yang memang punya kondisinya, keyakinan yang tampil naik dari 23,6% ke 71,5%.",
-     "a": [
-      1.245007,
-      1.792672,
-      1.460574,
-      1.064324,
-      1.313247,
-      1.78996,
-      1.519973,
-      1.473199,
-      1.476342,
-      1.40472
-     ],
-     "b": [
-      2.391046,
-      0.443246,
-      0.374956,
-      0.397158,
-      -0.002614,
-      0.650392,
-      0.270106,
-      0.744524,
-      -0.825343,
-      2.652558
-     ]
-    }
-   },
-   "ResNet50Repaired": {
-    "model": "condition_resnet50_repaired.tflite",
-    "T": 0.92,
-    "alpha": 0.25,
-    "rule": "geometric",
-    "T_fusion": 0.35,
-    "presence": {
-     "basis": "top_k_mean",
-     "top_k": 3,
-     "_catatan": "P(kondisi hadir di wajah) = sigmoid(a * logit(bukti) + b). Bukti = rata-rata top_k patch terkuat untuk kelas itu, persis nilai topKMean di aplikasi. Dilatih pada 4.866 wajah split train, diukur pada 947 wajah test: ECE 0,021, Brier 0,050 (cara lama: ECE 0,107, Brier 0,110). Pada wajah yang memang punya kondisinya, keyakinan yang tampil naik dari 23,6% ke 71,5%.",
-     "a": [
-      0.1508,
-      1.792672,
-      1.460574,
-      1.064324,
-      1.313247,
-      1.78996,
-      1.519973,
-      0.2779,
-      1.476342,
-      1.40472
-     ],
-     "b": [
-      1.4125,
-      0.443246,
-      0.374956,
-      0.397158,
-      -0.002614,
-      0.650392,
-      0.270106,
-      0.8876,
-      -0.825343,
-      2.652558
-     ],
-     "_catatan_refit": "Kurva lama dipasang pada skala bukti model lama, yang jauh lebih tinggi: median bukti Acne 0,667 pada model lama versus 0,334 pada model hasil latih ulang, sementara wajah bersih turun dari 0,333 ke 0,000. Memakai kurva lama pada bukti baru menekan wajah berjerawat ke 33-44 persen. Acne dan Scars karena itu difit ulang pada bukti head baru memakai label tingkat wajah (acne_kuat/scar_kuat lawan bersih), fit di valid lalu diuji di test. Delapan kelas lain belum punya label tingkat wajah sehingga kurvanya belum bisa difit; kelas itu tetap memakai kurva lama."
+    "skin_mu": {
+      "dry": 1.5,
+      "normal": 3.0,
+      "oily": 4.5
     },
-    "_catatan_repaired": "Dilatih ulang pada label yang diperbaiki (spot bukan Scars, kotak hampa dibuang). T=0,92 hasil fit NLL pada split valid; presence Acne dan Scars difit ulang pada kebenaran acuan audit kontras. Kelas lain memakai parameter lama karena labelnya tidak berubah. Macro-F1 petak 0,6903 vs 0,6344 pada model sebelumnya."
-   }
+    "skin_sigma": 0.9,
+    "T_fusion": 0.45,
+    "_catatan_T_fusion": "Akurasi fusi tipe kulit 83,6 persen, tetapi keyakinan yang tampil hanya 63-68 persen pada jawaban kuesioner yang konsisten, jadi aplikasi merendah sekitar 18 poin. Sweep pada probs_test_ResNet50 (n=133) dengan simulasi jawaban: T_fusion 0,60 memberi keyakinan 78,7 persen (selisih 4,4 poin), 0,42 memberi 84,1 persen. Dipakai 0,45 supaya keyakinan yang tampil berada di atas 70 persen dan mendekati akurasi 83,6 persen, bukan jauh di bawahnya. T_fusion terlalu kecil membuat keyakinan melampaui akurasi: 0,30 memberi 88,2 persen dengan ECE 0,162."
   },
-  "_catatan_v2": "Model kondisi v2 (notebook 04) menggantikan v1. ResNet50 v2: akurasi 70,5%, F1 macro 0,660, F1 selfie 0,699. Diuji pada 158 gambar berlabel acnenew dengan pipeline patch aplikasi: AUC Scars vs wajah tanpa lesi naik 0,374 -> 0,926, Acne 0,640 -> 0,773. Karena Scars kini benar-benar terlihat dari foto, jalur kuesioner untuk Scars dihapus.",
-  "threads": 6,
-  "_catatan_threads": "XNNPack memakai 6 thread (HP kelas menengah punya 8 inti). Naik dari 4: inferensi kondisi float32 mendominasi waktu analisis (11,8 dari 16,3 detik pada 27 patch selfie), sementara preprocess/landmark hanya ratusan ms.",
-  "_catatan_v3": "Model kondisi v3.1 (notebook 07): ResNet50 + kepala terlatih di 72.518 patch (25,3% selfie). Test 8.777 patch: accuracy 0,7517 (fp16, cos 0,9998 vs Keras) / 0,7250 (int8), F1 macro 0,7606, ROC-AUC 0,9643. Fusion dengan kuesioner: accuracy 0,8264 F1 macro 0,8257. T=1,2272 dan alpha=0,25 dihitung ulang di data valid.",
-  "_catatan_T_fusion": "Kalibrasi kedua pada output fusion. Akurasi test 82,4% tetapi keyakinan yang ditampilkan 41,4% -> under-confident 41 poin (ECE 0,410). T_fusion 0,35 menurunkan selisih terburuk menjadi 7,9 poin (ECE ~0,02).",
-  "_catatan_default": "Default diganti ke model yang dilatih ulang pada label yang diperbaiki. Model lama tetap tersedia sebagai entri ResNet50 untuk pembanding, tetapi tidak dipakai lagi karena label Scars-nya 89 persen berasal dari kotak spot (pigmen) dan dua pertiga kotak anotasi tidak punya jejak di piksel."
- },
- "roi": {
+  "condition": {
+    "default_model": "ResNet50Repaired",
+    "classes": [
+      "Acne",
+      "Birthmark",
+      "Blackhead",
+      "Cysts",
+      "Milium",
+      "Papular",
+      "Purulent",
+      "Scars",
+      "Whitehead",
+      "Clear"
+    ],
+    "input_size": 224,
+    "beta": 3.0,
+    "acne_group": [
+      "Acne",
+      "Papular",
+      "Purulent",
+      "Cysts"
+    ],
+    "comedo_group": [
+      "Blackhead",
+      "Whitehead"
+    ],
+    "models": {
+      "MobileNetV2": {
+        "model": "condition_mobilenetv2_v3.tflite",
+        "T": 0.969,
+        "alpha": 0.25,
+        "rule": "geometric"
+      },
+      "ResNet50": {
+        "model": "condition_resnet50_v31.tflite",
+        "T": 1.227167781585223,
+        "alpha": 0.25,
+        "rule": "geometric",
+        "T_fusion": 0.35,
+        "presence": {
+          "basis": "top_k_mean",
+          "top_k": 3,
+          "_catatan": "P(kondisi hadir di wajah) = sigmoid(a * logit(bukti) + b). Bukti = rata-rata top_k patch terkuat untuk kelas itu, persis nilai topKMean di aplikasi. Dilatih pada 4.866 wajah split train, diukur pada 947 wajah test: ECE 0,021, Brier 0,050 (cara lama: ECE 0,107, Brier 0,110). Pada wajah yang memang punya kondisinya, keyakinan yang tampil naik dari 23,6% ke 71,5%.",
+          "a": [
+            1.245007,
+            1.792672,
+            1.460574,
+            1.064324,
+            1.313247,
+            1.78996,
+            1.519973,
+            1.473199,
+            1.476342,
+            1.40472
+          ],
+          "b": [
+            2.391046,
+            0.443246,
+            0.374956,
+            0.397158,
+            -0.002614,
+            0.650392,
+            0.270106,
+            0.744524,
+            -0.825343,
+            2.652558
+          ]
+        }
+      },
+      "ResNet50Repaired": {
+        "model": "condition_resnet50_repaired.tflite",
+        "T": 0.92,
+        "alpha": 0.25,
+        "rule": "geometric",
+        "T_fusion": 0.35,
+        "presence": {
+          "basis": "top_k_mean",
+          "top_k": 3,
+          "_catatan": "P(kondisi hadir di wajah) = sigmoid(a * logit(bukti) + b). Bukti = rata-rata top_k patch terkuat untuk kelas itu, persis nilai topKMean di aplikasi. Dilatih pada 4.866 wajah split train, diukur pada 947 wajah test: ECE 0,021, Brier 0,050 (cara lama: ECE 0,107, Brier 0,110). Pada wajah yang memang punya kondisinya, keyakinan yang tampil naik dari 23,6% ke 71,5%.",
+          "a": [
+            0.1508,
+            1.792672,
+            1.460574,
+            1.064324,
+            1.313247,
+            1.78996,
+            1.519973,
+            0.2779,
+            1.476342,
+            1.40472
+          ],
+          "b": [
+            1.4125,
+            0.443246,
+            0.374956,
+            0.397158,
+            -0.002614,
+            0.650392,
+            0.270106,
+            0.8876,
+            -0.825343,
+            2.652558
+          ],
+          "_catatan_refit": "Kurva lama dipasang pada skala bukti model lama, yang jauh lebih tinggi: median bukti Acne 0,667 pada model lama versus 0,334 pada model hasil latih ulang, sementara wajah bersih turun dari 0,333 ke 0,000. Memakai kurva lama pada bukti baru menekan wajah berjerawat ke 33-44 persen. Acne dan Scars karena itu difit ulang pada bukti head baru memakai label tingkat wajah (acne_kuat/scar_kuat lawan bersih), fit di valid lalu diuji di test. Delapan kelas lain belum punya label tingkat wajah sehingga kurvanya belum bisa difit; kelas itu tetap memakai kurva lama."
+        },
+        "_catatan_repaired": "Dilatih ulang pada label yang diperbaiki (spot bukan Scars, kotak hampa dibuang). T=0,92 hasil fit NLL pada split valid; presence Acne dan Scars difit ulang pada kebenaran acuan audit kontras. Kelas lain memakai parameter lama karena labelnya tidak berubah. Macro-F1 petak 0,6903 vs 0,6344 pada model sebelumnya."
+      }
+    },
+    "_catatan_v2": "Model kondisi v2 (notebook 04) menggantikan v1. ResNet50 v2: akurasi 70,5%, F1 macro 0,660, F1 selfie 0,699. Diuji pada 158 gambar berlabel acnenew dengan pipeline patch aplikasi: AUC Scars vs wajah tanpa lesi naik 0,374 -> 0,926, Acne 0,640 -> 0,773. Karena Scars kini benar-benar terlihat dari foto, jalur kuesioner untuk Scars dihapus.",
+    "threads": 8,
+    "_catatan_threads": "Delapan thread, lalu diturunkan otomatis oleh kode ke jumlah inti perangkat. Diukur di emulator 4 inti: 4 thread 39,8 ms/petak, 6 thread 47,3 ms/petak (rebutan). Diukur di Redmi 9T (4x A73 + 4x A53): 4 thread 216,4 ms/petak, 6 thread 208,4, 8 thread 179,3 — makin banyak makin cepat karena XNNPack bisa memakai inti besar. Keluaran 4/6/8 thread identik bit-per-bit (selisih 0,000e+0), jadi menaikkan batas ini tidak mengubah hasil. Angka 8 adalah batas atas; perangkat 4 inti tetap memakai 4.",
+    "_catatan_v3": "Model kondisi v3.1 (notebook 07): ResNet50 + kepala terlatih di 72.518 patch (25,3% selfie). Test 8.777 patch: accuracy 0,7517 (fp16, cos 0,9998 vs Keras) / 0,7250 (int8), F1 macro 0,7606, ROC-AUC 0,9643. Fusion dengan kuesioner: accuracy 0,8264 F1 macro 0,8257. T=1,2272 dan alpha=0,25 dihitung ulang di data valid.",
+    "_catatan_T_fusion": "Kalibrasi kedua pada output fusion. Akurasi test 82,4% tetapi keyakinan yang ditampilkan 41,4% -> under-confident 41 poin (ECE 0,410). T_fusion 0,35 menurunkan selisih terburuk menjadi 7,9 poin (ECE ~0,02).",
+    "_catatan_default": "Default diganti ke model yang dilatih ulang pada label yang diperbaiki. Model lama tetap tersedia sebagai entri ResNet50 untuk pembanding, tetapi tidak dipakai lagi karena label Scars-nya 89 persen berasal dari kotak spot (pigmen) dan dua pertiga kotak anotasi tidak punya jejak di piksel."
+  },
   "roi": {
-   "forehead": {
-    "landmarks": [
-     10,
-     151
+    "roi": {
+      "forehead": {
+        "landmarks": [
+          10,
+          151
+        ],
+        "size_rel_face_width": 0.3
+      },
+      "cheek_left": {
+        "landmarks": [
+          50,
+          205
+        ],
+        "size_rel_face_width": 0.24
+      },
+      "cheek_right": {
+        "landmarks": [
+          280,
+          425
+        ],
+        "size_rel_face_width": 0.24
+      },
+      "nose": {
+        "landmarks": [
+          5,
+          195
+        ],
+        "size_rel_face_width": 0.16
+      },
+      "chin": {
+        "landmarks": [
+          152,
+          199
+        ],
+        "size_rel_face_width": 0.2
+      }
+    },
+    "face_width_landmarks": [
+      234,
+      454
     ],
-    "size_rel_face_width": 0.3
-   },
-   "cheek_left": {
-    "landmarks": [
-     50,
-     205
+    "min_face_px": 90,
+    "blur_min": 20.0,
+    "brightness_range": [
+      40,
+      225
     ],
-    "size_rel_face_width": 0.24
-   },
-   "cheek_right": {
-    "landmarks": [
-     280,
-     425
-    ],
-    "size_rel_face_width": 0.24
-   },
-   "nose": {
-    "landmarks": [
-     5,
-     195
-    ],
-    "size_rel_face_width": 0.16
-   },
-   "chin": {
-    "landmarks": [
-     152,
-     199
-    ],
-    "size_rel_face_width": 0.2
-   }
+    "min_valid_roi": 3
   },
-  "face_width_landmarks": [
-   234,
-   454
-  ],
-  "min_face_px": 90,
-  "blur_min": 20.0,
-  "brightness_range": [
-   40,
-   225
-  ],
-  "min_valid_roi": 3
- },
- "face": {
-  "landmark_model": "face_landmarks.tflite",
-  "refine_iters": 2,
-  "refine_scale": 1.5
- },
- "scan": {
-  "area_rel": {
-   "forehead": 0.66,
-   "left_cheek": 0.9,
-   "right_cheek": 0.9,
-   "nose": 0.44,
-   "chin": 0.58
+  "face": {
+    "landmark_model": "face_landmarks.tflite",
+    "refine_iters": 2,
+    "refine_scale": 1.5
   },
-  "tile_rel": 0.15,
-  "stride": 0.55,
-  "top_k": 3,
-  "min_condition_p": 0.12,
-  "max_conditions": 4,
-  "skin_min": 0.6,
-  "aggregation": "mean",
-  "gate_conf": 0.22,
-  "gate_frac": 0.05,
-  "gate_min_patches": 3,
-  "_catatan": "Dipilih dari uji on-device (Nov 2026): top-3 per kelas selalu 'menemukan' lesi di wajah bersih; mean + gating bukti visual mencegah kondisi muncul hanya dari kuesioner. Titik ML Kit diperhalus model landmark MediaPipe; patch dibatasi masker wajah & dilewati bila kilap.",
-  "feature_mask": true,
-  "glare_level": 215,
-  "glare_max": 0.06,
-  "hair_l_rel": 0.6,
-  "_catatan_gate": "Ambang dilonggarkan dari conf 0.40/min 4 karena pada foto asli dari galeri jerawat sering luput: model v2 menilai sebagian besar patch 'Clear' saat lesi kecil. Diukur pada 158 gambar berlabel (model v2, pipeline patch sama): conf 0.35/min 3 menaikkan acne tertangkap 12->15 dari 40 dan Scars 19->26 dari 40, dengan biaya wajah tanpa lesi yang ikut menampilkan kondisi 3->7 dari 39. Batas sebenarnya ada di model, bukan gate: pada foto close-up acnenew lesi mengisi sebagian besar patch, sedangkan di selfie lesi hanya beberapa piksel. Perbaikan tuntas perlu model yang dilatih khusus patch selfie berjarak normal (notebook 04).",
-  "gate_top_k": 4,
-  "gate_top_conf": 0.38,
-  "_catatan_gate_v31": "Gate diganti: rata-rata top-4 patch terkuat per kelas >= 0.38, bukan lagi 'min 3 patch dengan p>=0.35'. Diukur pada 947 wajah uji (8.777 patch): kondisi asli muncul pada 57,9% -> 79,1% wajah berlesi; domain selfie 38,0% -> 56,1%; acne9 63,9% -> 88,6%. Wajah bersih yang tetap kosong turun 95,0% -> 88,4%. Kepala alternatif (sample_weight selfie x2,5) diuji: recall hanya +0,3 poin tapi spesifisitas -8,7 poin, jadi ditolak. Agregasi max/top-3/top-5/top-20% dan koreksi prior (logit adjustment tau 0,3-1,0) juga diuji dan tidak lebih baik.",
-  "max_spots_per_condition": 16,
-  "gate_top_conf_by_class": {
-   "Acne": 0.22,
-   "Scars": 0.22,
-   "Birthmark": 0.1
+  "scan": {
+    "area_rel": {
+      "forehead": 0.66,
+      "left_cheek": 0.9,
+      "right_cheek": 0.9,
+      "nose": 0.44,
+      "chin": 0.58
+    },
+    "tile_rel": 0.15,
+    "stride": 0.55,
+    "top_k": 3,
+    "min_condition_p": 0.12,
+    "max_conditions": 4,
+    "skin_min": 0.6,
+    "aggregation": "mean",
+    "gate_conf": 0.22,
+    "gate_frac": 0.05,
+    "gate_min_patches": 3,
+    "_catatan": "Dipilih dari uji on-device (Nov 2026): top-3 per kelas selalu 'menemukan' lesi di wajah bersih; mean + gating bukti visual mencegah kondisi muncul hanya dari kuesioner. Titik ML Kit diperhalus model landmark MediaPipe; patch dibatasi masker wajah & dilewati bila kilap.",
+    "feature_mask": true,
+    "glare_level": 215,
+    "glare_max": 0.06,
+    "hair_l_rel": 0.6,
+    "_catatan_gate": "Ambang dilonggarkan dari conf 0.40/min 4 karena pada foto asli dari galeri jerawat sering luput: model v2 menilai sebagian besar patch 'Clear' saat lesi kecil. Diukur pada 158 gambar berlabel (model v2, pipeline patch sama): conf 0.35/min 3 menaikkan acne tertangkap 12->15 dari 40 dan Scars 19->26 dari 40, dengan biaya wajah tanpa lesi yang ikut menampilkan kondisi 3->7 dari 39. Batas sebenarnya ada di model, bukan gate: pada foto close-up acnenew lesi mengisi sebagian besar patch, sedangkan di selfie lesi hanya beberapa piksel. Perbaikan tuntas perlu model yang dilatih khusus patch selfie berjarak normal (notebook 04).",
+    "gate_top_k": 4,
+    "gate_top_conf": 0.38,
+    "_catatan_gate_v31": "Gate diganti: rata-rata top-4 patch terkuat per kelas >= 0.38, bukan lagi 'min 3 patch dengan p>=0.35'. Diukur pada 947 wajah uji (8.777 patch): kondisi asli muncul pada 57,9% -> 79,1% wajah berlesi; domain selfie 38,0% -> 56,1%; acne9 63,9% -> 88,6%. Wajah bersih yang tetap kosong turun 95,0% -> 88,4%. Kepala alternatif (sample_weight selfie x2,5) diuji: recall hanya +0,3 poin tapi spesifisitas -8,7 poin, jadi ditolak. Agregasi max/top-3/top-5/top-20% dan koreksi prior (logit adjustment tau 0,3-1,0) juga diuji dan tidak lebih baik.",
+    "max_spots_per_condition": 16,
+    "gate_top_conf_by_class": {
+      "Acne": 0.22,
+      "Scars": 0.22,
+      "Birthmark": 0.1
+    },
+    "_catatan_ambang_kelas": "Model yang dilatih ulang pada label yang diperbaiki memberi bukti Scars jauh lebih tipis di petak wajah utuh: top-4 Scars median 0,150 pada 12 wajah berbekas, sedangkan Acne 0,374 pada 170 wajah berjerawat. Ambang tunggal 0,38 menyembunyikan Scars sepenuhnya. Ambang 0,16 memulihkan 50 persen wajah berbekas dengan 1,7 persen wajah bersih ikut terdeteksi. Nilai ini diperkirakan dari top-4 petak valid, jadi wajib diverifikasi ulang di perangkat.",
+    "_catatan_acne_ambang": "Ambang Acne diuji 0,30 di perangkat: tidak memunculkan Acne pada tiga wajah berjerawat yang diuji, tetapi memunculkan Acne palsu pada wajah berbekas. Bukti top-4 Acne pada petak aplikasi (57 patch di 5 ROI) memang rendah walau lesinya ada, karena penempatan patch berpusat di ROI dan tidak menutup seluruh pipi. Ambang dikembalikan ke default 0,38; masalahnya ada pada penempatan patch, bukan pada ambang.",
+    "_catatan_cakupan": "Cakupan pindai diperluas agar lesi di sisi luar pipi ikut dinilai. Sebelumnya petak aplikasi hanya 57 dan berpusat di lima ROI, sehingga jerawat di pipi luar tidak pernah masuk model: bukti top-4 Acne pada tiga wajah berjerawat hanya 0,216/0,838/0,277 sementara pada petak latih penuh mencapai median 0,374. area_rel pipi 0,58 -> 0,76, dahi 0,60 -> 0,66, dagu 0,52 -> 0,58, stride 0,60 -> 0,55. Diuji ulang di perangkat: jumlah petak dan kelas yang tampil dicatat di outputs/condition_v31/hardneg/PERLUASAN_CAKUPAN_PATCH.md.",
+    "_catatan_area_rel": "Pipi dilebarkan dari 0,76 ke 0,90. Diukur pada 40 wajah acne_kuat memakai src/selfie_patches.app_tiles, geometri yang sama dengan aplikasi: cakupan kotak jerawat valid naik dari 68,3 persen ke 72,4 persen, wajah yang seluruh kotaknya tercakup naik dari 57,5 ke 65 persen. Biaya: petak per wajah 62,6 menjadi 75,7. Pelebaran ke 1,00 memberi 77,4 persen tetapi 90 petak, dan pada perangkat inferensi kondisi sudah 3,4 detik untuk 57 petak sehingga mendekati batas 10 detik per sesi.",
+    "_catatan_gate_acne": "Acne 0,34 (bukan 0,38): pada 235 wajah berjerawat dan 86 wajah bersih (split uji 57.281 petak geometri aplikasi, label kotak asli), ambang 0,38 menangkap 51,5% wajah berjerawat dengan 23,3% wajah bersih ikut tersentuh. Ambang 0,34 menangkap 64,7% dengan 27,9% palsu. Selisih palsu 4,6 poin dibayar untuk 13,2 poin wajah berjerawat yang kembali terdeteksi, yaitu keluhan \"jerawat yang dulu muncul sekarang tidak\". Kelas lain tidak diubah karena tidak punya keluhan serupa dan datanya tidak mendukung.",
+    "_catatan_max_spots": "Dinaikkan dari 8 ke 16: pada foto berjerawat banyak, jumlah lesi sebenarnya 26 tetapi aplikasi berhenti di 8 karena pagu ini, bukan karena model. Penggabungan sudah dibatasi luas 0,10 sehingga kotak tidak lagi menelan seluruh bidang, jadi pagu 16 masih terbaca di peta tanpa menutupinya.",
+    "_catatan_retrain_2025": "Kepala klasifikasi dilatih ulang di atas fitur GAP backbone yang sama, memakai 54.960 petak close-up + 34.609 petak geometri aplikasi (diulang 3x) dari 241 wajah. Backbone tidak berubah, jadi paritas TFLite 5,69e-05 dan ukuran tetap 49,4 MB. Diuji pada 241 wajah geometri aplikasi, ambang lama Acne 0,34 Scars 0,16: Acne 28/80->18/80 (turun), Scars 9/80->60/80 (naik), positif palsu di 81 wajah bersih 30->17. Ambang disetel ulang pada kurva yang sama: Acne 0,22 memberi 36/80 tertangkap dengan 15/81 palsu (lama 16/80 dengan 11/81), Scars 0,18 memberi 63/80 dengan 15/81; ambang dipakai 0,22 karena memberi 54/80 dengan 9/81 palsu dan menghilangkan Scars palsu pada foto berjerawat-saja (bukti 0,21). Sebelumnya 8/80 dengan 12/81. Sebaran peluang kepala baru berbeda dari kepala lama, jadi ambang lama tidak bisa dipakai apa adanya. Model lama disimpan sebagai condition_resnet50_repaired.tflite.bak untuk pembanding di perangkat.",
+    "_catatan_birthmark": "Birthmark ditambahkan 0,10 setelah pelatihan ulang kepala. Kepala baru memberi bukti Birthmark lebih rendah untuk tanda lahir yang sama: pada 530 petak Birthmark dan 1.421 petak Clear, ambang 0,10 menangkap 95,5% dengan 4,4% positif palsu, sedangkan kepala lama butuh 0,46 untuk 96,2% dengan 4,0%. Daya tangkapnya setara, hanya skalanya bergeser. Tanpa ambang khusus ini Birthmark memakai bawaan 0,38 dan tanda lahir nyata tertutup: pada 241 wajah selfie, positif palsunya turun dari 47% (kepala lama) ke 1% (kepala baru), tanda bahwa kepala baru jauh lebih hemat, tetapi ambang 0,38 terlalu tinggi untuk skalanya."
   },
-  "_catatan_ambang_kelas": "Model yang dilatih ulang pada label yang diperbaiki memberi bukti Scars jauh lebih tipis di petak wajah utuh: top-4 Scars median 0,150 pada 12 wajah berbekas, sedangkan Acne 0,374 pada 170 wajah berjerawat. Ambang tunggal 0,38 menyembunyikan Scars sepenuhnya. Ambang 0,16 memulihkan 50 persen wajah berbekas dengan 1,7 persen wajah bersih ikut terdeteksi. Nilai ini diperkirakan dari top-4 petak valid, jadi wajib diverifikasi ulang di perangkat.",
-  "_catatan_acne_ambang": "Ambang Acne diuji 0,30 di perangkat: tidak memunculkan Acne pada tiga wajah berjerawat yang diuji, tetapi memunculkan Acne palsu pada wajah berbekas. Bukti top-4 Acne pada petak aplikasi (57 patch di 5 ROI) memang rendah walau lesinya ada, karena penempatan patch berpusat di ROI dan tidak menutup seluruh pipi. Ambang dikembalikan ke default 0,38; masalahnya ada pada penempatan patch, bukan pada ambang.",
-  "_catatan_cakupan": "Cakupan pindai diperluas agar lesi di sisi luar pipi ikut dinilai. Sebelumnya petak aplikasi hanya 57 dan berpusat di lima ROI, sehingga jerawat di pipi luar tidak pernah masuk model: bukti top-4 Acne pada tiga wajah berjerawat hanya 0,216/0,838/0,277 sementara pada petak latih penuh mencapai median 0,374. area_rel pipi 0,58 -> 0,76, dahi 0,60 -> 0,66, dagu 0,52 -> 0,58, stride 0,60 -> 0,55. Diuji ulang di perangkat: jumlah petak dan kelas yang tampil dicatat di outputs/condition_v31/hardneg/PERLUASAN_CAKUPAN_PATCH.md.",
-  "_catatan_area_rel": "Pipi dilebarkan dari 0,76 ke 0,90. Diukur pada 40 wajah acne_kuat memakai src/selfie_patches.app_tiles, geometri yang sama dengan aplikasi: cakupan kotak jerawat valid naik dari 68,3 persen ke 72,4 persen, wajah yang seluruh kotaknya tercakup naik dari 57,5 ke 65 persen. Biaya: petak per wajah 62,6 menjadi 75,7. Pelebaran ke 1,00 memberi 77,4 persen tetapi 90 petak, dan pada perangkat inferensi kondisi sudah 3,4 detik untuk 57 petak sehingga mendekati batas 10 detik per sesi.",
-  "_catatan_gate_acne": "Acne 0,34 (bukan 0,38): pada 235 wajah berjerawat dan 86 wajah bersih (split uji 57.281 petak geometri aplikasi, label kotak asli), ambang 0,38 menangkap 51,5% wajah berjerawat dengan 23,3% wajah bersih ikut tersentuh. Ambang 0,34 menangkap 64,7% dengan 27,9% palsu. Selisih palsu 4,6 poin dibayar untuk 13,2 poin wajah berjerawat yang kembali terdeteksi, yaitu keluhan \"jerawat yang dulu muncul sekarang tidak\". Kelas lain tidak diubah karena tidak punya keluhan serupa dan datanya tidak mendukung.",
-  "_catatan_max_spots": "Dinaikkan dari 8 ke 16: pada foto berjerawat banyak, jumlah lesi sebenarnya 26 tetapi aplikasi berhenti di 8 karena pagu ini, bukan karena model. Penggabungan sudah dibatasi luas 0,10 sehingga kotak tidak lagi menelan seluruh bidang, jadi pagu 16 masih terbaca di peta tanpa menutupinya.",
-  "_catatan_retrain_2025": "Kepala klasifikasi dilatih ulang di atas fitur GAP backbone yang sama, memakai 54.960 petak close-up + 34.609 petak geometri aplikasi (diulang 3x) dari 241 wajah. Backbone tidak berubah, jadi paritas TFLite 5,69e-05 dan ukuran tetap 49,4 MB. Diuji pada 241 wajah geometri aplikasi, ambang lama Acne 0,34 Scars 0,16: Acne 28/80->18/80 (turun), Scars 9/80->60/80 (naik), positif palsu di 81 wajah bersih 30->17. Ambang disetel ulang pada kurva yang sama: Acne 0,22 memberi 36/80 tertangkap dengan 15/81 palsu (lama 16/80 dengan 11/81), Scars 0,18 memberi 63/80 dengan 15/81; ambang dipakai 0,22 karena memberi 54/80 dengan 9/81 palsu dan menghilangkan Scars palsu pada foto berjerawat-saja (bukti 0,21). Sebelumnya 8/80 dengan 12/81. Sebaran peluang kepala baru berbeda dari kepala lama, jadi ambang lama tidak bisa dipakai apa adanya. Model lama disimpan sebagai condition_resnet50_repaired.tflite.bak untuk pembanding di perangkat.",
-  "_catatan_birthmark": "Birthmark ditambahkan 0,10 setelah pelatihan ulang kepala. Kepala baru memberi bukti Birthmark lebih rendah untuk tanda lahir yang sama: pada 530 petak Birthmark dan 1.421 petak Clear, ambang 0,10 menangkap 95,5% dengan 4,4% positif palsu, sedangkan kepala lama butuh 0,46 untuk 96,2% dengan 4,0%. Daya tangkapnya setara, hanya skalanya bergeser. Tanpa ambang khusus ini Birthmark memakai bawaan 0,38 dan tanda lahir nyata tertutup: pada 241 wajah selfie, positif palsunya turun dari 47% (kepala lama) ke 1% (kepala baru), tanda bahwa kepala baru jauh lebih hemat, tetapi ambang 0,38 terlalu tinggi untuk skalanya."
- },
- "recommender": {
-  "weights": [
-   0.7,
-   0.3,
-   0.0
-  ],
-  "actives": [
-   "Niacinamide",
-   "Salicylic Acid",
-   "Hyaluronic Acid",
-   "Retinol",
-   "Centella Asiatica",
-   "Ceramide",
-   "AHA",
-   "Azelaic Acid",
-   "Vitamin C",
-   "Zinc",
-   "Tea Tree",
-   "Panthenol",
-   "Benzoyl Peroxide",
-   "Alpha Arbutin",
-   "Glycerin",
-   "Squalane",
-   "Sunscreen Filter",
-   "Comedogenic Oil",
-   "Heavy Occlusive",
-   "Essential Oil",
-   "Fragrance",
-   "Alcohol Denat"
-  ],
-  "mapping": [
-   {
-    "target": "Acne",
-    "target_type": "condition",
-    "ingredient": "Salicylic Acid",
-    "role": "recommended",
-    "weight": 1.0,
-    "note": "BHA larut minyak; eksfoliasi pori",
-    "source": "Zaenglein et al. 2016; Reynolds et al. 2024"
-   },
-   {
-    "target": "Acne",
-    "target_type": "condition",
-    "ingredient": "Benzoyl Peroxide",
-    "role": "recommended",
-    "weight": 1.0,
-    "note": "antibakteri C. acnes",
-    "source": "Zaenglein et al. 2016; Reynolds et al. 2024"
-   },
-   {
-    "target": "Acne",
-    "target_type": "condition",
-    "ingredient": "Azelaic Acid",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "antibakteri & anti-inflamasi",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Acne",
-    "target_type": "condition",
-    "ingredient": "Niacinamide",
-    "role": "recommended",
-    "weight": 0.6,
-    "note": "anti-inflamasi; mengurangi sebum",
-    "source": "Draelos et al. 2006"
-   },
-   {
-    "target": "Acne",
-    "target_type": "condition",
-    "ingredient": "Retinol",
-    "role": "recommended",
-    "weight": 0.6,
-    "note": "retinoid topikal (bentuk kosmetik)",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Acne",
-    "target_type": "condition",
-    "ingredient": "Tea Tree",
-    "role": "recommended",
-    "weight": 0.4,
-    "note": "bukti terbatas",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Acne",
-    "target_type": "condition",
-    "ingredient": "Comedogenic Oil",
-    "role": "avoid",
-    "weight": 1.0,
-    "note": "minyak/ester komedogenik",
-    "source": "Draelos & DiNardo 2006"
-   },
-   {
-    "target": "Papular",
-    "target_type": "condition",
-    "ingredient": "Salicylic Acid",
-    "role": "recommended",
-    "weight": 1.0,
-    "note": "lesi inflamasi",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Papular",
-    "target_type": "condition",
-    "ingredient": "Benzoyl Peroxide",
-    "role": "recommended",
-    "weight": 1.0,
-    "note": "lesi inflamasi",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Papular",
-    "target_type": "condition",
-    "ingredient": "Azelaic Acid",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "anti-inflamasi",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Papular",
-    "target_type": "condition",
-    "ingredient": "Niacinamide",
-    "role": "recommended",
-    "weight": 0.6,
-    "note": "anti-inflamasi",
-    "source": "Draelos et al. 2006"
-   },
-   {
-    "target": "Papular",
-    "target_type": "condition",
-    "ingredient": "Comedogenic Oil",
-    "role": "avoid",
-    "weight": 1.0,
-    "note": "",
-    "source": "Draelos & DiNardo 2006"
-   },
-   {
-    "target": "Purulent",
-    "target_type": "condition",
-    "ingredient": "Benzoyl Peroxide",
-    "role": "recommended",
-    "weight": 1.0,
-    "note": "pustul (bakteri)",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Purulent",
-    "target_type": "condition",
-    "ingredient": "Salicylic Acid",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Purulent",
-    "target_type": "condition",
-    "ingredient": "Azelaic Acid",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Purulent",
-    "target_type": "condition",
-    "ingredient": "Tea Tree",
-    "role": "recommended",
-    "weight": 0.4,
-    "note": "bukti terbatas",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Purulent",
-    "target_type": "condition",
-    "ingredient": "Comedogenic Oil",
-    "role": "avoid",
-    "weight": 1.0,
-    "note": "",
-    "source": "Draelos & DiNardo 2006"
-   },
-   {
-    "target": "Cysts",
-    "target_type": "condition",
-    "ingredient": "Benzoyl Peroxide",
-    "role": "recommended",
-    "weight": 0.6,
-    "note": "butuh terapi dokter (oral); skincare hanya pendukung",
-    "source": "Reynolds et al. 2024"
-   },
-   {
-    "target": "Cysts",
-    "target_type": "condition",
-    "ingredient": "Azelaic Acid",
-    "role": "recommended",
-    "weight": 0.6,
-    "note": "pendukung",
-    "source": "Reynolds et al. 2024"
-   },
-   {
-    "target": "Cysts",
-    "target_type": "condition",
-    "ingredient": "Comedogenic Oil",
-    "role": "avoid",
-    "weight": 1.0,
-    "note": "",
-    "source": "Draelos & DiNardo 2006"
-   },
-   {
-    "target": "Blackhead",
-    "target_type": "condition",
-    "ingredient": "Salicylic Acid",
-    "role": "recommended",
-    "weight": 1.0,
-    "note": "komedo terbuka",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Blackhead",
-    "target_type": "condition",
-    "ingredient": "Retinol",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "komedolitik",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Blackhead",
-    "target_type": "condition",
-    "ingredient": "AHA",
-    "role": "recommended",
-    "weight": 0.5,
-    "note": "eksfoliasi permukaan",
-    "source": "Kornhauser et al. 2010"
-   },
-   {
-    "target": "Blackhead",
-    "target_type": "condition",
-    "ingredient": "Niacinamide",
-    "role": "recommended",
-    "weight": 0.4,
-    "note": "",
-    "source": "Draelos et al. 2006"
-   },
-   {
-    "target": "Blackhead",
-    "target_type": "condition",
-    "ingredient": "Comedogenic Oil",
-    "role": "avoid",
-    "weight": 1.0,
-    "note": "",
-    "source": "Draelos & DiNardo 2006"
-   },
-   {
-    "target": "Whitehead",
-    "target_type": "condition",
-    "ingredient": "Salicylic Acid",
-    "role": "recommended",
-    "weight": 1.0,
-    "note": "komedo tertutup",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Whitehead",
-    "target_type": "condition",
-    "ingredient": "Retinol",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "komedolitik",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Whitehead",
-    "target_type": "condition",
-    "ingredient": "AHA",
-    "role": "recommended",
-    "weight": 0.5,
-    "note": "",
-    "source": "Kornhauser et al. 2010"
-   },
-   {
-    "target": "Whitehead",
-    "target_type": "condition",
-    "ingredient": "Comedogenic Oil",
-    "role": "avoid",
-    "weight": 1.0,
-    "note": "",
-    "source": "Draelos & DiNardo 2006"
-   },
-   {
-    "target": "Milium",
-    "target_type": "condition",
-    "ingredient": "Retinol",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "mempercepat pergantian sel; ekstraksi oleh dokter lebih efektif",
-    "source": "Berk & Bayliss 2008"
-   },
-   {
-    "target": "Milium",
-    "target_type": "condition",
-    "ingredient": "AHA",
-    "role": "recommended",
-    "weight": 0.6,
-    "note": "",
-    "source": "Berk & Bayliss 2008"
-   },
-   {
-    "target": "Milium",
-    "target_type": "condition",
-    "ingredient": "Heavy Occlusive",
-    "role": "avoid",
-    "weight": 0.8,
-    "note": "krim sangat oklusif dapat memicu milia",
-    "source": "Berk & Bayliss 2008"
-   },
-   {
-    "target": "Scars",
-    "target_type": "condition",
-    "ingredient": "Vitamin C",
-    "role": "recommended",
-    "weight": 1.0,
-    "note": "hiperpigmentasi pasca-inflamasi (PIH)",
-    "source": "Telang 2013"
-   },
-   {
-    "target": "Scars",
-    "target_type": "condition",
-    "ingredient": "Niacinamide",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "menghambat transfer melanosom",
-    "source": "Hakozaki et al. 2002"
-   },
-   {
-    "target": "Scars",
-    "target_type": "condition",
-    "ingredient": "Azelaic Acid",
-    "role": "recommended",
-    "weight": 0.6,
-    "note": "PIH",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Scars",
-    "target_type": "condition",
-    "ingredient": "Retinol",
-    "role": "recommended",
-    "weight": 0.6,
-    "note": "tekstur & PIH",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Scars",
-    "target_type": "condition",
-    "ingredient": "AHA",
-    "role": "recommended",
-    "weight": 0.5,
-    "note": "",
-    "source": "Kornhauser et al. 2010"
-   },
-   {
-    "target": "Scars",
-    "target_type": "condition",
-    "ingredient": "Alpha Arbutin",
-    "role": "recommended",
-    "weight": 0.5,
-    "note": "pencerah PIH",
-    "source": "Telang 2013"
-   },
-   {
-    "target": "Scars",
-    "target_type": "condition",
-    "ingredient": "Sunscreen Filter",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "mencegah PIH makin gelap",
-    "source": "Telang 2013"
-   },
-   {
-    "target": "Birthmark",
-    "target_type": "condition",
-    "ingredient": "Sunscreen Filter",
-    "role": "recommended",
-    "weight": 0.5,
-    "note": "tidak ada skincare yang menghilangkan tanda lahir; rujuk dokter bila berubah",
-    "source": "(rujukan dokter)"
-   },
-   {
-    "target": "Clear",
-    "target_type": "condition",
-    "ingredient": "Sunscreen Filter",
-    "role": "recommended",
-    "weight": 0.6,
-    "note": "perawatan dasar",
-    "source": "(perawatan dasar)"
-   },
-   {
-    "target": "Clear",
-    "target_type": "condition",
-    "ingredient": "Hyaluronic Acid",
-    "role": "recommended",
-    "weight": 0.3,
-    "note": "perawatan dasar",
-    "source": "(perawatan dasar)"
-   },
-   {
-    "target": "Oily",
-    "target_type": "skin_type",
-    "ingredient": "Niacinamide",
-    "role": "recommended",
-    "weight": 1.0,
-    "note": "mengurangi sebum",
-    "source": "Draelos et al. 2006"
-   },
-   {
-    "target": "Oily",
-    "target_type": "skin_type",
-    "ingredient": "Salicylic Acid",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Oily",
-    "target_type": "skin_type",
-    "ingredient": "Zinc",
-    "role": "recommended",
-    "weight": 0.5,
-    "note": "",
-    "source": "(sebum regulator)"
-   },
-   {
-    "target": "Oily",
-    "target_type": "skin_type",
-    "ingredient": "Hyaluronic Acid",
-    "role": "recommended",
-    "weight": 0.3,
-    "note": "hidrasi ringan",
-    "source": "(hidrasi)"
-   },
-   {
-    "target": "Oily",
-    "target_type": "skin_type",
-    "ingredient": "Comedogenic Oil",
-    "role": "avoid",
-    "weight": 0.8,
-    "note": "",
-    "source": "Draelos & DiNardo 2006"
-   },
-   {
-    "target": "Dry",
-    "target_type": "skin_type",
-    "ingredient": "Ceramide",
-    "role": "recommended",
-    "weight": 1.0,
-    "note": "memperbaiki skin barrier",
-    "source": "Draelos 2018"
-   },
-   {
-    "target": "Dry",
-    "target_type": "skin_type",
-    "ingredient": "Hyaluronic Acid",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "humektan",
-    "source": "Draelos 2018"
-   },
-   {
-    "target": "Dry",
-    "target_type": "skin_type",
-    "ingredient": "Glycerin",
-    "role": "recommended",
-    "weight": 0.6,
-    "note": "humektan",
-    "source": "Draelos 2018"
-   },
-   {
-    "target": "Dry",
-    "target_type": "skin_type",
-    "ingredient": "Squalane",
-    "role": "recommended",
-    "weight": 0.6,
-    "note": "emolien",
-    "source": "Draelos 2018"
-   },
-   {
-    "target": "Dry",
-    "target_type": "skin_type",
-    "ingredient": "Panthenol",
-    "role": "recommended",
-    "weight": 0.5,
-    "note": "",
-    "source": "Draelos 2018"
-   },
-   {
-    "target": "Dry",
-    "target_type": "skin_type",
-    "ingredient": "Alcohol Denat",
-    "role": "avoid",
-    "weight": 0.8,
-    "note": "mengeringkan",
-    "source": "Draelos 2018"
-   },
-   {
-    "target": "Normal",
-    "target_type": "skin_type",
-    "ingredient": "Hyaluronic Acid",
-    "role": "recommended",
-    "weight": 0.5,
-    "note": "perawatan dasar",
-    "source": "(perawatan dasar)"
-   },
-   {
-    "target": "Normal",
-    "target_type": "skin_type",
-    "ingredient": "Glycerin",
-    "role": "recommended",
-    "weight": 0.3,
-    "note": "perawatan dasar",
-    "source": "(perawatan dasar)"
-   },
-   {
-    "target": "Sensitive",
-    "target_type": "sensitivity",
-    "ingredient": "Centella Asiatica",
-    "role": "recommended",
-    "weight": 1.0,
-    "note": "menenangkan",
-    "source": "Bylka et al. 2013"
-   },
-   {
-    "target": "Sensitive",
-    "target_type": "sensitivity",
-    "ingredient": "Panthenol",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "",
-    "source": "Draelos 2018"
-   },
-   {
-    "target": "Sensitive",
-    "target_type": "sensitivity",
-    "ingredient": "Ceramide",
-    "role": "recommended",
-    "weight": 0.8,
-    "note": "",
-    "source": "Draelos 2018"
-   },
-   {
-    "target": "Sensitive",
-    "target_type": "sensitivity",
-    "ingredient": "Fragrance",
-    "role": "avoid",
-    "weight": 1.0,
-    "note": "alergen kosmetik paling umum",
-    "source": "de Groot 2019"
-   },
-   {
-    "target": "Sensitive",
-    "target_type": "sensitivity",
-    "ingredient": "Essential Oil",
-    "role": "avoid",
-    "weight": 0.8,
-    "note": "",
-    "source": "de Groot 2019"
-   },
-   {
-    "target": "Sensitive",
-    "target_type": "sensitivity",
-    "ingredient": "Alcohol Denat",
-    "role": "avoid",
-    "weight": 0.8,
-    "note": "",
-    "source": "Draelos 2018"
-   },
-   {
-    "target": "Sensitive",
-    "target_type": "sensitivity",
-    "ingredient": "Retinol",
-    "role": "avoid",
-    "weight": 0.6,
-    "note": "berisiko iritasi; perkenalkan bertahap",
-    "source": "Zaenglein et al. 2016"
-   },
-   {
-    "target": "Sensitive",
-    "target_type": "sensitivity",
-    "ingredient": "AHA",
-    "role": "avoid",
-    "weight": 0.6,
-    "note": "berisiko iritasi",
-    "source": "Kornhauser et al. 2010"
-   }
-  ],
-  "usd_to_idr": 16000,
-  "class_to_tag": {
-   "Acne": {
-    "acne": 1
-   },
-   "Papular": {
-    "acne": 1
-   },
-   "Purulent": {
-    "acne": 1
-   },
-   "Cysts": {
-    "acne": 1
-   },
-   "Blackhead": {
-    "pores": 1,
-    "acne": 0.5
-   },
-   "Whitehead": {
-    "pores": 1,
-    "acne": 0.5
-   },
-   "Scars": {
-    "dark_spots": 1,
-    "texture": 0.5
-   },
-   "Milium": {
-    "texture": 1
-   },
-   "Birthmark": {},
-   "Clear": {}
-  },
-  "_catatan": "Katalog kini produk lokal Sociolla (824 produk, semuanya berfoto), jadi bobot 0.7/0.3/0.0 dari notebook 06 varian local dipakai: P@10 0,63 NDCG@10 0,684, nol pelanggaran keamanan, coverage 0,358. Sebelumnya katalog Sephora memakai 0.5/0.5."
- }
+  "recommender": {
+    "weights": [
+      0.7,
+      0.3,
+      0.0
+    ],
+    "actives": [
+      "Niacinamide",
+      "Salicylic Acid",
+      "Hyaluronic Acid",
+      "Retinol",
+      "Centella Asiatica",
+      "Ceramide",
+      "AHA",
+      "Azelaic Acid",
+      "Vitamin C",
+      "Zinc",
+      "Tea Tree",
+      "Panthenol",
+      "Benzoyl Peroxide",
+      "Alpha Arbutin",
+      "Glycerin",
+      "Squalane",
+      "Sunscreen Filter",
+      "Comedogenic Oil",
+      "Heavy Occlusive",
+      "Essential Oil",
+      "Fragrance",
+      "Alcohol Denat"
+    ],
+    "mapping": [
+      {
+        "target": "Acne",
+        "target_type": "condition",
+        "ingredient": "Salicylic Acid",
+        "role": "recommended",
+        "weight": 1.0,
+        "note": "BHA larut minyak; eksfoliasi pori",
+        "source": "Zaenglein et al. 2016; Reynolds et al. 2024"
+      },
+      {
+        "target": "Acne",
+        "target_type": "condition",
+        "ingredient": "Benzoyl Peroxide",
+        "role": "recommended",
+        "weight": 1.0,
+        "note": "antibakteri C. acnes",
+        "source": "Zaenglein et al. 2016; Reynolds et al. 2024"
+      },
+      {
+        "target": "Acne",
+        "target_type": "condition",
+        "ingredient": "Azelaic Acid",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "antibakteri & anti-inflamasi",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Acne",
+        "target_type": "condition",
+        "ingredient": "Niacinamide",
+        "role": "recommended",
+        "weight": 0.6,
+        "note": "anti-inflamasi; mengurangi sebum",
+        "source": "Draelos et al. 2006"
+      },
+      {
+        "target": "Acne",
+        "target_type": "condition",
+        "ingredient": "Retinol",
+        "role": "recommended",
+        "weight": 0.6,
+        "note": "retinoid topikal (bentuk kosmetik)",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Acne",
+        "target_type": "condition",
+        "ingredient": "Tea Tree",
+        "role": "recommended",
+        "weight": 0.4,
+        "note": "bukti terbatas",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Acne",
+        "target_type": "condition",
+        "ingredient": "Comedogenic Oil",
+        "role": "avoid",
+        "weight": 1.0,
+        "note": "minyak/ester komedogenik",
+        "source": "Draelos & DiNardo 2006"
+      },
+      {
+        "target": "Papular",
+        "target_type": "condition",
+        "ingredient": "Salicylic Acid",
+        "role": "recommended",
+        "weight": 1.0,
+        "note": "lesi inflamasi",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Papular",
+        "target_type": "condition",
+        "ingredient": "Benzoyl Peroxide",
+        "role": "recommended",
+        "weight": 1.0,
+        "note": "lesi inflamasi",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Papular",
+        "target_type": "condition",
+        "ingredient": "Azelaic Acid",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "anti-inflamasi",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Papular",
+        "target_type": "condition",
+        "ingredient": "Niacinamide",
+        "role": "recommended",
+        "weight": 0.6,
+        "note": "anti-inflamasi",
+        "source": "Draelos et al. 2006"
+      },
+      {
+        "target": "Papular",
+        "target_type": "condition",
+        "ingredient": "Comedogenic Oil",
+        "role": "avoid",
+        "weight": 1.0,
+        "note": "",
+        "source": "Draelos & DiNardo 2006"
+      },
+      {
+        "target": "Purulent",
+        "target_type": "condition",
+        "ingredient": "Benzoyl Peroxide",
+        "role": "recommended",
+        "weight": 1.0,
+        "note": "pustul (bakteri)",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Purulent",
+        "target_type": "condition",
+        "ingredient": "Salicylic Acid",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Purulent",
+        "target_type": "condition",
+        "ingredient": "Azelaic Acid",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Purulent",
+        "target_type": "condition",
+        "ingredient": "Tea Tree",
+        "role": "recommended",
+        "weight": 0.4,
+        "note": "bukti terbatas",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Purulent",
+        "target_type": "condition",
+        "ingredient": "Comedogenic Oil",
+        "role": "avoid",
+        "weight": 1.0,
+        "note": "",
+        "source": "Draelos & DiNardo 2006"
+      },
+      {
+        "target": "Cysts",
+        "target_type": "condition",
+        "ingredient": "Benzoyl Peroxide",
+        "role": "recommended",
+        "weight": 0.6,
+        "note": "butuh terapi dokter (oral); skincare hanya pendukung",
+        "source": "Reynolds et al. 2024"
+      },
+      {
+        "target": "Cysts",
+        "target_type": "condition",
+        "ingredient": "Azelaic Acid",
+        "role": "recommended",
+        "weight": 0.6,
+        "note": "pendukung",
+        "source": "Reynolds et al. 2024"
+      },
+      {
+        "target": "Cysts",
+        "target_type": "condition",
+        "ingredient": "Comedogenic Oil",
+        "role": "avoid",
+        "weight": 1.0,
+        "note": "",
+        "source": "Draelos & DiNardo 2006"
+      },
+      {
+        "target": "Blackhead",
+        "target_type": "condition",
+        "ingredient": "Salicylic Acid",
+        "role": "recommended",
+        "weight": 1.0,
+        "note": "komedo terbuka",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Blackhead",
+        "target_type": "condition",
+        "ingredient": "Retinol",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "komedolitik",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Blackhead",
+        "target_type": "condition",
+        "ingredient": "AHA",
+        "role": "recommended",
+        "weight": 0.5,
+        "note": "eksfoliasi permukaan",
+        "source": "Kornhauser et al. 2010"
+      },
+      {
+        "target": "Blackhead",
+        "target_type": "condition",
+        "ingredient": "Niacinamide",
+        "role": "recommended",
+        "weight": 0.4,
+        "note": "",
+        "source": "Draelos et al. 2006"
+      },
+      {
+        "target": "Blackhead",
+        "target_type": "condition",
+        "ingredient": "Comedogenic Oil",
+        "role": "avoid",
+        "weight": 1.0,
+        "note": "",
+        "source": "Draelos & DiNardo 2006"
+      },
+      {
+        "target": "Whitehead",
+        "target_type": "condition",
+        "ingredient": "Salicylic Acid",
+        "role": "recommended",
+        "weight": 1.0,
+        "note": "komedo tertutup",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Whitehead",
+        "target_type": "condition",
+        "ingredient": "Retinol",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "komedolitik",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Whitehead",
+        "target_type": "condition",
+        "ingredient": "AHA",
+        "role": "recommended",
+        "weight": 0.5,
+        "note": "",
+        "source": "Kornhauser et al. 2010"
+      },
+      {
+        "target": "Whitehead",
+        "target_type": "condition",
+        "ingredient": "Comedogenic Oil",
+        "role": "avoid",
+        "weight": 1.0,
+        "note": "",
+        "source": "Draelos & DiNardo 2006"
+      },
+      {
+        "target": "Milium",
+        "target_type": "condition",
+        "ingredient": "Retinol",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "mempercepat pergantian sel; ekstraksi oleh dokter lebih efektif",
+        "source": "Berk & Bayliss 2008"
+      },
+      {
+        "target": "Milium",
+        "target_type": "condition",
+        "ingredient": "AHA",
+        "role": "recommended",
+        "weight": 0.6,
+        "note": "",
+        "source": "Berk & Bayliss 2008"
+      },
+      {
+        "target": "Milium",
+        "target_type": "condition",
+        "ingredient": "Heavy Occlusive",
+        "role": "avoid",
+        "weight": 0.8,
+        "note": "krim sangat oklusif dapat memicu milia",
+        "source": "Berk & Bayliss 2008"
+      },
+      {
+        "target": "Scars",
+        "target_type": "condition",
+        "ingredient": "Vitamin C",
+        "role": "recommended",
+        "weight": 1.0,
+        "note": "hiperpigmentasi pasca-inflamasi (PIH)",
+        "source": "Telang 2013"
+      },
+      {
+        "target": "Scars",
+        "target_type": "condition",
+        "ingredient": "Niacinamide",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "menghambat transfer melanosom",
+        "source": "Hakozaki et al. 2002"
+      },
+      {
+        "target": "Scars",
+        "target_type": "condition",
+        "ingredient": "Azelaic Acid",
+        "role": "recommended",
+        "weight": 0.6,
+        "note": "PIH",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Scars",
+        "target_type": "condition",
+        "ingredient": "Retinol",
+        "role": "recommended",
+        "weight": 0.6,
+        "note": "tekstur & PIH",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Scars",
+        "target_type": "condition",
+        "ingredient": "AHA",
+        "role": "recommended",
+        "weight": 0.5,
+        "note": "",
+        "source": "Kornhauser et al. 2010"
+      },
+      {
+        "target": "Scars",
+        "target_type": "condition",
+        "ingredient": "Alpha Arbutin",
+        "role": "recommended",
+        "weight": 0.5,
+        "note": "pencerah PIH",
+        "source": "Telang 2013"
+      },
+      {
+        "target": "Scars",
+        "target_type": "condition",
+        "ingredient": "Sunscreen Filter",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "mencegah PIH makin gelap",
+        "source": "Telang 2013"
+      },
+      {
+        "target": "Birthmark",
+        "target_type": "condition",
+        "ingredient": "Sunscreen Filter",
+        "role": "recommended",
+        "weight": 0.5,
+        "note": "tidak ada skincare yang menghilangkan tanda lahir; rujuk dokter bila berubah",
+        "source": "(rujukan dokter)"
+      },
+      {
+        "target": "Clear",
+        "target_type": "condition",
+        "ingredient": "Sunscreen Filter",
+        "role": "recommended",
+        "weight": 0.6,
+        "note": "perawatan dasar",
+        "source": "(perawatan dasar)"
+      },
+      {
+        "target": "Clear",
+        "target_type": "condition",
+        "ingredient": "Hyaluronic Acid",
+        "role": "recommended",
+        "weight": 0.3,
+        "note": "perawatan dasar",
+        "source": "(perawatan dasar)"
+      },
+      {
+        "target": "Oily",
+        "target_type": "skin_type",
+        "ingredient": "Niacinamide",
+        "role": "recommended",
+        "weight": 1.0,
+        "note": "mengurangi sebum",
+        "source": "Draelos et al. 2006"
+      },
+      {
+        "target": "Oily",
+        "target_type": "skin_type",
+        "ingredient": "Salicylic Acid",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Oily",
+        "target_type": "skin_type",
+        "ingredient": "Zinc",
+        "role": "recommended",
+        "weight": 0.5,
+        "note": "",
+        "source": "(sebum regulator)"
+      },
+      {
+        "target": "Oily",
+        "target_type": "skin_type",
+        "ingredient": "Hyaluronic Acid",
+        "role": "recommended",
+        "weight": 0.3,
+        "note": "hidrasi ringan",
+        "source": "(hidrasi)"
+      },
+      {
+        "target": "Oily",
+        "target_type": "skin_type",
+        "ingredient": "Comedogenic Oil",
+        "role": "avoid",
+        "weight": 0.8,
+        "note": "",
+        "source": "Draelos & DiNardo 2006"
+      },
+      {
+        "target": "Dry",
+        "target_type": "skin_type",
+        "ingredient": "Ceramide",
+        "role": "recommended",
+        "weight": 1.0,
+        "note": "memperbaiki skin barrier",
+        "source": "Draelos 2018"
+      },
+      {
+        "target": "Dry",
+        "target_type": "skin_type",
+        "ingredient": "Hyaluronic Acid",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "humektan",
+        "source": "Draelos 2018"
+      },
+      {
+        "target": "Dry",
+        "target_type": "skin_type",
+        "ingredient": "Glycerin",
+        "role": "recommended",
+        "weight": 0.6,
+        "note": "humektan",
+        "source": "Draelos 2018"
+      },
+      {
+        "target": "Dry",
+        "target_type": "skin_type",
+        "ingredient": "Squalane",
+        "role": "recommended",
+        "weight": 0.6,
+        "note": "emolien",
+        "source": "Draelos 2018"
+      },
+      {
+        "target": "Dry",
+        "target_type": "skin_type",
+        "ingredient": "Panthenol",
+        "role": "recommended",
+        "weight": 0.5,
+        "note": "",
+        "source": "Draelos 2018"
+      },
+      {
+        "target": "Dry",
+        "target_type": "skin_type",
+        "ingredient": "Alcohol Denat",
+        "role": "avoid",
+        "weight": 0.8,
+        "note": "mengeringkan",
+        "source": "Draelos 2018"
+      },
+      {
+        "target": "Normal",
+        "target_type": "skin_type",
+        "ingredient": "Hyaluronic Acid",
+        "role": "recommended",
+        "weight": 0.5,
+        "note": "perawatan dasar",
+        "source": "(perawatan dasar)"
+      },
+      {
+        "target": "Normal",
+        "target_type": "skin_type",
+        "ingredient": "Glycerin",
+        "role": "recommended",
+        "weight": 0.3,
+        "note": "perawatan dasar",
+        "source": "(perawatan dasar)"
+      },
+      {
+        "target": "Sensitive",
+        "target_type": "sensitivity",
+        "ingredient": "Centella Asiatica",
+        "role": "recommended",
+        "weight": 1.0,
+        "note": "menenangkan",
+        "source": "Bylka et al. 2013"
+      },
+      {
+        "target": "Sensitive",
+        "target_type": "sensitivity",
+        "ingredient": "Panthenol",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "",
+        "source": "Draelos 2018"
+      },
+      {
+        "target": "Sensitive",
+        "target_type": "sensitivity",
+        "ingredient": "Ceramide",
+        "role": "recommended",
+        "weight": 0.8,
+        "note": "",
+        "source": "Draelos 2018"
+      },
+      {
+        "target": "Sensitive",
+        "target_type": "sensitivity",
+        "ingredient": "Fragrance",
+        "role": "avoid",
+        "weight": 1.0,
+        "note": "alergen kosmetik paling umum",
+        "source": "de Groot 2019"
+      },
+      {
+        "target": "Sensitive",
+        "target_type": "sensitivity",
+        "ingredient": "Essential Oil",
+        "role": "avoid",
+        "weight": 0.8,
+        "note": "",
+        "source": "de Groot 2019"
+      },
+      {
+        "target": "Sensitive",
+        "target_type": "sensitivity",
+        "ingredient": "Alcohol Denat",
+        "role": "avoid",
+        "weight": 0.8,
+        "note": "",
+        "source": "Draelos 2018"
+      },
+      {
+        "target": "Sensitive",
+        "target_type": "sensitivity",
+        "ingredient": "Retinol",
+        "role": "avoid",
+        "weight": 0.6,
+        "note": "berisiko iritasi; perkenalkan bertahap",
+        "source": "Zaenglein et al. 2016"
+      },
+      {
+        "target": "Sensitive",
+        "target_type": "sensitivity",
+        "ingredient": "AHA",
+        "role": "avoid",
+        "weight": 0.6,
+        "note": "berisiko iritasi",
+        "source": "Kornhauser et al. 2010"
+      }
+    ],
+    "usd_to_idr": 16000,
+    "class_to_tag": {
+      "Acne": {
+        "acne": 1
+      },
+      "Papular": {
+        "acne": 1
+      },
+      "Purulent": {
+        "acne": 1
+      },
+      "Cysts": {
+        "acne": 1
+      },
+      "Blackhead": {
+        "pores": 1,
+        "acne": 0.5
+      },
+      "Whitehead": {
+        "pores": 1,
+        "acne": 0.5
+      },
+      "Scars": {
+        "dark_spots": 1,
+        "texture": 0.5
+      },
+      "Milium": {
+        "texture": 1
+      },
+      "Birthmark": {},
+      "Clear": {}
+    },
+    "_catatan": "Katalog kini produk lokal Sociolla (824 produk, semuanya berfoto), jadi bobot 0.7/0.3/0.0 dari notebook 06 varian local dipakai: P@10 0,63 NDCG@10 0,684, nol pelanggaran keamanan, coverage 0,358. Sebelumnya katalog Sephora memakai 0.5/0.5."
+  }
 }
